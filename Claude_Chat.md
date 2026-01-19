@@ -1,5 +1,5 @@
 the base we are using for our project intergration
-https://github.com/Ghenghis/Winhance
+https://github.com/Ghenghis/Winhance-FS
 Winhance is a C# application designed to debloat, optimize and customize your Windows experience. From software management to system optimizations and customization, Winhance provides everything you need to enhance Windows 10 and 11 systems.
 Winhance features most of the same enhancements as UnattendedWinstall without needing to do a clean install of Windows.
 Requirements 💻
@@ -19,6 +19,7 @@ can use both E:\ and F:\ to move files and folders organized with index files fr
 how to create something that has CLI access and control to help from lm studio, claude code, windsurf ide all seamlessly able to connect and automate anything needed from natural lang
 review users c:, d:, e:, f:, g:\ drives the C:\ drive needs to be cleaned but carefully and with multi backup recover fails safes multi included to make sure users can move anything back and forth as needed by selecting and making it easy to move either way
 how to create windows native app that would included everything for users but also include everything for AI access and full access to moving and organizing for users with awesome threading and extreme pipelines for extreme speed and output overall, how to cover all aspects and angles so this is extremely useful
+https://github.com/Ghenghis/Winhance-FS
 
 its jan 18th 2026 4:45pm 85122 time zone AZ, continue
 make sure you extend your research for professonal apsects geared for speed but detail included, continue include everything from users requests but greatly enhanced and researched with great detail, figure out where and how to include into Winhance-Borg-Edition themes included that only change 1-5 colors from standard theme. borg would just include green, red, blue, purple, gold, orange, pink, neon colors all shades included, robust amount of single color changes and upto 5 different colors changed from across UI, type of theme studio included users can change single color from stock/standard or can create custom themes changing upto 5 total colors around UI color placements, Studio would have where users click on UI and it changes to the selected color user then save and test then save the theme name if user likes or make changes, or delete, needs to be a robust and user friendly click and change theme colors on simulated GUI users create themes with then save there name to be used in project. from 1 color upto 5 colors customized theme Studio extremely easy to use and see the changes theme studio professonally designed for windows Winhance is a C# but we want to use rust when possible
