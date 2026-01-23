@@ -269,20 +269,258 @@ jobs:
           # Copy published files
           Copy-Item -Path "./publish/msix-${{ matrix.arch }}/*" -Destination $msixDir -Recurse
 
-          # Create AppxManifest.xml
+          # Create AppxManifest.xml for MSIX
+          $manifest = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+                   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+                   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+                   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+                   IgnorableNamespaces="uap uap3 rescap">
+            <Identity Name="Winhance.Winhance" Publisher="CN=Winhance, O=Winhance Team, C=US" Version="${{ steps.version.outputs.assembly_version }}" ProcessorArchitecture="${{ matrix.arch }}" />
+            <Properties>
+              <DisplayName>Winhance</DisplayName>
+              <PublisherDisplayName>Winhance Team</PublisherDisplayName>
+              <Logo>Assets\StoreLogo.png</Logo>
+              <Description>Windows Enhancement and Optimization Tool</Description>
+            </Properties>
+            <Dependencies>
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+            </Dependencies>
+            <Resources>
+              <Resource Language="en-us" />
+            </Resources>
+            <Applications>
+              <Application Id="Winhance" Executable="Winhance.WPF.exe" EntryPoint="Windows.FullTrustApplication">
+                <uap:VisualElements DisplayName="Winhance" Description="Windows Enhancement Tool" BackgroundColor="#1E1E1E" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+                  <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" ShortName="Winhance">
+                    <uap:ShowNameOnTiles>
+                      <uap:ShowOn Tile="square150x150Logo"/>
+                      <uap:ShowOn Tile="wide310x150Logo"/>
+                      <uap:ShowOn Tile="square310x310Logo"/>
+                    </uap:ShowNameOnTiles>
+                  </uap:DefaultTile>
+                  <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#1E1E1E"/>
+                </uap:VisualElements>
+              </Application>
+            </Applications>
+            <Capabilities>
+              <rescap:Capability Name="runFullTrust" />
+              <rescap:Capability Name="allowElevation" />
+            </Capabilities>
+          </Package>
+          "@
+          $manifest | Out-File -FilePath "$msixDir/AppxManifest.xml" -Encoding UTF8
+
+          # Create Assets directory with proper logos
+          New-Item -ItemType Directory -Force -Path "$msixDir/Assets"
+          
+          # Create proper sized placeholder PNGs (50x50 for store logo)
+          # StoreLogo.png (50x50)
+          $storeLogo50 = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AEXBwAA5xCKVAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFklEQVRo3u3BMQEAAADCoPVP7WsIoAAAeAMPMAABpQYSbgAAAABJRU5ErkJggg==")
+          [IO.File]::WriteAllBytes("$msixDir/Assets/StoreLogo.png", $storeLogo50)
+          
+          # Square logos (using same placeholder)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square44x44Logo.png", $storeLogo50)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square71x71Logo.png", $storeLogo50)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square150x150Logo.png", $storeLogo50)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square310x310Logo.png", $storeLogo50)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Wide310x150Logo.png", $storeLogo50)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/SplashScreen.png", $storeLogo50)
+
+          # Find Windows SDK makeappx.exe
+          $sdkPath = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1
+          
+          if ($sdkPath) {
+            $makeAppx = $sdkPath.FullName
+            Write-Host "Found makeappx.exe at: $makeAppx"
+            
+            # Create .msix package (unsigned - for sideloading/testing)
+            $msixFile = "./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.msix"
+            & $makeAppx pack /d $msixDir /p $msixFile /nv
+            
+            if (Test-Path $msixFile) {
+              $hash = Get-FileHash $msixFile -Algorithm SHA256
+              Set-Content -Path "$msixFile.sha256" -Value "$($hash.Hash)  $(Split-Path $msixFile -Leaf)"
+              Write-Host "Created MSIX: $msixFile"
+            }
+          } else {
+            Write-Host "makeappx.exe not found, creating ZIP package instead"
+          }
+
+          # Also create ZIP version for manual inspection/sideloading
+          $zipName = "Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path "$msixDir/*" -DestinationPath "./publish/$zipName" -Force
+
+          $hash = Get-FileHash "./publish/$zipName" -Algorithm SHA256
+          Set-Content -Path "./publish/$zipName.sha256" -Value "$($hash.Hash)  $zipName"
+
+          Write-Host "Created MSIX ZIP package: $zipName"
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-MSIX-${{ matrix.arch }}
+          path: |
+            ./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.msix
+            ./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.msix.sha256
+            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip
+            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip.sha256
+          retention-days: 30
+
+  # MSIX Bundle Creation (combines all architectures)
+  msix-bundle:
+    name: Create MSIX Bundle
+    runs-on: windows-latest
+    needs: msix-build
+
+    steps:
+      - name: Download all MSIX artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Winhance-MSIX-*
+          path: ./msix-packages
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create MSIX Bundle
+        shell: pwsh
+        run: |
+          # Find Windows SDK makeappx.exe
+          $sdkPath = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1
+          
+          if ($sdkPath) {
+            $makeAppx = $sdkPath.FullName
+            Write-Host "Found makeappx.exe at: $makeAppx"
+            
+            # Create bundle directory
+            New-Item -ItemType Directory -Force -Path ./bundle-input
+            
+            # Copy all .msix files to bundle directory
+            Get-ChildItem -Path ./msix-packages -Recurse -Filter "*.msix" | ForEach-Object {
+              Copy-Item $_.FullName -Destination ./bundle-input/
+              Write-Host "Added to bundle: $($_.Name)"
+            }
+            
+            # Create .msixbundle (combines x64, x86, arm64)
+            $bundleFile = "./Winhance-${{ steps.version.outputs.version }}.msixbundle"
+            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv ${{ steps.version.outputs.version }}
+            
+            if (Test-Path $bundleFile) {
+              $hash = Get-FileHash $bundleFile -Algorithm SHA256
+              Set-Content -Path "$bundleFile.sha256" -Value "$($hash.Hash)  $(Split-Path $bundleFile -Leaf)"
+              Write-Host "Created MSIX Bundle: $bundleFile"
+            }
+          } else {
+            Write-Host "makeappx.exe not found, creating ZIP bundle instead"
+            
+            # Fallback: create ZIP bundle
+            Get-ChildItem -Path ./msix-packages -Recurse -Filter "*.msix" | ForEach-Object {
+              Copy-Item $_.FullName -Destination ./
+            }
+            $bundleZip = "./Winhance-msixbundle-${{ steps.version.outputs.version }}.zip"
+            Get-ChildItem -Filter "*.msix" | Compress-Archive -DestinationPath $bundleZip -Force
+            
+            $hash = Get-FileHash $bundleZip -Algorithm SHA256
+            Set-Content -Path "$bundleZip.sha256" -Value "$($hash.Hash)  $(Split-Path $bundleZip -Leaf)"
+          }
+
+      - name: Upload MSIX Bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-MSIX-Bundle
+          path: |
+            ./Winhance-*.msixbundle
+            ./Winhance-*.msixbundle.sha256
+            ./Winhance-msixbundle-*.zip
+            ./Winhance-msixbundle-*.zip.sha256
+          retention-days: 30
+
+  # APPX Build (Legacy Windows Store format)
+  appx-build:
+    name: Build APPX ${{ matrix.arch }}
+    runs-on: windows-latest
+    needs: rust-build
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86]
+        include:
+          - arch: x64
+            runtime: win-x64
+          - arch: x86
+            runtime: win-x86
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          ASSEMBLY_VERSION=$(echo "$VERSION_NUM" | sed 's/-.*$//' | sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)$/\1.0/' | sed 's/^\([0-9]*\.[0-9]*\)$/\1.0.0/' | sed 's/^\([0-9]*\)$/\1.0.0.0/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_num=$VERSION_NUM" >> $GITHUB_OUTPUT
+          echo "assembly_version=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build APPX package
+        shell: pwsh
+        run: |
+          # Build the application
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            --configuration Release `
+            --runtime ${{ matrix.runtime }} `
+            --self-contained true `
+            -p:Version=${{ steps.version.outputs.version_num }} `
+            -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} `
+            -p:FileVersion=${{ steps.version.outputs.assembly_version }} `
+            --output ./publish/appx-${{ matrix.arch }}
+
+          # Create APPX directory structure
+          $appxDir = "./appx-package"
+          New-Item -ItemType Directory -Force -Path $appxDir
+          Copy-Item -Path "./publish/appx-${{ matrix.arch }}/*" -Destination $appxDir -Recurse
+
+          # Create AppxManifest.xml for APPX (legacy format)
           $manifest = @"
           <?xml version="1.0" encoding="utf-8"?>
           <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
                    xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
                    xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
-            <Identity Name="Winhance" Publisher="CN=Winhance" Version="${{ steps.version.outputs.assembly_version }}" ProcessorArchitecture="${{ matrix.arch }}" />
+            <Identity Name="Winhance.Winhance" Publisher="CN=Winhance" Version="${{ steps.version.outputs.assembly_version }}" ProcessorArchitecture="${{ matrix.arch }}" />
             <Properties>
               <DisplayName>Winhance</DisplayName>
               <PublisherDisplayName>Winhance Team</PublisherDisplayName>
               <Logo>Assets\StoreLogo.png</Logo>
             </Properties>
             <Dependencies>
-              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.19041.0" />
             </Dependencies>
             <Resources>
               <Resource Language="en-us" />
@@ -299,35 +537,116 @@ jobs:
             </Capabilities>
           </Package>
           "@
-          $manifest | Out-File -FilePath "$msixDir/AppxManifest.xml" -Encoding UTF8
+          $manifest | Out-File -FilePath "$appxDir/AppxManifest.xml" -Encoding UTF8
 
-          # Create placeholder assets directory
-          New-Item -ItemType Directory -Force -Path "$msixDir/Assets"
+          # Create Assets
+          New-Item -ItemType Directory -Force -Path "$appxDir/Assets"
+          $pngBytes = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AEXBwAA5xCKVAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFklEQVRo3u3BMQEAAADCoPVP7WsIoAAAeAMPMAABpQYSbgAAAABJRU5ErkJggg==")
+          [IO.File]::WriteAllBytes("$appxDir/Assets/StoreLogo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$appxDir/Assets/Square44x44Logo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$appxDir/Assets/Square150x150Logo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$appxDir/Assets/Wide310x150Logo.png", $pngBytes)
+
+          # Find Windows SDK makeappx.exe
+          $sdkPath = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1
           
-          # Create placeholder logo files (1x1 transparent PNG)
-          $pngBytes = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
-          [IO.File]::WriteAllBytes("$msixDir/Assets/StoreLogo.png", $pngBytes)
-          [IO.File]::WriteAllBytes("$msixDir/Assets/Square150x150Logo.png", $pngBytes)
-          [IO.File]::WriteAllBytes("$msixDir/Assets/Square44x44Logo.png", $pngBytes)
-          [IO.File]::WriteAllBytes("$msixDir/Assets/Wide310x150Logo.png", $pngBytes)
+          if ($sdkPath) {
+            $makeAppx = $sdkPath.FullName
+            
+            # Create .appx package
+            $appxFile = "./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.appx"
+            & $makeAppx pack /d $appxDir /p $appxFile /nv
+            
+            if (Test-Path $appxFile) {
+              $hash = Get-FileHash $appxFile -Algorithm SHA256
+              Set-Content -Path "$appxFile.sha256" -Value "$($hash.Hash)  $(Split-Path $appxFile -Leaf)"
+              Write-Host "Created APPX: $appxFile"
+            }
+          }
 
-          # Package as zip for now (full MSIX requires signing)
-          $zipName = "Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip"
-          Compress-Archive -Path "$msixDir/*" -DestinationPath "./publish/$zipName" -Force
-
-          # Calculate SHA256
+          # Also create ZIP version
+          $zipName = "Winhance-APPX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path "$appxDir/*" -DestinationPath "./publish/$zipName" -Force
+          
           $hash = Get-FileHash "./publish/$zipName" -Algorithm SHA256
           Set-Content -Path "./publish/$zipName.sha256" -Value "$($hash.Hash)  $zipName"
 
-          Write-Host "Created MSIX package: $zipName"
-
-      - name: Upload MSIX artifact
+      - name: Upload APPX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Winhance-MSIX-${{ matrix.arch }}
+          name: Winhance-APPX-${{ matrix.arch }}
           path: |
-            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip
-            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip.sha256
+            ./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.appx
+            ./publish/Winhance-${{ matrix.arch }}-${{ steps.version.outputs.version }}.appx.sha256
+            ./publish/Winhance-APPX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip
+            ./publish/Winhance-APPX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip.sha256
+          retention-days: 30
+
+  # APPX Bundle Creation
+  appx-bundle:
+    name: Create APPX Bundle
+    runs-on: windows-latest
+    needs: appx-build
+
+    steps:
+      - name: Download all APPX artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Winhance-APPX-*
+          path: ./appx-packages
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create APPX Bundle
+        shell: pwsh
+        run: |
+          $sdkPath = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | Select-Object -First 1
+          
+          if ($sdkPath) {
+            $makeAppx = $sdkPath.FullName
+            
+            New-Item -ItemType Directory -Force -Path ./bundle-input
+            
+            Get-ChildItem -Path ./appx-packages -Recurse -Filter "*.appx" | ForEach-Object {
+              Copy-Item $_.FullName -Destination ./bundle-input/
+              Write-Host "Added to bundle: $($_.Name)"
+            }
+            
+            $bundleFile = "./Winhance-${{ steps.version.outputs.version }}.appxbundle"
+            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv ${{ steps.version.outputs.version }}
+            
+            if (Test-Path $bundleFile) {
+              $hash = Get-FileHash $bundleFile -Algorithm SHA256
+              Set-Content -Path "$bundleFile.sha256" -Value "$($hash.Hash)  $(Split-Path $bundleFile -Leaf)"
+              Write-Host "Created APPX Bundle: $bundleFile"
+            }
+          } else {
+            # Fallback
+            $bundleZip = "./Winhance-appxbundle-${{ steps.version.outputs.version }}.zip"
+            Get-ChildItem -Path ./appx-packages -Recurse -Filter "*.appx" | Compress-Archive -DestinationPath $bundleZip -Force
+            
+            $hash = Get-FileHash $bundleZip -Algorithm SHA256
+            Set-Content -Path "$bundleZip.sha256" -Value "$($hash.Hash)  $(Split-Path $bundleZip -Leaf)"
+          }
+
+      - name: Upload APPX Bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-APPX-Bundle
+          path: |
+            ./Winhance-*.appxbundle
+            ./Winhance-*.appxbundle.sha256
+            ./Winhance-appxbundle-*.zip
+            ./Winhance-appxbundle-*.zip.sha256
           retention-days: 30
 
   # Setup.exe Installer Build
@@ -826,7 +1145,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: [rust-build, build, msix-build, installer-build, msi-build, chocolatey-build, winget-build, squirrel-build, clickonce-build]
+    needs: [rust-build, build, msix-build, msix-bundle, appx-build, appx-bundle, installer-build, msi-build, chocolatey-build, winget-build, squirrel-build, clickonce-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -884,10 +1203,21 @@ jobs:
           |---------|-------------|
           | `Winhance-Setup-${{ steps.version.outputs.version }}.exe` | Windows Setup Installer (Inno Setup) |
           | `Winhance-MSI-x64-${{ steps.version.outputs.version }}.zip` | MSI Installer Package (x64) |
-          | `Winhance-MSIX-x64-${{ steps.version.outputs.version }}.zip` | MSIX Package (x64) for sideloading |
-          | `Winhance-MSIX-x86-${{ steps.version.outputs.version }}.zip` | MSIX Package (x86) for sideloading |
-          | `Winhance-MSIX-arm64-${{ steps.version.outputs.version }}.zip` | MSIX Package (ARM64) for sideloading |
           | `Winhance-ClickOnce-${{ steps.version.outputs.version }}.zip` | ClickOnce Deployment Package |
+
+          ### Windows Store Packages (MSIX/APPX)
+
+          | Package | Format | Description |
+          |---------|--------|-------------|
+          | `Winhance-x64-${{ steps.version.outputs.version }}.msix` | MSIX | Windows 10/11 Package (x64) |
+          | `Winhance-x86-${{ steps.version.outputs.version }}.msix` | MSIX | Windows 10/11 Package (x86) |
+          | `Winhance-arm64-${{ steps.version.outputs.version }}.msix` | MSIX | Windows 10/11 Package (ARM64) |
+          | `Winhance-${{ steps.version.outputs.version }}.msixbundle` | MSIX Bundle | Multi-arch Bundle (x64+x86+ARM64) |
+          | `Winhance-x64-${{ steps.version.outputs.version }}.appx` | APPX | Legacy Windows 10 Package (x64) |
+          | `Winhance-x86-${{ steps.version.outputs.version }}.appx` | APPX | Legacy Windows 10 Package (x86) |
+          | `Winhance-${{ steps.version.outputs.version }}.appxbundle` | APPX Bundle | Legacy Multi-arch Bundle |
+
+          > **Note**: MSIX/APPX packages support auto-updates and secure deployment. For Microsoft Store submission, packages require code signing.
 
           ### Package Managers
 
