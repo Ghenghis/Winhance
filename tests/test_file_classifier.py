@@ -150,7 +150,8 @@ class TestFileClassification:
         user_doc = file_generator.create_file("my_notes.txt", 1024)
         classification = classify_file(user_doc)
 
-        assert classification.path.resolve() == user_doc.resolve()
+        # Use os.path.normcase and realpath for Windows short path compatibility
+        assert os.path.normcase(os.path.realpath(classification.path)) == os.path.normcase(os.path.realpath(user_doc))
         # User file should be safe to move
         assert classification.safe_to_move or classification.safety_level in [
             SafetyLevel.SAFE,
@@ -182,8 +183,10 @@ class TestFileClassification:
         results = classifier.batch_classify(files)
 
         assert len(results) == 3
+        # Use os.path.normcase and realpath for Windows short path compatibility
+        normalized_files = [os.path.normcase(os.path.realpath(f)) for f in files]
         for _, clf in results.items():
-            assert clf.path.resolve() in [f.resolve() for f in files]
+            assert os.path.normcase(os.path.realpath(clf.path)) in normalized_files
 
     def test_safety_summary(self, file_generator: DummyFileGenerator):
         """Test safety summary generation."""
@@ -248,4 +251,5 @@ class TestEdgeCases:
         special_file = file_generator.create_file("file with spaces & symbols.txt", 100)
         classification = classify_file(special_file)
 
-        assert classification.path.resolve() == special_file.resolve()
+        # Use os.path.normcase and realpath for Windows short path compatibility
+        assert os.path.normcase(os.path.realpath(classification.path)) == os.path.normcase(os.path.realpath(special_file))
