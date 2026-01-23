@@ -110,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black pytest pytest-asyncio pytest-timeout toml pydantic
+          pip install ruff black pytest pytest-asyncio pytest-timeout toml pydantic pydantic-settings loguru structlog
 
       - name: Run Ruff linter
         run: ruff check src/nexus_ai src/nexus_cli src/nexus_mcp
