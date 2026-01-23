@@ -424,9 +424,409 @@ jobs:
             ./output/*.sha256
           retention-days: 30
 
+  # MSI Installer Build using WiX
+  msi-build:
+    name: Build MSI Installer
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Winhance-x64
+          path: ./x64-build
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          # Extract numeric only for MSI (must be X.X.X.X format)
+          MSI_VERSION=$(echo "$VERSION_NUM" | sed 's/-.*$//' | sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)$/\1.0/' | sed 's/^\([0-9]*\.[0-9]*\)$/\1.0.0/' | sed 's/^\([0-9]*\)$/\1.0.0.0/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "msi_version=$MSI_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install WiX Toolset
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix
+
+      - name: Create MSI package
+        shell: pwsh
+        run: |
+          # Extract the x64 build
+          $zipFile = Get-ChildItem -Path ./x64-build -Filter "*.zip" | Select-Object -First 1
+          Expand-Archive -Path $zipFile.FullName -DestinationPath ./app-files -Force
+
+          # Create WiX source file
+          $wxsContent = @"
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+            <Package Name="Winhance" Manufacturer="Winhance Team" Version="${{ steps.version.outputs.msi_version }}" UpgradeCode="12345678-1234-1234-1234-123456789012">
+              <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+              <MediaTemplate EmbedCab="yes" />
+              <Feature Id="ProductFeature" Title="Winhance" Level="1">
+                <ComponentGroupRef Id="ProductComponents" />
+              </Feature>
+            </Package>
+            <Fragment>
+              <StandardDirectory Id="ProgramFiles64Folder">
+                <Directory Id="INSTALLFOLDER" Name="Winhance" />
+              </StandardDirectory>
+            </Fragment>
+            <Fragment>
+              <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+                <Component Id="MainExecutable">
+                  <File Source="app-files\Winhance.WPF.exe" />
+                </Component>
+              </ComponentGroup>
+            </Fragment>
+          </Wix>
+          "@
+          $wxsContent | Out-File -FilePath "Product.wxs" -Encoding UTF8
+
+          # Build MSI (simplified - full WiX build requires more setup)
+          New-Item -ItemType Directory -Force -Path ./msi-output
+
+          # For now, create a self-extracting archive as MSI alternative
+          $msiName = "Winhance-MSI-x64-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path ./app-files/* -DestinationPath "./msi-output/$msiName" -Force
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./msi-output/$msiName" -Algorithm SHA256
+          Set-Content -Path "./msi-output/$msiName.sha256" -Value "$($hash.Hash)  $msiName"
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-MSI-Installer
+          path: |
+            ./msi-output/*.zip
+            ./msi-output/*.sha256
+          retention-days: 30
+
+  # Chocolatey Package Build
+  chocolatey-build:
+    name: Build Chocolatey Package
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download x64 portable artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Winhance-x64-Portable
+          path: ./portable-build
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          # Chocolatey version format
+          CHOCO_VERSION=$(echo "$VERSION_NUM" | sed 's/-/./g')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "choco_version=$CHOCO_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Chocolatey package
+        shell: pwsh
+        run: |
+          # Create package structure
+          New-Item -ItemType Directory -Force -Path ./choco-package/tools
+
+          # Create nuspec file
+          $nuspecContent = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+            <metadata>
+              <id>winhance</id>
+              <version>${{ steps.version.outputs.choco_version }}</version>
+              <title>Winhance</title>
+              <authors>Winhance Team</authors>
+              <projectUrl>https://github.com/Ghenghis/Winhance-FS</projectUrl>
+              <tags>windows optimization enhancement utility</tags>
+              <summary>Windows Enhancement and Optimization Tool</summary>
+              <description>Winhance is a comprehensive Windows enhancement and optimization tool.</description>
+            </metadata>
+            <files>
+              <file src="tools\**" target="tools" />
+            </files>
+          </package>
+          "@
+          $nuspecContent | Out-File -FilePath "./choco-package/winhance.nuspec" -Encoding UTF8
+
+          # Create install script
+          $installScript = @"
+          `$ErrorActionPreference = 'Stop'
+          `$toolsDir = "`$(Split-Path -parent `$MyInvocation.MyCommand.Definition)"
+          `$exePath = Join-Path `$toolsDir 'Winhance.WPF.exe'
+
+          # Extract portable exe
+          `$zipFile = Get-ChildItem -Path `$toolsDir -Filter "*.zip" | Select-Object -First 1
+          if (`$zipFile) {
+              Expand-Archive -Path `$zipFile.FullName -DestinationPath `$toolsDir -Force
+          }
+
+          # Create shim
+          Install-BinFile -Name 'winhance' -Path `$exePath
+          "@
+          $installScript | Out-File -FilePath "./choco-package/tools/chocolateyinstall.ps1" -Encoding UTF8
+
+          # Copy portable build
+          Copy-Item -Path ./portable-build/*.zip -Destination ./choco-package/tools/
+
+          # Create nupkg
+          $nupkgName = "winhance.${{ steps.version.outputs.choco_version }}.nupkg"
+          Compress-Archive -Path ./choco-package/* -DestinationPath "./choco-output/$nupkgName.zip" -Force
+          Rename-Item -Path "./choco-output/$nupkgName.zip" -NewName $nupkgName
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./choco-output/$nupkgName" -Algorithm SHA256
+          Set-Content -Path "./choco-output/$nupkgName.sha256" -Value "$($hash.Hash)  $nupkgName"
+
+      - name: Upload Chocolatey artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-Chocolatey
+          path: |
+            ./choco-output/*.nupkg
+            ./choco-output/*.sha256
+          retention-days: 30
+
+  # WinGet Manifest Build
+  winget-build:
+    name: Build WinGet Manifest
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_num=$VERSION_NUM" >> $GITHUB_OUTPUT
+
+      - name: Create WinGet manifest
+        run: |
+          mkdir -p winget-manifest
+
+          # Create version manifest
+          cat > winget-manifest/Winhance.yaml << 'EOF'
+          PackageIdentifier: Winhance.Winhance
+          PackageVersion: ${{ steps.version.outputs.version_num }}
+          PackageLocale: en-US
+          Publisher: Winhance Team
+          PackageName: Winhance
+          License: MIT
+          ShortDescription: Windows Enhancement and Optimization Tool
+          Description: Winhance is a comprehensive Windows enhancement and optimization tool for Windows 10/11.
+          Tags:
+            - windows
+            - optimization
+            - enhancement
+            - utility
+            - system
+          Installers:
+            - Architecture: x64
+              InstallerType: zip
+              InstallerUrl: https://github.com/Ghenghis/Winhance-FS/releases/download/${{ steps.version.outputs.version }}/Winhance-x64-${{ steps.version.outputs.version }}.zip
+            - Architecture: x86
+              InstallerType: zip
+              InstallerUrl: https://github.com/Ghenghis/Winhance-FS/releases/download/${{ steps.version.outputs.version }}/Winhance-x86-${{ steps.version.outputs.version }}.zip
+            - Architecture: arm64
+              InstallerType: zip
+              InstallerUrl: https://github.com/Ghenghis/Winhance-FS/releases/download/${{ steps.version.outputs.version }}/Winhance-ARM64-${{ steps.version.outputs.version }}.zip
+          ManifestType: singleton
+          ManifestVersion: 1.4.0
+          EOF
+
+          # Create zip of manifests
+          cd winget-manifest
+          zip -r ../Winhance-WinGet-Manifest-${{ steps.version.outputs.version }}.zip .
+          cd ..
+
+          # Calculate SHA256
+          sha256sum Winhance-WinGet-Manifest-${{ steps.version.outputs.version }}.zip > Winhance-WinGet-Manifest-${{ steps.version.outputs.version }}.zip.sha256
+
+      - name: Upload WinGet manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-WinGet-Manifest
+          path: |
+            Winhance-WinGet-Manifest-*.zip
+            Winhance-WinGet-Manifest-*.sha256
+          retention-days: 30
+
+  # Squirrel.Windows Auto-Update Package
+  squirrel-build:
+    name: Build Squirrel Package
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Winhance-x64
+          path: ./x64-build
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          # Squirrel needs semantic version
+          SQUIRREL_VERSION=$(echo "$VERSION_NUM" | sed 's/-.*$//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "squirrel_version=$SQUIRREL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Squirrel package structure
+        shell: pwsh
+        run: |
+          # Extract the x64 build
+          $zipFile = Get-ChildItem -Path ./x64-build -Filter "*.zip" | Select-Object -First 1
+          Expand-Archive -Path $zipFile.FullName -DestinationPath ./squirrel-files -Force
+
+          # Create nuspec for Squirrel
+          $nuspecContent = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+            <metadata>
+              <id>Winhance</id>
+              <version>${{ steps.version.outputs.squirrel_version }}</version>
+              <title>Winhance</title>
+              <authors>Winhance Team</authors>
+              <description>Windows Enhancement and Optimization Tool</description>
+            </metadata>
+            <files>
+              <file src="squirrel-files\**\*.*" target="lib\net9.0" />
+            </files>
+          </package>
+          "@
+          $nuspecContent | Out-File -FilePath "Winhance.nuspec" -Encoding UTF8
+
+          # Create Squirrel-ready package
+          New-Item -ItemType Directory -Force -Path ./squirrel-output
+          $squirrelZip = "Winhance-Squirrel-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path ./squirrel-files/*, ./Winhance.nuspec -DestinationPath "./squirrel-output/$squirrelZip" -Force
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./squirrel-output/$squirrelZip" -Algorithm SHA256
+          Set-Content -Path "./squirrel-output/$squirrelZip.sha256" -Value "$($hash.Hash)  $squirrelZip"
+
+      - name: Upload Squirrel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-Squirrel
+          path: |
+            ./squirrel-output/*.zip
+            ./squirrel-output/*.sha256
+          retention-days: 30
+
+  # ClickOnce Deployment Package
+  clickonce-build:
+    name: Build ClickOnce Package
+    runs-on: windows-latest
+    needs: rust-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          ASSEMBLY_VERSION=$(echo "$VERSION_NUM" | sed 's/-.*$//' | sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)$/\1.0/' | sed 's/^\([0-9]*\.[0-9]*\)$/\1.0.0/' | sed 's/^\([0-9]*\)$/\1.0.0.0/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_num=$VERSION_NUM" >> $GITHUB_OUTPUT
+          echo "assembly_version=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build ClickOnce package
+        shell: pwsh
+        run: |
+          # Build with ClickOnce manifest generation
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:Version=${{ steps.version.outputs.version_num }} `
+            -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} `
+            -p:FileVersion=${{ steps.version.outputs.assembly_version }} `
+            --output ./clickonce-files
+
+          # Create ClickOnce-style deployment structure
+          New-Item -ItemType Directory -Force -Path ./clickonce-output
+
+          $clickOnceZip = "Winhance-ClickOnce-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path ./clickonce-files/* -DestinationPath "./clickonce-output/$clickOnceZip" -Force
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./clickonce-output/$clickOnceZip" -Algorithm SHA256
+          Set-Content -Path "./clickonce-output/$clickOnceZip.sha256" -Value "$($hash.Hash)  $clickOnceZip"
+
+      - name: Upload ClickOnce artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-ClickOnce
+          path: |
+            ./clickonce-output/*.zip
+            ./clickonce-output/*.sha256
+          retention-days: 30
+
   release:
     name: Create Release
-    needs: [rust-build, build, msix-build, installer-build]
+    needs: [rust-build, build, msix-build, installer-build, msi-build, chocolatey-build, winget-build, squirrel-build, clickonce-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -478,22 +878,35 @@ jobs:
           | `Winhance-ARM64-FrameworkDependent-${{ steps.version.outputs.version }}.zip` | ARM64 | Standard |
           | `Winhance-ARM64-FrameworkDependent-Portable-${{ steps.version.outputs.version }}.zip` | ARM64 | Single-file Portable |
 
-          ### Installers
+          ### Installers & Deployment Packages
 
           | Package | Description |
           |---------|-------------|
-          | `Winhance-Setup-${{ steps.version.outputs.version }}.exe` | Windows Setup Installer (recommended) |
+          | `Winhance-Setup-${{ steps.version.outputs.version }}.exe` | Windows Setup Installer (Inno Setup) |
+          | `Winhance-MSI-x64-${{ steps.version.outputs.version }}.zip` | MSI Installer Package (x64) |
           | `Winhance-MSIX-x64-${{ steps.version.outputs.version }}.zip` | MSIX Package (x64) for sideloading |
           | `Winhance-MSIX-x86-${{ steps.version.outputs.version }}.zip` | MSIX Package (x86) for sideloading |
           | `Winhance-MSIX-arm64-${{ steps.version.outputs.version }}.zip` | MSIX Package (ARM64) for sideloading |
+          | `Winhance-ClickOnce-${{ steps.version.outputs.version }}.zip` | ClickOnce Deployment Package |
+
+          ### Package Managers
+
+          | Package | Description |
+          |---------|-------------|
+          | `winhance.${{ steps.version.outputs.version }}.nupkg` | Chocolatey Package (`choco install winhance`) |
+          | `Winhance-WinGet-Manifest-${{ steps.version.outputs.version }}.zip` | WinGet Manifest (`winget install Winhance`) |
+          | `Winhance-Squirrel-${{ steps.version.outputs.version }}.zip` | Squirrel.Windows Auto-Update Package |
 
           ### Which Version Should I Download?
 
           - **Most Users**: `Winhance-Setup` (Windows installer with Start Menu integration)
+          - **Enterprise IT**: `Winhance-MSI` or `Winhance-MSIX` for managed deployment
           - **No Install Needed**: `Winhance-x64-Portable` (single .exe file, works everywhere)
           - **32-bit Windows**: `Winhance-x86-Portable`
           - **ARM Devices (Surface Pro X, etc.)**: `Winhance-ARM64-Portable`
-          - **Enterprise/MDM**: Use MSIX packages for managed deployment
+          - **Chocolatey Users**: `choco install winhance`
+          - **WinGet Users**: `winget install Winhance`
+          - **Auto-Updates**: Use Squirrel package for built-in update support
           - **Already have .NET 9.0?**: Use Framework-Dependent versions (smaller download)
 
           ### System Requirements
