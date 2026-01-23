@@ -5,6 +5,7 @@ Run with: python -m nexus_mcp
 """
 
 import asyncio
+
 from nexus_mcp.server import main
 
 if __name__ == "__main__":

@@ -18,13 +18,10 @@ import os
 import threading
 import time
 from collections import deque
-from concurrent.futures import ThreadPoolExecutor, Future
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
-from queue import PriorityQueue, Empty
-from typing import Dict, List, Optional, Callable, Tuple, Set
-import hashlib
 
 from loguru import logger
 
@@ -72,7 +69,7 @@ class IndexStats:
     total_size: int = 0
     time_ms: int = 0
     files_per_sec: float = 0.0
-    drives_indexed: List[str] = field(default_factory=list)
+    drives_indexed: list[str] = field(default_factory=list)
     errors: int = 0
 
 
@@ -107,11 +104,11 @@ class HyperIndexer:
 
     def __init__(
         self,
-        threads: Optional[int] = None,
+        threads: int | None = None,
         batch_size: int = 1000,
-        exclusions: Optional[Set[str]] = None,
+        exclusions: set[str] | None = None,
         deep_index: bool = False,
-        progress_callback: Optional[Callable[[str, int], None]] = None,
+        progress_callback: Callable[[str, int], None] | None = None,
     ):
         """
         Initialize the hyper indexer.
@@ -137,7 +134,7 @@ class HyperIndexer:
         self._lock = threading.Lock()
 
         # Results storage
-        self._records: List[FileRecord] = []
+        self._records: list[FileRecord] = []
         self._records_lock = threading.Lock()
 
         # Work queue
@@ -151,14 +148,14 @@ class HyperIndexer:
         """Check if directory should be excluded."""
         return name.lower() in self.exclusions
 
-    def _scan_directory_batch(self, dir_path: Path) -> Tuple[List[FileRecord], List[Path]]:
+    def _scan_directory_batch(self, dir_path: Path) -> tuple[list[FileRecord], list[Path]]:
         """
         Scan a directory and return files and subdirectories.
 
         Uses os.scandir for maximum performance.
         """
-        files: List[FileRecord] = []
-        subdirs: List[Path] = []
+        files: list[FileRecord] = []
+        subdirs: list[Path] = []
 
         try:
             with os.scandir(dir_path) as entries:
@@ -242,8 +239,8 @@ class HyperIndexer:
     def index_path(
         self,
         path: Path,
-        progress_callback: Optional[Callable[[str, int], None]] = None,
-    ) -> Dict:
+        progress_callback: Callable[[str, int], None] | None = None,
+    ) -> dict:
         """
         Index a single path with maximum speed.
 
@@ -310,9 +307,9 @@ class HyperIndexer:
 
     def index_all_drives(
         self,
-        drives: List[str],
-        progress_callback: Optional[Callable[[str, int], None]] = None,
-    ) -> Dict:
+        drives: list[str],
+        progress_callback: Callable[[str, int], None] | None = None,
+    ) -> dict:
         """
         Index multiple drives in parallel.
 
@@ -379,15 +376,15 @@ class HyperIndexer:
 
         return stats
 
-    def get_records(self) -> List[FileRecord]:
+    def get_records(self) -> list[FileRecord]:
         """Get all indexed file records."""
         return self._records.copy()
 
-    def find_large_files(self, min_size_bytes: int) -> List[FileRecord]:
+    def find_large_files(self, min_size_bytes: int) -> list[FileRecord]:
         """Find files larger than specified size."""
         return [r for r in self._records if r.size >= min_size_bytes]
 
-    def find_by_extension(self, extension: str) -> List[FileRecord]:
+    def find_by_extension(self, extension: str) -> list[FileRecord]:
         """Find files with specified extension."""
         ext = extension.lower().lstrip(".")
         return [r for r in self._records if r.extension == ext]

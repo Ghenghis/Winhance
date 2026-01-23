@@ -13,15 +13,15 @@ Supports GPU acceleration with RTX 3090 Ti.
 
 from __future__ import annotations
 
-import os
 import json
-import asyncio
-import httpx
+import os
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Dict, Any, List, AsyncIterator, Callable
-from pathlib import Path
+from typing import Any
+
+import httpx
 
 from nexus_ai.core.logging_config import get_logger, log_async_function_call
 
@@ -44,8 +44,8 @@ class AIMessage:
     """A message in a conversation."""
     role: str  # "system", "user", "assistant"
     content: str
-    name: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    name: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -56,15 +56,15 @@ class AIResponse:
     provider: ProviderType
     tokens_used: int = 0
     finish_reason: str = "stop"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class AIConfig:
     """Configuration for an AI provider."""
     provider: ProviderType
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
+    api_key: str | None = None
+    base_url: str | None = None
     model: str = ""
     temperature: float = 0.7
     max_tokens: int = 4096
@@ -81,12 +81,12 @@ class AIProvider(ABC):
 
     def __init__(self, config: AIConfig):
         self.config = config
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     @abstractmethod
     async def chat(
         self,
-        messages: List[AIMessage],
+        messages: list[AIMessage],
         **kwargs
     ) -> AIResponse:
         """Send a chat completion request."""
@@ -95,7 +95,7 @@ class AIProvider(ABC):
     @abstractmethod
     async def stream_chat(
         self,
-        messages: List[AIMessage],
+        messages: list[AIMessage],
         **kwargs
     ) -> AsyncIterator[str]:
         """Stream a chat completion response."""
@@ -119,7 +119,7 @@ class OpenAIProvider(AIProvider):
         self.config.model = config.model or "gpt-4-turbo-preview"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         headers = {
             "Authorization": f"Bearer {self.config.api_key}",
             "Content-Type": "application/json",
@@ -148,7 +148,7 @@ class OpenAIProvider(AIProvider):
             finish_reason=data["choices"][0].get("finish_reason", "stop"),
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         headers = {
             "Authorization": f"Bearer {self.config.api_key}",
             "Content-Type": "application/json",
@@ -184,7 +184,7 @@ class AnthropicProvider(AIProvider):
         self.config.model = config.model or "claude-opus-4-5-20251101"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         headers = {
             "x-api-key": self.config.api_key,
             "Content-Type": "application/json",
@@ -224,7 +224,7 @@ class AnthropicProvider(AIProvider):
             finish_reason=data.get("stop_reason", "end_turn"),
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         headers = {
             "x-api-key": self.config.api_key,
             "Content-Type": "application/json",
@@ -270,7 +270,7 @@ class GoogleProvider(AIProvider):
         self.config.model = config.model or "gemini-pro"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         # Convert to Gemini format
         contents = []
         for m in messages:
@@ -303,7 +303,7 @@ class GoogleProvider(AIProvider):
             finish_reason=data["candidates"][0].get("finishReason", "STOP"),
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         # Similar to chat but with streaming endpoint
         contents = []
         for m in messages:
@@ -342,7 +342,7 @@ class LMStudioProvider(AIProvider):
         self.config.model = config.model or "local-model"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         payload = {
             "model": kwargs.get("model", self.config.model),
             "messages": [{"role": m.role, "content": m.content} for m in messages],
@@ -365,7 +365,7 @@ class LMStudioProvider(AIProvider):
             finish_reason=data["choices"][0].get("finish_reason", "stop"),
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         payload = {
             "model": kwargs.get("model", self.config.model),
             "messages": [{"role": m.role, "content": m.content} for m in messages],
@@ -395,7 +395,7 @@ class OllamaProvider(AIProvider):
         self.config.model = config.model or "llama3.2"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         payload = {
             "model": kwargs.get("model", self.config.model),
             "messages": [{"role": m.role, "content": m.content} for m in messages],
@@ -427,7 +427,7 @@ class OllamaProvider(AIProvider):
             },
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         payload = {
             "model": kwargs.get("model", self.config.model),
             "messages": [{"role": m.role, "content": m.content} for m in messages],
@@ -459,7 +459,7 @@ class AnythingLLMProvider(AIProvider):
         self.config.base_url = config.base_url or "http://localhost:3001/api/v1"
 
     @log_async_function_call
-    async def chat(self, messages: List[AIMessage], **kwargs) -> AIResponse:
+    async def chat(self, messages: list[AIMessage], **kwargs) -> AIResponse:
         headers = {
             "Authorization": f"Bearer {self.config.api_key}",
             "Content-Type": "application/json",
@@ -488,7 +488,7 @@ class AnythingLLMProvider(AIProvider):
             finish_reason="stop",
         )
 
-    async def stream_chat(self, messages: List[AIMessage], **kwargs) -> AsyncIterator[str]:
+    async def stream_chat(self, messages: list[AIMessage], **kwargs) -> AsyncIterator[str]:
         # AnythingLLM streaming not fully supported yet
         response = await self.chat(messages, **kwargs)
         yield response.content
@@ -506,9 +506,9 @@ class AIProviderManager:
     """
 
     def __init__(self):
-        self._providers: Dict[ProviderType, AIConfig] = {}
-        self._active_connections: Dict[ProviderType, AIProvider] = {}
-        self._default_provider: Optional[ProviderType] = None
+        self._providers: dict[ProviderType, AIConfig] = {}
+        self._active_connections: dict[ProviderType, AIProvider] = {}
+        self._default_provider: ProviderType | None = None
 
     def register_provider(
         self,
@@ -522,7 +522,7 @@ class AIProviderManager:
             self._default_provider = provider_type
         logger.info(f"Registered provider: {provider_type.value}", model=config.model)
 
-    def get_provider(self, provider_type: Optional[ProviderType] = None) -> AIProvider:
+    def get_provider(self, provider_type: ProviderType | None = None) -> AIProvider:
         """Get a provider instance."""
         pt = provider_type or self._default_provider
         if pt is None:
@@ -549,8 +549,8 @@ class AIProviderManager:
 
     async def chat(
         self,
-        messages: List[AIMessage],
-        provider_type: Optional[ProviderType] = None,
+        messages: list[AIMessage],
+        provider_type: ProviderType | None = None,
         **kwargs
     ) -> AIResponse:
         """Send a chat request to a provider."""
@@ -560,8 +560,8 @@ class AIProviderManager:
 
     async def stream_chat(
         self,
-        messages: List[AIMessage],
-        provider_type: Optional[ProviderType] = None,
+        messages: list[AIMessage],
+        provider_type: ProviderType | None = None,
         **kwargs
     ) -> AsyncIterator[str]:
         """Stream a chat response from a provider."""
@@ -644,7 +644,7 @@ class AIProviderManager:
 
 
 # Global provider manager
-_provider_manager: Optional[AIProviderManager] = None
+_provider_manager: AIProviderManager | None = None
 
 
 def get_ai_manager() -> AIProviderManager:

@@ -19,47 +19,47 @@ __version__ = "0.1.0"
 __author__ = "ShadowByte"
 
 from nexus_ai.config import NexusConfig, get_config
-from nexus_ai.organization.transaction_manager import TransactionManager
 
 # Core enterprise modules
 from nexus_ai.core import (
-    # Logging
-    setup_logging,
-    get_logger,
-    LogConfig,
-    LogLevel,
-    LogPerformance,
-    # AI Providers
-    AIProviderManager,
-    AIProvider,
-    AIConfig,
-    AIMessage,
-    AIResponse,
-    ProviderType,
-    get_ai_manager,
+    Agent,
     # Agents
     AgentOrchestrator,
-    Agent,
+    AgentStatus,
     AgentTask,
     AgentType,
-    AgentStatus,
-    TaskPriority,
-    get_orchestrator,
-    quick_task,
+    AIConfig,
+    AIMessage,
+    AIProvider,
+    # AI Providers
+    AIProviderManager,
+    AIResponse,
+    BackupConfig,
+    # Backup
+    BackupManager,
+    # Documentation
+    DocumentationAgent,
     # GPU
     GPUAccelerator,
     GPUConfig,
+    LogConfig,
+    LogLevel,
+    LogPerformance,
+    ProviderType,
+    TaskPriority,
     check_gpu_status,
-    get_gpu_accelerator,
-    # Backup
-    BackupManager,
-    BackupConfig,
-    get_backup_manager,
     create_restore_point_before,
-    # Documentation
-    DocumentationAgent,
+    get_ai_manager,
+    get_backup_manager,
     get_doc_agent,
+    get_gpu_accelerator,
+    get_logger,
+    get_orchestrator,
+    quick_task,
+    # Logging
+    setup_logging,
 )
+from nexus_ai.organization.transaction_manager import TransactionManager
 
 __all__ = [
     # Config

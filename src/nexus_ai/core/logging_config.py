@@ -10,16 +10,16 @@ Real-time logging with multiple outputs:
 
 from __future__ import annotations
 
-import sys
-import json
-from pathlib import Path
-from datetime import datetime
-from typing import Optional, Dict, Any, Callable
-from dataclasses import dataclass, field
-from enum import Enum
-import threading
-import queue
 import atexit
+import queue
+import sys
+import threading
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 from loguru import logger
 
@@ -67,18 +67,18 @@ class RealTimeLogHandler:
     """
 
     def __init__(self):
-        self._callbacks: list[Callable[[Dict[str, Any]], None]] = []
+        self._callbacks: list[Callable[[dict[str, Any]], None]] = []
         self._queue: queue.Queue = queue.Queue()
         self._running = False
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
-    def add_callback(self, callback: Callable[[Dict[str, Any]], None]) -> None:
+    def add_callback(self, callback: Callable[[dict[str, Any]], None]) -> None:
         """Add a real-time log callback."""
         with self._lock:
             self._callbacks.append(callback)
 
-    def remove_callback(self, callback: Callable[[Dict[str, Any]], None]) -> None:
+    def remove_callback(self, callback: Callable[[dict[str, Any]], None]) -> None:
         """Remove a callback."""
         with self._lock:
             if callback in self._callbacks:
@@ -98,7 +98,7 @@ class RealTimeLogHandler:
         if self._thread:
             self._thread.join(timeout=1.0)
 
-    def emit(self, record: Dict[str, Any]) -> None:
+    def emit(self, record: dict[str, Any]) -> None:
         """Emit a log record to all callbacks."""
         if self._running:
             self._queue.put(record)
@@ -122,7 +122,7 @@ class RealTimeLogHandler:
 _realtime_handler = RealTimeLogHandler()
 
 
-def _serialize_record(record) -> Dict[str, Any]:
+def _serialize_record(record) -> dict[str, Any]:
     """Serialize a loguru record to dict."""
     return {
         "timestamp": record["time"].isoformat(),
@@ -144,7 +144,7 @@ def _realtime_sink(message):
     _realtime_handler.emit(_serialize_record(record))
 
 
-def setup_logging(config: Optional[LogConfig] = None) -> None:
+def setup_logging(config: LogConfig | None = None) -> None:
     """
     Configure enterprise logging.
 
@@ -215,7 +215,7 @@ def get_logger(name: str = "nexus"):
     return logger.bind(name=name)
 
 
-def add_realtime_callback(callback: Callable[[Dict[str, Any]], None]) -> None:
+def add_realtime_callback(callback: Callable[[dict[str, Any]], None]) -> None:
     """
     Add a callback for real-time log events.
 
@@ -230,7 +230,7 @@ def add_realtime_callback(callback: Callable[[Dict[str, Any]], None]) -> None:
     _realtime_handler.add_callback(callback)
 
 
-def remove_realtime_callback(callback: Callable[[Dict[str, Any]], None]) -> None:
+def remove_realtime_callback(callback: Callable[[dict[str, Any]], None]) -> None:
     """Remove a real-time callback."""
     _realtime_handler.remove_callback(callback)
 
@@ -258,7 +258,6 @@ def log_function_call(func):
 def log_async_function_call(func):
     """Decorator to log async function calls."""
     import functools
-    import asyncio
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
@@ -282,7 +281,7 @@ class LogPerformance:
     def __init__(self, operation: str, logger_name: str = "performance"):
         self.operation = operation
         self.logger = get_logger(logger_name)
-        self.start_time: Optional[datetime] = None
+        self.start_time: datetime | None = None
 
     def __enter__(self):
         self.start_time = datetime.now()

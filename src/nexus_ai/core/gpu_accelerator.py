@@ -11,10 +11,10 @@ Leverages CUDA for:
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, List
-from pathlib import Path
 import threading
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 from nexus_ai.core.logging_config import get_logger
 
@@ -54,12 +54,12 @@ class GPUAccelerator:
     - Tensor cores for mixed precision
     """
 
-    def __init__(self, config: Optional[GPUConfig] = None):
+    def __init__(self, config: GPUConfig | None = None):
         self.config = config or GPUConfig()
         self._torch = None
         self._cuda_available = False
         self._device = None
-        self._gpu_info: Optional[GPUInfo] = None
+        self._gpu_info: GPUInfo | None = None
         self._lock = threading.Lock()
 
         self._initialize()
@@ -113,11 +113,11 @@ class GPUAccelerator:
         return self._cuda_available
 
     @property
-    def gpu_info(self) -> Optional[GPUInfo]:
+    def gpu_info(self) -> GPUInfo | None:
         """Get GPU information."""
         return self._gpu_info
 
-    def get_memory_stats(self) -> Dict[str, float]:
+    def get_memory_stats(self) -> dict[str, float]:
         """Get current GPU memory statistics."""
         if not self._cuda_available or not self._torch:
             return {"error": "GPU not available"}
@@ -131,9 +131,9 @@ class GPUAccelerator:
 
     async def compute_embeddings_batch(
         self,
-        texts: List[str],
+        texts: list[str],
         model_name: str = "all-MiniLM-L6-v2",
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """
         Compute embeddings for a batch of texts using GPU.
 
@@ -170,8 +170,8 @@ class GPUAccelerator:
 
     async def compute_image_hashes_batch(
         self,
-        image_paths: List[Path],
-    ) -> Dict[str, str]:
+        image_paths: list[Path],
+    ) -> dict[str, str]:
         """
         Compute perceptual hashes for images using GPU.
 
@@ -184,8 +184,8 @@ class GPUAccelerator:
         results = {}
 
         try:
-            from PIL import Image
             import imagehash
+            from PIL import Image
 
             for path in image_paths:
                 try:
@@ -203,9 +203,9 @@ class GPUAccelerator:
 
     def accelerate_hash_computation(
         self,
-        file_paths: List[Path],
+        file_paths: list[Path],
         algorithm: str = "xxhash",
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         Accelerate file hashing using GPU/multi-threading.
 
@@ -246,7 +246,7 @@ class GPUAccelerator:
     async def run_local_inference(
         self,
         prompt: str,
-        model_path: Optional[Path] = None,
+        model_path: Path | None = None,
         max_tokens: int = 512,
     ) -> str:
         """
@@ -328,7 +328,7 @@ class GPUAccelerator:
 
 
 # Global GPU accelerator instance
-_gpu_accelerator: Optional[GPUAccelerator] = None
+_gpu_accelerator: GPUAccelerator | None = None
 
 
 def get_gpu_accelerator() -> GPUAccelerator:
@@ -341,7 +341,7 @@ def get_gpu_accelerator() -> GPUAccelerator:
     return _gpu_accelerator
 
 
-def check_gpu_status() -> Dict[str, Any]:
+def check_gpu_status() -> dict[str, Any]:
     """Quick check of GPU status."""
     acc = get_gpu_accelerator()
     if acc.gpu_info:

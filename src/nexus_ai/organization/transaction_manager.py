@@ -13,17 +13,16 @@ Provides:
 from __future__ import annotations
 
 import hashlib
-import json
 import shutil
+import threading
 import uuid
-from dataclasses import dataclass, field, asdict
+from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Generator
-import os
-import threading
-from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
 import orjson
 from loguru import logger
@@ -54,14 +53,14 @@ class FileTransaction:
     timestamp: datetime
     operation: OperationType
     source_path: str
-    dest_path: Optional[str]
-    source_hash: Optional[str]
+    dest_path: str | None
+    source_hash: str | None
     source_size: int
-    backup_path: Optional[str]
-    metadata: Dict[str, Any]
+    backup_path: str | None
+    metadata: dict[str, Any]
     status: TransactionStatus
-    error: Optional[str] = None
-    completed_at: Optional[datetime] = None
+    error: str | None = None
+    completed_at: datetime | None = None
 
     def to_json(self) -> bytes:
         """Serialize to JSON bytes."""
@@ -73,7 +72,7 @@ class FileTransaction:
         return orjson.dumps(data)
 
     @classmethod
-    def from_json(cls, data: bytes) -> "FileTransaction":
+    def from_json(cls, data: bytes) -> FileTransaction:
         """Deserialize from JSON bytes."""
         obj = orjson.loads(data)
         obj["timestamp"] = datetime.fromisoformat(obj["timestamp"])
@@ -120,7 +119,7 @@ class TransactionManager:
 
         logger.info(f"TransactionManager initialized: log={log_path}, backup={backup_dir}")
 
-    def _compute_hash(self, path: Path, quick: bool = True) -> Optional[str]:
+    def _compute_hash(self, path: Path, quick: bool = True) -> str | None:
         """Compute file hash for verification."""
         try:
             if not path.exists() or path.is_dir():
@@ -153,10 +152,10 @@ class TransactionManager:
             with open(path, "r+b") as f:
                 pass
             return False
-        except (IOError, PermissionError):
+        except (OSError, PermissionError):
             return True
 
-    def _create_backup(self, source: Path) -> Optional[Path]:
+    def _create_backup(self, source: Path) -> Path | None:
         """Create a backup of the source file."""
         if not source.exists() or source.is_dir():
             return None
@@ -211,9 +210,9 @@ class TransactionManager:
         self,
         operation: OperationType,
         source: Path,
-        dest: Optional[Path] = None,
+        dest: Path | None = None,
         create_backup: bool = True,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> FileTransaction:
         """
         Begin a new transaction.
@@ -232,7 +231,7 @@ class TransactionManager:
 
         # Check if file is in use
         if self._is_file_in_use(source):
-            raise IOError(f"File is in use: {source}")
+            raise OSError(f"File is in use: {source}")
 
         # Compute hash
         source_hash = self._compute_hash(source)
@@ -262,7 +261,7 @@ class TransactionManager:
         logger.info(f"Transaction started: {tx.id} - {operation.value} {source}")
         return tx
 
-    def commit(self, tx: FileTransaction, dest: Optional[Path] = None) -> FileTransaction:
+    def commit(self, tx: FileTransaction, dest: Path | None = None) -> FileTransaction:
         """
         Commit a transaction after successful operation.
 
@@ -297,7 +296,7 @@ class TransactionManager:
         source: Path,
         dest: Path,
         create_backup: bool = True,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> FileTransaction:
         """
         Execute a move operation with full transaction support.
@@ -386,10 +385,10 @@ class TransactionManager:
 
     def rollback_range(
         self,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
-        hours: Optional[int] = None,
-    ) -> List[str]:
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        hours: int | None = None,
+    ) -> list[str]:
         """
         Rollback all transactions in a time range.
 
@@ -423,7 +422,7 @@ class TransactionManager:
 
         return rolled_back
 
-    def get_transaction(self, tx_id: str) -> Optional[FileTransaction]:
+    def get_transaction(self, tx_id: str) -> FileTransaction | None:
         """Get a transaction by ID."""
         for tx in self.iter_transactions():
             if tx.id == tx_id:
@@ -435,7 +434,7 @@ class TransactionManager:
         if not self.log_path.exists():
             return
 
-        seen_ids: Dict[str, FileTransaction] = {}
+        seen_ids: dict[str, FileTransaction] = {}
 
         with open(self.log_path, "rb") as f:
             for line in f:
@@ -455,9 +454,9 @@ class TransactionManager:
     def list_transactions(
         self,
         limit: int = 100,
-        status: Optional[TransactionStatus] = None,
-        operation: Optional[OperationType] = None,
-    ) -> List[FileTransaction]:
+        status: TransactionStatus | None = None,
+        operation: OperationType | None = None,
+    ) -> list[FileTransaction]:
         """List recent transactions with optional filtering."""
         transactions = []
 
@@ -474,8 +473,8 @@ class TransactionManager:
 
     def generate_rollback_script(
         self,
-        tx_ids: Optional[List[str]] = None,
-        hours: Optional[int] = None,
+        tx_ids: list[str] | None = None,
+        hours: int | None = None,
         format: str = "ps1",
     ) -> str:
         """
@@ -510,7 +509,7 @@ class TransactionManager:
         else:
             return self._generate_batch_script(transactions)
 
-    def _generate_powershell_script(self, transactions: List[FileTransaction]) -> str:
+    def _generate_powershell_script(self, transactions: list[FileTransaction]) -> str:
         """Generate PowerShell rollback script."""
         lines = [
             "# NexusFS Rollback Script",
@@ -571,11 +570,11 @@ class TransactionManager:
 
         return "\n".join(lines)
 
-    def _generate_batch_script(self, transactions: List[FileTransaction]) -> str:
+    def _generate_batch_script(self, transactions: list[FileTransaction]) -> str:
         """Generate Batch rollback script."""
         lines = [
             "@echo off",
-            f"REM NexusFS Rollback Script",
+            "REM NexusFS Rollback Script",
             f"REM Generated: {datetime.now().isoformat()}",
             f"REM Transactions: {len(transactions)}",
             "",
@@ -588,18 +587,18 @@ class TransactionManager:
             if tx.dest_path:
                 lines.append(f'if exist "{tx.dest_path}" (')
                 lines.append(f'    move /Y "{tx.dest_path}" "{tx.source_path}"')
-                lines.append(f'    echo   [OK] Restored')
-                lines.append(f') else (')
+                lines.append('    echo   [OK] Restored')
+                lines.append(') else (')
                 if tx.backup_path:
                     lines.append(f'    if exist "{tx.backup_path}" (')
                     lines.append(f'        copy /Y "{tx.backup_path}" "{tx.source_path}"')
-                    lines.append(f'        echo   [OK] Restored from backup')
-                    lines.append(f'    ) else (')
-                    lines.append(f'        echo   [ERROR] No source found')
-                    lines.append(f'    )')
+                    lines.append('        echo   [OK] Restored from backup')
+                    lines.append('    ) else (')
+                    lines.append('        echo   [ERROR] No source found')
+                    lines.append('    )')
                 else:
-                    lines.append(f'    echo   [ERROR] No source found')
-                lines.append(f')')
+                    lines.append('    echo   [ERROR] No source found')
+                lines.append(')')
             lines.append("")
 
         lines.extend([
@@ -610,7 +609,7 @@ class TransactionManager:
 
         return "\n".join(lines)
 
-    def check_dependencies(self, source: Path) -> Dict[str, Any]:
+    def check_dependencies(self, source: Path) -> dict[str, Any]:
         """
         Check if a file/folder is used by other projects.
 
@@ -656,7 +655,7 @@ class TransactionManager:
 
         return result
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get transaction statistics."""
         stats = {
             "total": 0,

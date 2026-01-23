@@ -11,17 +11,15 @@ Game-changing features:
 
 from __future__ import annotations
 
+import ctypes
 import os
 import re
 import winreg
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
-from concurrent.futures import ThreadPoolExecutor
-import ctypes
-import json
 
 from nexus_ai.core.logging_config import get_logger
 
@@ -67,20 +65,20 @@ class FileClassification:
     is_readonly: bool = False
 
     # App association
-    associated_app: Optional[str] = None
-    app_install_path: Optional[str] = None
-    registry_references: List[str] = field(default_factory=list)
+    associated_app: str | None = None
+    app_install_path: str | None = None
+    registry_references: list[str] = field(default_factory=list)
 
     # Safety info
     safe_to_move: bool = True
     safe_to_delete: bool = True
     requires_admin: bool = False
     requires_confirmation: bool = False
-    warning_message: Optional[str] = None
+    warning_message: str | None = None
 
     # Recommendations
-    suggested_action: Optional[str] = None
-    alternative_location: Optional[str] = None
+    suggested_action: str | None = None
+    alternative_location: str | None = None
 
 
 @dataclass
@@ -88,13 +86,13 @@ class InstalledApp:
     """Information about an installed application."""
     name: str
     install_path: Path
-    publisher: Optional[str] = None
-    version: Optional[str] = None
-    install_date: Optional[datetime] = None
-    uninstall_string: Optional[str] = None
-    registry_key: Optional[str] = None
-    file_extensions: List[str] = field(default_factory=list)
-    known_folders: List[Path] = field(default_factory=list)
+    publisher: str | None = None
+    version: str | None = None
+    install_date: datetime | None = None
+    uninstall_string: str | None = None
+    registry_key: str | None = None
+    file_extensions: list[str] = field(default_factory=list)
+    known_folders: list[Path] = field(default_factory=list)
 
 
 class WindowsSystemDetector:
@@ -125,7 +123,7 @@ class WindowsSystemDetector:
         "Registration", "Resources", "SchCache", "security",
         "ServiceProfiles", "servicing", "Setup", "SoftwareDistribution",
         "System", "SystemResources", "TAPI", "Tasks", "Temp", "tracing",
-        "WaaS", "Web", "WinSxS", "Vss",
+        "WaaS", "Web", "Vss",
     }
 
     # System file extensions
@@ -144,7 +142,7 @@ class WindowsSystemDetector:
         self.windows_root = Path(os.environ.get("SYSTEMROOT", "C:\\Windows"))
         self.program_files = Path(os.environ.get("PROGRAMFILES", "C:\\Program Files"))
         self.program_files_x86 = Path(os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)"))
-        self._system_file_cache: Dict[str, bool] = {}
+        self._system_file_cache: dict[str, bool] = {}
 
     def is_system_path(self, path: Path) -> bool:
         """Check if path is within Windows system directories."""
@@ -221,7 +219,7 @@ class WindowsSystemDetector:
             pass
         return False
 
-    def get_system_safety_level(self, path: Path) -> Tuple[SafetyLevel, str]:
+    def get_system_safety_level(self, path: Path) -> tuple[SafetyLevel, str]:
         """
         Determine safety level for a system file.
 
@@ -286,11 +284,11 @@ class InstalledAppDetector:
     ]
 
     def __init__(self):
-        self._app_cache: Dict[str, InstalledApp] = {}
-        self._path_to_app: Dict[str, str] = {}
+        self._app_cache: dict[str, InstalledApp] = {}
+        self._path_to_app: dict[str, str] = {}
         self._loaded = False
 
-    def load_installed_apps(self) -> Dict[str, InstalledApp]:
+    def load_installed_apps(self) -> dict[str, InstalledApp]:
         """Load all installed applications from registry."""
         if self._loaded:
             return self._app_cache
@@ -317,10 +315,10 @@ class InstalledAppDetector:
 
                             winreg.CloseKey(subkey)
                             i += 1
-                        except WindowsError:
+                        except OSError:
                             break
                     winreg.CloseKey(key)
-                except WindowsError:
+                except OSError:
                     continue
 
         self._app_cache = apps
@@ -328,7 +326,7 @@ class InstalledAppDetector:
         logger.info(f"Loaded {len(apps)} installed applications")
         return apps
 
-    def _parse_app_key(self, key, key_name: str) -> Optional[InstalledApp]:
+    def _parse_app_key(self, key, key_name: str) -> InstalledApp | None:
         """Parse registry key to InstalledApp."""
         try:
             name = self._get_reg_value(key, "DisplayName")
@@ -356,15 +354,15 @@ class InstalledAppDetector:
         except Exception:
             return None
 
-    def _get_reg_value(self, key, name: str) -> Optional[str]:
+    def _get_reg_value(self, key, name: str) -> str | None:
         """Get registry value, return None if not found."""
         try:
             value, _ = winreg.QueryValueEx(key, name)
             return str(value) if value else None
-        except WindowsError:
+        except OSError:
             return None
 
-    def find_app_for_path(self, path: Path) -> Optional[InstalledApp]:
+    def find_app_for_path(self, path: Path) -> InstalledApp | None:
         """Find which installed app owns this path."""
         if not self._loaded:
             self.load_installed_apps()
@@ -398,7 +396,7 @@ class InstalledAppDetector:
         except Exception:
             return None
 
-    def get_app_footprint(self, app: InstalledApp) -> Dict[str, List[Path]]:
+    def get_app_footprint(self, app: InstalledApp) -> dict[str, list[Path]]:
         """Get complete file footprint of an application."""
         footprint = {
             "install_files": [],
@@ -485,7 +483,7 @@ class UserFileDetector:
         self.user_folders = self._get_user_folders()
         self._app_generated_re = [re.compile(p, re.IGNORECASE) for p in self.APP_GENERATED_PATTERNS]
 
-    def _get_user_folders(self) -> Dict[str, Path]:
+    def _get_user_folders(self) -> dict[str, Path]:
         """Get standard user folders."""
         return {
             "documents": self.user_home / "Documents",
@@ -510,7 +508,7 @@ class UserFileDetector:
         except Exception:
             return False
 
-    def is_user_created(self, path: Path) -> Tuple[bool, float]:
+    def is_user_created(self, path: Path) -> tuple[bool, float]:
         """
         Determine if file was user-created.
 
@@ -766,7 +764,7 @@ class FileClassifier:
 
         return False
 
-    def batch_classify(self, paths: List[Path]) -> Dict[Path, FileClassification]:
+    def batch_classify(self, paths: list[Path]) -> dict[Path, FileClassification]:
         """Classify multiple files in parallel."""
         results = {}
 
@@ -787,7 +785,7 @@ class FileClassifier:
 
         return results
 
-    def get_safety_summary(self, classifications: Dict[Path, FileClassification]) -> Dict[str, any]:
+    def get_safety_summary(self, classifications: dict[Path, FileClassification]) -> dict[str, any]:
         """Get summary of safety levels from classifications."""
         summary = {
             "total": len(classifications),
@@ -820,7 +818,7 @@ class FileClassifier:
 
 
 # Global classifier instance
-_classifier: Optional[FileClassifier] = None
+_classifier: FileClassifier | None = None
 
 
 def get_classifier() -> FileClassifier:
@@ -836,7 +834,7 @@ def classify_file(path: Path) -> FileClassification:
     return get_classifier().classify(path)
 
 
-def is_safe_to_move(path: Path) -> Tuple[bool, str]:
+def is_safe_to_move(path: Path) -> tuple[bool, str]:
     """
     Quick check if file is safe to move.
 
@@ -847,7 +845,7 @@ def is_safe_to_move(path: Path) -> Tuple[bool, str]:
     return clf.safe_to_move, clf.warning_message or "Safe to move"
 
 
-def is_safe_to_delete(path: Path) -> Tuple[bool, str]:
+def is_safe_to_delete(path: Path) -> tuple[bool, str]:
     """
     Quick check if file is safe to delete.
 

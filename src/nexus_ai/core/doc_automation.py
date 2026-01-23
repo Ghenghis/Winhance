@@ -12,17 +12,15 @@ Agents that automatically:
 from __future__ import annotations
 
 import ast
-import inspect
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Dict, Any, List
-import json
+from typing import Any
 
+from nexus_ai.core.ai_providers import AIMessage, get_ai_manager
 from nexus_ai.core.logging_config import get_logger
-from nexus_ai.core.ai_providers import get_ai_manager, AIMessage, ProviderType
 
 logger = get_logger("doc_automation")
 
@@ -57,10 +55,10 @@ class CodeElement:
     type: str  # "class", "function", "module", "method"
     file_path: str
     line_number: int
-    docstring: Optional[str] = None
-    signature: Optional[str] = None
-    dependencies: List[str] = field(default_factory=list)
-    children: List["CodeElement"] = field(default_factory=list)
+    docstring: str | None = None
+    signature: str | None = None
+    dependencies: list[str] = field(default_factory=list)
+    children: list[CodeElement] = field(default_factory=list)
 
 
 @dataclass
@@ -70,9 +68,9 @@ class IssueEntry:
     type: str  # "bug", "warning", "improvement", "missing"
     severity: str  # "critical", "high", "medium", "low"
     file_path: str
-    line_number: Optional[int]
+    line_number: int | None
     description: str
-    suggestion: Optional[str] = None
+    suggestion: str | None = None
     detected_at: datetime = field(default_factory=datetime.now)
 
 
@@ -90,10 +88,10 @@ class CodeAnalyzer:
     """Analyzes code structure for documentation."""
 
     def __init__(self):
-        self.elements: Dict[str, CodeElement] = {}
-        self.issues: List[IssueEntry] = []
+        self.elements: dict[str, CodeElement] = {}
+        self.issues: list[IssueEntry] = []
 
-    def analyze_python_file(self, file_path: Path) -> List[CodeElement]:
+    def analyze_python_file(self, file_path: Path) -> list[CodeElement]:
         """Analyze a Python file and extract code elements."""
         elements = []
 
@@ -215,7 +213,7 @@ class CodeAnalyzer:
                         description=comment.strip("# "),
                     ))
 
-    def analyze_rust_file(self, file_path: Path) -> List[CodeElement]:
+    def analyze_rust_file(self, file_path: Path) -> list[CodeElement]:
         """Analyze a Rust file (basic parsing)."""
         elements = []
 
@@ -259,7 +257,7 @@ class CodeAnalyzer:
 
         return elements
 
-    def analyze_csharp_file(self, file_path: Path) -> List[CodeElement]:
+    def analyze_csharp_file(self, file_path: Path) -> list[CodeElement]:
         """Analyze a C# file (basic parsing)."""
         elements = []
 
@@ -299,9 +297,9 @@ class DiagramGenerator:
     def __init__(self, ai_manager=None):
         self.ai_manager = ai_manager or get_ai_manager()
 
-    def generate_mermaid_flowchart(self, elements: List[CodeElement], title: str = "Code Flow") -> str:
+    def generate_mermaid_flowchart(self, elements: list[CodeElement], title: str = "Code Flow") -> str:
         """Generate a Mermaid flowchart from code elements."""
-        lines = [f"```mermaid", f"flowchart TD", f"    subgraph {title}"]
+        lines = ["```mermaid", "flowchart TD", f"    subgraph {title}"]
 
         for elem in elements:
             node_id = elem.name.replace(" ", "_")
@@ -317,7 +315,7 @@ class DiagramGenerator:
         lines.append("```")
         return "\n".join(lines)
 
-    def generate_mermaid_class_diagram(self, elements: List[CodeElement]) -> str:
+    def generate_mermaid_class_diagram(self, elements: list[CodeElement]) -> str:
         """Generate a Mermaid class diagram."""
         lines = ["```mermaid", "classDiagram"]
 
@@ -383,7 +381,7 @@ Output only the Mermaid code block, no explanation."""
             return response.content
         except Exception as e:
             logger.error(f"AI diagram generation failed: {e}")
-            return f"```mermaid\nflowchart TD\n    A[Error generating diagram]\n```"
+            return "```mermaid\nflowchart TD\n    A[Error generating diagram]\n```"
 
 
 class DocGenerator:
@@ -394,7 +392,7 @@ class DocGenerator:
         self.analyzer = CodeAnalyzer()
         self.diagram_gen = DiagramGenerator(ai_manager)
 
-    def generate_api_reference(self, elements: List[CodeElement]) -> str:
+    def generate_api_reference(self, elements: list[CodeElement]) -> str:
         """Generate API reference documentation."""
         sections = ["# API Reference\n"]
 
@@ -428,7 +426,7 @@ class DocGenerator:
 
         return "\n".join(sections)
 
-    def generate_issue_report(self, issues: List[IssueEntry]) -> str:
+    def generate_issue_report(self, issues: list[IssueEntry]) -> str:
         """Generate an issue/bug report from detected issues."""
         sections = [
             "# Issue Report\n",
@@ -456,7 +454,7 @@ class DocGenerator:
 
         return "\n".join(sections)
 
-    def generate_changelog_entry(self, changes: List[Dict[str, Any]]) -> str:
+    def generate_changelog_entry(self, changes: list[dict[str, Any]]) -> str:
         """Generate a changelog entry."""
         sections = [f"## [{datetime.now().strftime('%Y-%m-%d')}]\n"]
 
@@ -525,14 +523,14 @@ class DocumentationAgent:
     - Maintains doc-code sync
     """
 
-    def __init__(self, project_path: Path, docs_path: Optional[Path] = None):
+    def __init__(self, project_path: Path, docs_path: Path | None = None):
         self.project_path = project_path
         self.docs_path = docs_path or project_path / "docs"
         self.generator = DocGenerator()
         self.analyzer = CodeAnalyzer()
-        self._last_scan: Optional[datetime] = None
+        self._last_scan: datetime | None = None
 
-    async def full_scan(self) -> Dict[str, Any]:
+    async def full_scan(self) -> dict[str, Any]:
         """
         Perform a full scan of the codebase.
 
@@ -574,7 +572,7 @@ class DocumentationAgent:
 
         return results
 
-    async def generate_all_docs(self) -> List[Path]:
+    async def generate_all_docs(self) -> list[Path]:
         """Generate all documentation files."""
         generated = []
 
@@ -610,7 +608,7 @@ class DocumentationAgent:
         logger.info(f"Generated {len(generated)} documentation files")
         return generated
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get agent status."""
         return {
             "project_path": str(self.project_path),
@@ -622,10 +620,10 @@ class DocumentationAgent:
 
 
 # Global documentation agent
-_doc_agent: Optional[DocumentationAgent] = None
+_doc_agent: DocumentationAgent | None = None
 
 
-def get_doc_agent(project_path: Optional[Path] = None) -> DocumentationAgent:
+def get_doc_agent(project_path: Path | None = None) -> DocumentationAgent:
     """Get the global documentation agent."""
     global _doc_agent
     if _doc_agent is None:

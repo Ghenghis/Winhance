@@ -4,12 +4,12 @@ NexusFS Configuration Management
 Central configuration for all NexusFS components.
 """
 
+import os
 from pathlib import Path
-from typing import Optional, List
+
+import toml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
-import os
-import toml
 
 # Default paths
 DEFAULT_DATA_DIR = Path("D:/NexusFS/data")
@@ -28,7 +28,7 @@ class DriveConfig(BaseModel):
 class IndexConfig(BaseModel):
     """Indexing configuration."""
     # Drives to index
-    drives: List[str] = Field(default_factory=lambda: ["C", "D", "E", "F", "G"])
+    drives: list[str] = Field(default_factory=lambda: ["C", "D", "E", "F", "G"])
 
     # Performance
     threads: int = Field(default_factory=lambda: os.cpu_count() or 8)
@@ -45,7 +45,7 @@ class IndexConfig(BaseModel):
     deep_index: bool = False  # Include content embeddings
 
     # Exclusions
-    exclude_dirs: List[str] = Field(default_factory=lambda: [
+    exclude_dirs: list[str] = Field(default_factory=lambda: [
         "$Recycle.Bin",
         "System Volume Information",
         "Windows",
@@ -56,7 +56,7 @@ class IndexConfig(BaseModel):
         "PerfLogs",
     ])
 
-    exclude_extensions: List[str] = Field(default_factory=lambda: [
+    exclude_extensions: list[str] = Field(default_factory=lambda: [
         "tmp", "temp", "log", "bak",
     ])
 
@@ -84,7 +84,7 @@ class SpaceConfig(BaseModel):
     huge_file_gb: float = 10.0
 
     # Model directories to track
-    model_dirs: List[str] = Field(default_factory=lambda: [
+    model_dirs: list[str] = Field(default_factory=lambda: [
         ".lmstudio",
         ".ollama",
         ".cache/huggingface",
@@ -93,7 +93,7 @@ class SpaceConfig(BaseModel):
     ])
 
     # Target drives for large files (by priority)
-    large_file_targets: List[str] = Field(default_factory=lambda: ["D", "F", "G"])
+    large_file_targets: list[str] = Field(default_factory=lambda: ["D", "F", "G"])
 
     # Cleanup settings
     temp_max_age_days: int = 7
@@ -146,7 +146,7 @@ class NexusConfig(BaseSettings):
 
     # Logging
     log_level: str = "INFO"
-    log_file: Optional[Path] = DEFAULT_DATA_DIR / "logs" / "nexus.log"
+    log_file: Path | None = DEFAULT_DATA_DIR / "logs" / "nexus.log"
     log_rotation: str = "10 MB"
     log_retention: int = 5
 
@@ -155,7 +155,7 @@ class NexusConfig(BaseSettings):
         env_file = ".env"
 
     @classmethod
-    def load(cls, config_path: Optional[Path] = None) -> "NexusConfig":
+    def load(cls, config_path: Path | None = None) -> "NexusConfig":
         """Load configuration from file."""
         if config_path is None:
             config_path = DEFAULT_CONFIG_DIR / "default.toml"
@@ -166,7 +166,7 @@ class NexusConfig(BaseSettings):
 
         return cls()
 
-    def save(self, config_path: Optional[Path] = None) -> None:
+    def save(self, config_path: Path | None = None) -> None:
         """Save configuration to file."""
         if config_path is None:
             config_path = DEFAULT_CONFIG_DIR / "default.toml"
@@ -177,7 +177,7 @@ class NexusConfig(BaseSettings):
 
 
 # Global config instance
-_config: Optional[NexusConfig] = None
+_config: NexusConfig | None = None
 
 
 def get_config() -> NexusConfig:

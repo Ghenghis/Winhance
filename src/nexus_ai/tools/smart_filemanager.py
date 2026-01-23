@@ -13,15 +13,16 @@ Game-changing features:
 from __future__ import annotations
 
 import logging
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Callable, Any, TYPE_CHECKING
-import time
+from typing import TYPE_CHECKING, Any
 
 # Setup logger with fallback
-_logger: Optional[logging.Logger] = None
+_logger: logging.Logger | None = None
 
 def _get_module_logger() -> logging.Logger:
     """Get logger with fallback."""
@@ -48,7 +49,7 @@ class SafetyLevel(Enum):
 
 
 if TYPE_CHECKING:
-    from nexus_ai.tools.file_classifier import FileClassification, FileClassifier
+    from nexus_ai.tools.file_classifier import FileClassification
 
 
 def _get_classifier() -> Any:
@@ -125,8 +126,8 @@ class GestureMapping:
     """Maps a gesture to an action."""
     gesture: GestureType
     action: ActionType
-    context: Optional[str] = None  # "file", "folder", "empty", "selection"
-    modifier: Optional[str] = None  # "shift", "ctrl", "alt"
+    context: str | None = None  # "file", "folder", "empty", "selection"
+    modifier: str | None = None  # "shift", "ctrl", "alt"
     description: str = ""
 
 
@@ -137,7 +138,7 @@ class QuickAction:
     name: str
     icon: str
     action: ActionType
-    shortcut: Optional[str] = None
+    shortcut: str | None = None
     color: str = "#007ACC"
     enabled: bool = True
     tooltip: str = ""
@@ -154,9 +155,9 @@ class FileCard:
 
     # Visual properties
     icon: str = "file"
-    thumbnail: Optional[str] = None  # Base64 or path
+    thumbnail: str | None = None  # Base64 or path
     color: str = "#FFFFFF"
-    badge: Optional[str] = None  # "new", "modified", "syncing"
+    badge: str | None = None  # "new", "modified", "syncing"
 
     # Safety indicators
     safety_level: SafetyLevel = SafetyLevel.SAFE
@@ -169,10 +170,10 @@ class FileCard:
     is_dragging: bool = False
 
     # Classification - uses Any to avoid circular import
-    classification: Optional[Any] = None
+    classification: Any | None = None
 
     # Actions available
-    available_actions: List[ActionType] = field(default_factory=list)
+    available_actions: list[ActionType] = field(default_factory=list)
 
 
 @dataclass
@@ -181,11 +182,11 @@ class DropZone:
     id: str
     name: str
     icon: str
-    path: Optional[Path] = None
+    path: Path | None = None
     action: ActionType = ActionType.MOVE
     color: str = "#2196F3"
     is_active: bool = False
-    accepts_types: List[str] = field(default_factory=lambda: ["*"])
+    accepts_types: list[str] = field(default_factory=lambda: ["*"])
 
 
 @dataclass
@@ -206,12 +207,12 @@ class UndoAction:
     description: str
 
     # State before action
-    source_paths: List[Path]
-    dest_paths: Optional[List[Path]] = None
+    source_paths: list[Path]
+    dest_paths: list[Path] | None = None
 
     # Undo data
     can_undo: bool = True
-    undo_data: Dict[str, Any] = field(default_factory=dict)
+    undo_data: dict[str, Any] = field(default_factory=dict)
 
 
 class GestureManager:
@@ -252,14 +253,14 @@ class GestureManager:
 
     def __init__(self):
         self.mappings = self.DEFAULT_MAPPINGS.copy()
-        self._custom_mappings: List[GestureMapping] = []
+        self._custom_mappings: list[GestureMapping] = []
 
     def get_action(
         self,
         gesture: GestureType,
         context: str,
-        modifier: Optional[str] = None
-    ) -> Optional[ActionType]:
+        modifier: str | None = None
+    ) -> ActionType | None:
         """Get the action for a gesture in a context."""
         # Check custom mappings first
         for mapping in self._custom_mappings:
@@ -278,7 +279,7 @@ class GestureManager:
         mapping: GestureMapping,
         gesture: GestureType,
         context: str,
-        modifier: Optional[str]
+        modifier: str | None
     ) -> bool:
         """Check if a mapping matches the gesture."""
         if mapping.gesture != gesture:
@@ -293,7 +294,7 @@ class GestureManager:
         """Add a custom gesture mapping."""
         self._custom_mappings.insert(0, mapping)
 
-    def get_gesture_help(self) -> List[Dict[str, str]]:
+    def get_gesture_help(self) -> list[dict[str, str]]:
         """Get help text for all gestures."""
         help_items = []
         for mapping in self.mappings:
@@ -331,14 +332,14 @@ class QuickActionWheel:
 
     def __init__(self):
         self.actions = self.DEFAULT_ACTIONS.copy()
-        self._recent_actions: List[str] = []
+        self._recent_actions: list[str] = []
         self._max_recent = 8
 
     def get_actions_for_context(
         self,
-        selected_items: List[FileCard],
+        selected_items: list[FileCard],
         is_single: bool = True
-    ) -> List[QuickAction]:
+    ) -> list[QuickAction]:
         """Get relevant quick actions for selection context."""
         available = []
 
@@ -356,7 +357,7 @@ class QuickActionWheel:
     def _is_action_available(
         self,
         action: QuickAction,
-        selected_items: List[FileCard],
+        selected_items: list[FileCard],
         is_single: bool
     ) -> bool:
         """Check if action is available for selection."""
@@ -396,7 +397,7 @@ class DropZoneManager:
     """
 
     def __init__(self):
-        self.zones: List[DropZone] = []
+        self.zones: list[DropZone] = []
         self._setup_default_zones()
 
     def _setup_default_zones(self) -> None:
@@ -436,7 +437,7 @@ class DropZoneManager:
             ),
         ]
 
-    def get_active_zones(self, dragging_items: List[FileCard]) -> List[DropZone]:
+    def get_active_zones(self, dragging_items: list[FileCard]) -> list[DropZone]:
         """Get drop zones that can accept the dragged items."""
         active = []
 
@@ -456,7 +457,7 @@ class DropZoneManager:
 
         return active
 
-    def _can_accept(self, zone: DropZone, items: List[FileCard]) -> bool:
+    def _can_accept(self, zone: DropZone, items: list[FileCard]) -> bool:
         """Check if zone can accept items."""
         # Check safety
         for item in items:
@@ -499,26 +500,26 @@ class SmartFileManager:
 
         # State
         self.current_path: Path = Path.home()
-        self.selected_items: List[FileCard] = []
-        self.clipboard: List[FileCard] = []
-        self.clipboard_action: Optional[ActionType] = None
+        self.selected_items: list[FileCard] = []
+        self.clipboard: list[FileCard] = []
+        self.clipboard_action: ActionType | None = None
         self.view_mode: ViewMode = ViewMode.CARDS
         self.sort_by: str = "name"
         self.sort_ascending: bool = True
 
         # History
-        self.navigation_history: List[Path] = []
+        self.navigation_history: list[Path] = []
         self.history_index: int = -1
-        self.undo_history: List[UndoAction] = []
-        self.redo_history: List[UndoAction] = []
+        self.undo_history: list[UndoAction] = []
+        self.redo_history: list[UndoAction] = []
 
         # Callbacks
-        self.on_navigate: Optional[Callable[[Path], None]] = None
-        self.on_selection_change: Optional[Callable[[List[FileCard]], None]] = None
-        self.on_action_complete: Optional[Callable[[ActionType, bool], None]] = None
-        self.on_confirmation_needed: Optional[Callable[[str, str, Callable[[bool], None]], None]] = None
+        self.on_navigate: Callable[[Path], None] | None = None
+        self.on_selection_change: Callable[[list[FileCard]], None] | None = None
+        self.on_action_complete: Callable[[ActionType, bool], None] | None = None
+        self.on_confirmation_needed: Callable[[str, str, Callable[[bool], None]], None] | None = None
 
-    def navigate_to(self, path: Path) -> List[FileCard]:
+    def navigate_to(self, path: Path) -> list[FileCard]:
         """Navigate to a directory and return file cards."""
         path = path.resolve()
 
@@ -545,7 +546,7 @@ class SmartFileManager:
 
         return cards
 
-    def _get_file_cards(self, path: Path) -> List[FileCard]:
+    def _get_file_cards(self, path: Path) -> list[FileCard]:
         """Get file cards for directory contents."""
         cards = []
 
@@ -561,7 +562,7 @@ class SmartFileManager:
 
         return cards
 
-    def _create_file_card(self, path: Path) -> Optional[FileCard]:
+    def _create_file_card(self, path: Path) -> FileCard | None:
         """Create a file card with classification."""
         try:
             stat = path.stat()
@@ -652,7 +653,7 @@ class SmartFileManager:
 
         return icon_map.get(ext, "file")
 
-    def _get_available_actions(self, classification: FileClassification) -> List[ActionType]:
+    def _get_available_actions(self, classification: FileClassification) -> list[ActionType]:
         """Get available actions based on classification."""
         actions = [ActionType.OPEN, ActionType.PROPERTIES]
 
@@ -667,7 +668,7 @@ class SmartFileManager:
 
         return actions
 
-    def _sort_cards(self, cards: List[FileCard]) -> List[FileCard]:
+    def _sort_cards(self, cards: list[FileCard]) -> list[FileCard]:
         """Sort file cards."""
         # Folders first
         folders = [c for c in cards if c.path.is_dir()]
@@ -691,9 +692,9 @@ class SmartFileManager:
     def handle_gesture(
         self,
         gesture: GestureType,
-        target: Optional[FileCard] = None,
-        modifier: Optional[str] = None
-    ) -> Optional[ActionType]:
+        target: FileCard | None = None,
+        modifier: str | None = None
+    ) -> ActionType | None:
         """Handle a touch/mouse gesture."""
         context = "empty"
         if target:
@@ -709,8 +710,8 @@ class SmartFileManager:
     def _execute_action(
         self,
         action: ActionType,
-        targets: List[FileCard],
-        destination: Optional[Path] = None
+        targets: list[FileCard],
+        destination: Path | None = None
     ) -> bool:
         """Execute a file action."""
         if not targets and action not in [ActionType.NAVIGATE_BACK, ActionType.NAVIGATE_FORWARD, ActionType.REFRESH]:
@@ -745,7 +746,7 @@ class SmartFileManager:
             logger.error(f"Action failed: {e}")
             return False
 
-    def _action_open(self, targets: List[FileCard]) -> bool:
+    def _action_open(self, targets: list[FileCard]) -> bool:
         """Open file or navigate to folder."""
         if not targets:
             return False
@@ -761,7 +762,7 @@ class SmartFileManager:
 
         return True
 
-    def _action_select(self, targets: List[FileCard]) -> bool:
+    def _action_select(self, targets: list[FileCard]) -> bool:
         """Select a single item."""
         self.selected_items = targets[:1]
 
@@ -770,7 +771,7 @@ class SmartFileManager:
 
         return True
 
-    def _action_multi_select(self, targets: List[FileCard]) -> bool:
+    def _action_multi_select(self, targets: list[FileCard]) -> bool:
         """Add to multi-selection."""
         for target in targets:
             if target not in self.selected_items:
@@ -782,7 +783,7 @@ class SmartFileManager:
 
         return True
 
-    def _action_delete(self, targets: List[FileCard]) -> bool:
+    def _action_delete(self, targets: list[FileCard]) -> bool:
         """Delete files (to recycle bin with undo)."""
         # Check safety
         for target in targets:
@@ -814,7 +815,7 @@ class SmartFileManager:
 
         return self._perform_delete(targets)
 
-    def _perform_delete(self, targets: List[FileCard]) -> bool:
+    def _perform_delete(self, targets: list[FileCard]) -> bool:
         """Actually perform delete operation."""
         try:
             import send2trash
@@ -848,7 +849,7 @@ class SmartFileManager:
             logger.error(f"Delete failed: {e}")
             return False
 
-    def _action_move(self, targets: List[FileCard], destination: Optional[Path]) -> bool:
+    def _action_move(self, targets: list[FileCard], destination: Path | None) -> bool:
         """Move files to destination."""
         if destination:
             return self._perform_move(targets, destination)
@@ -858,7 +859,7 @@ class SmartFileManager:
         self.clipboard_action = ActionType.MOVE
         return True
 
-    def _perform_move(self, targets: List[FileCard], destination: Path) -> bool:
+    def _perform_move(self, targets: list[FileCard], destination: Path) -> bool:
         """Actually perform move operation."""
         import shutil
 
@@ -888,7 +889,7 @@ class SmartFileManager:
             logger.error(f"Move failed: {e}")
             return False
 
-    def _action_copy(self, targets: List[FileCard], destination: Optional[Path]) -> bool:
+    def _action_copy(self, targets: list[FileCard], destination: Path | None) -> bool:
         """Copy files."""
         if destination:
             return self._perform_copy(targets, destination)
@@ -897,7 +898,7 @@ class SmartFileManager:
         self.clipboard_action = ActionType.COPY
         return True
 
-    def _perform_copy(self, targets: List[FileCard], destination: Path) -> bool:
+    def _perform_copy(self, targets: list[FileCard], destination: Path) -> bool:
         """Actually perform copy operation."""
         import shutil
 
@@ -926,7 +927,7 @@ class SmartFileManager:
             logger.error(f"Copy failed: {e}")
             return False
 
-    def _action_rename(self, targets: List[FileCard]) -> bool:
+    def _action_rename(self, targets: list[FileCard]) -> bool:
         """Rename a file (single selection only)."""
         if len(targets) != 1:
             return False
@@ -961,7 +962,7 @@ class SmartFileManager:
             return True
         return False
 
-    def undo(self) -> Optional[UndoAction]:
+    def undo(self) -> UndoAction | None:
         """Undo the last action."""
         if not self.undo_history:
             return None
@@ -973,7 +974,7 @@ class SmartFileManager:
             if action.action_type == ActionType.MOVE:
                 # Move files back
                 if action.dest_paths:
-                    for src, dest in zip(action.dest_paths, action.source_paths):
+                    for src, dest in zip(action.dest_paths, action.source_paths, strict=False):
                         if src.exists():
                             shutil.move(str(src), str(dest))
 
@@ -989,7 +990,7 @@ class SmartFileManager:
             logger.error(f"Undo failed: {e}")
             return None
 
-    def redo(self) -> Optional[UndoAction]:
+    def redo(self) -> UndoAction | None:
         """Redo the last undone action."""
         if not self.redo_history:
             return None
@@ -1000,7 +1001,7 @@ class SmartFileManager:
         self.undo_history.append(action)
         return action
 
-    def get_breadcrumbs(self) -> List[BreadcrumbItem]:
+    def get_breadcrumbs(self) -> list[BreadcrumbItem]:
         """Get breadcrumb navigation items."""
         crumbs = []
         path = self.current_path
@@ -1036,7 +1037,7 @@ class SmartFileManager:
 
 
 # Global instance
-_smart_manager: Optional[SmartFileManager] = None
+_smart_manager: SmartFileManager | None = None
 
 
 def get_smart_manager() -> SmartFileManager:

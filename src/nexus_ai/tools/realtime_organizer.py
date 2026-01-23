@@ -12,26 +12,27 @@ Game-changing features:
 
 from __future__ import annotations
 
-import logging
-import shutil
 import json
+import logging
+import queue
+import shutil
+import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Callable, Any, Set, TYPE_CHECKING
-import threading
-import queue
+from typing import TYPE_CHECKING, Any
 
+from watchdog.events import FileMovedEvent, FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent, FileMovedEvent
 
 if TYPE_CHECKING:
     from nexus_ai.tools.file_classifier import FileClassification
 
 # Setup logger with fallback
-_logger: Optional[logging.Logger] = None
+_logger: logging.Logger | None = None
 
 
 def _get_module_logger() -> logging.Logger:
@@ -110,17 +111,17 @@ class OrganizationRule:
     enabled: bool = True
 
     # Matching conditions
-    extensions: List[str] = field(default_factory=list)
-    name_patterns: List[str] = field(default_factory=list)
-    source_folders: List[str] = field(default_factory=list)
-    min_size_bytes: Optional[int] = None
-    max_size_bytes: Optional[int] = None
-    file_origin: Optional[FileOrigin] = None
+    extensions: list[str] = field(default_factory=list)
+    name_patterns: list[str] = field(default_factory=list)
+    source_folders: list[str] = field(default_factory=list)
+    min_size_bytes: int | None = None
+    max_size_bytes: int | None = None
+    file_origin: FileOrigin | None = None
 
     # Action
     action: OrganizationAction = OrganizationAction.MOVE
-    destination: Optional[str] = None
-    subfolder_pattern: Optional[str] = None  # e.g., "{year}/{month}"
+    destination: str | None = None
+    subfolder_pattern: str | None = None  # e.g., "{year}/{month}"
 
     # Confirmation
     confirmation_level: ConfirmationLevel = ConfirmationLevel.CAUTIOUS
@@ -133,26 +134,26 @@ class OrganizationRule:
 class OrganizationDecision:
     """A decision about what to do with a file."""
     file_path: Path
-    rule_id: Optional[str]
+    rule_id: str | None
     action: OrganizationAction
-    destination: Optional[Path]
+    destination: Path | None
     reason: str
     confidence: float
-    classification: Optional[FileClassification] = None
+    classification: FileClassification | None = None
 
     # User interaction
     requires_confirmation: bool = False
-    user_confirmed: Optional[bool] = None
-    user_feedback: Optional[str] = None
+    user_confirmed: bool | None = None
+    user_feedback: str | None = None
 
     # Timestamps
     created_at: datetime = field(default_factory=datetime.now)
-    executed_at: Optional[datetime] = None
+    executed_at: datetime | None = None
 
     # Undo support
-    original_path: Optional[Path] = None
+    original_path: Path | None = None
     can_undo: bool = True
-    undo_deadline: Optional[datetime] = None
+    undo_deadline: datetime | None = None
 
 
 @dataclass
@@ -160,7 +161,7 @@ class UserPreference:
     """Learned user preference for organization."""
     pattern: str  # What triggered this preference
     action: OrganizationAction
-    destination: Optional[str]
+    destination: str | None
     times_confirmed: int = 1
     times_rejected: int = 0
     last_used: datetime = field(default_factory=datetime.now)
@@ -177,10 +178,10 @@ class UserPreference:
 class FileEventHandler(FileSystemEventHandler):
     """Handles file system events for real-time organization."""
 
-    def __init__(self, organizer: "RealtimeOrganizer"):
+    def __init__(self, organizer: RealtimeOrganizer):
         super().__init__()
         self.organizer = organizer
-        self._debounce: Dict[str, float] = {}
+        self._debounce: dict[str, float] = {}
         self._debounce_seconds = 2.0  # Wait for file to stabilize
 
     def on_created(self, event: FileSystemEvent):
@@ -283,25 +284,25 @@ class RealtimeOrganizer:
 
     def __init__(
         self,
-        config_path: Optional[Path] = None,
-        confirmation_callback: Optional[Callable[[OrganizationDecision], bool]] = None,
+        config_path: Path | None = None,
+        confirmation_callback: Callable[[OrganizationDecision], bool] | None = None,
     ):
         self.config_path = config_path or Path.home() / ".nexusfs" / "organizer_config.json"
         self.confirmation_callback = confirmation_callback
 
         # State
-        self.rules: List[OrganizationRule] = []
-        self.preferences: Dict[str, UserPreference] = {}
-        self.pending_decisions: Dict[str, OrganizationDecision] = {}
-        self.decision_history: List[OrganizationDecision] = []
-        self.undo_stack: List[OrganizationDecision] = []
+        self.rules: list[OrganizationRule] = []
+        self.preferences: dict[str, UserPreference] = {}
+        self.pending_decisions: dict[str, OrganizationDecision] = {}
+        self.decision_history: list[OrganizationDecision] = []
+        self.undo_stack: list[OrganizationDecision] = []
 
         # Processing
-        self._file_queue: "queue.Queue[Any]" = queue.Queue()
+        self._file_queue: queue.Queue[Any] = queue.Queue()
         self._running = False
-        self._observer: Optional["Observer"] = None
-        self._processor_thread: Optional[threading.Thread] = None
-        self._watched_folders: Set[Path] = set()
+        self._observer: Observer | None = None
+        self._processor_thread: threading.Thread | None = None
+        self._watched_folders: set[Path] = set()
 
         # Components
         self.classifier = get_classifier()
@@ -536,7 +537,7 @@ class RealtimeOrganizer:
         # Use extension and parent folder as key
         return f"{path.suffix.lower()}:{path.parent.name.lower()}"
 
-    def _match_rule(self, path: Path, classification: FileClassification) -> Optional[OrganizationRule]:
+    def _match_rule(self, path: Path, classification: FileClassification) -> OrganizationRule | None:
         """Find matching rule for a file."""
         # Sort rules by priority
         sorted_rules = sorted(
@@ -597,7 +598,7 @@ class RealtimeOrganizer:
 
         return True
 
-    def _resolve_destination(self, rule: OrganizationRule, path: Path) -> Optional[Path]:
+    def _resolve_destination(self, rule: OrganizationRule, path: Path) -> Path | None:
         """Resolve the destination path for a rule."""
         if not rule.destination:
             return None
@@ -634,7 +635,7 @@ class RealtimeOrganizer:
             except Exception as e:
                 logger.error(f"Confirmation callback error: {e}")
 
-    def confirm_decision(self, path: Path, confirmed: bool, feedback: Optional[str] = None) -> None:
+    def confirm_decision(self, path: Path, confirmed: bool, feedback: str | None = None) -> None:
         """User confirms or rejects a decision."""
         key = str(path.resolve())
         decision = self.pending_decisions.get(key)
@@ -816,8 +817,8 @@ class RealtimeOrganizer:
     def _execute_archive(self, decision: OrganizationDecision) -> bool:
         """Execute an archive/extract operation."""
         try:
-            import zipfile
             import tarfile
+            import zipfile
 
             src = decision.file_path
 
@@ -853,7 +854,7 @@ class RealtimeOrganizer:
             logger.error(f"Archive extraction failed: {e}")
             return False
 
-    def undo_last(self) -> Optional[OrganizationDecision]:
+    def undo_last(self) -> OrganizationDecision | None:
         """Undo the last organization action."""
         if not self.undo_stack:
             logger.info("Nothing to undo")
@@ -894,11 +895,11 @@ class RealtimeOrganizer:
 
         return None
 
-    def get_pending_decisions(self) -> List[OrganizationDecision]:
+    def get_pending_decisions(self) -> list[OrganizationDecision]:
         """Get all pending decisions awaiting user confirmation."""
         return list(self.pending_decisions.values())
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get organizer statistics."""
         return {
             "watched_folders": len(self._watched_folders),
@@ -912,7 +913,7 @@ class RealtimeOrganizer:
 
 
 # Global organizer instance
-_organizer: Optional[RealtimeOrganizer] = None
+_organizer: RealtimeOrganizer | None = None
 
 
 def get_organizer() -> RealtimeOrganizer:
@@ -923,7 +924,7 @@ def get_organizer() -> RealtimeOrganizer:
     return _organizer
 
 
-def start_organizing(folders: List[Path]) -> None:
+def start_organizing(folders: list[Path]) -> None:
     """Convenience function to start organizing folders."""
     organizer = get_organizer()
     for folder in folders:

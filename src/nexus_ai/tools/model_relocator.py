@@ -12,20 +12,16 @@ Features:
 
 from __future__ import annotations
 
+# Windows-specific for symlinks
+import hashlib
 import os
 import shutil
-import hashlib
-import json
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any
 
 from loguru import logger
-
-# Windows-specific for symlinks
-import ctypes
 
 
 @dataclass
@@ -37,7 +33,7 @@ class ModelInfo:
     format: str  # gguf, safetensors, etc.
     app: str  # lmstudio, ollama, huggingface, comfyui
     modified: datetime
-    hash: Optional[str] = None
+    hash: str | None = None
 
 
 @dataclass
@@ -45,7 +41,7 @@ class RelocationPlan:
     """Plan for relocating models."""
     source_dir: str
     dest_dir: str
-    models: List[ModelInfo] = field(default_factory=list)
+    models: list[ModelInfo] = field(default_factory=list)
     total_size: int = 0
     create_symlink: bool = True
     verify_after_move: bool = True
@@ -56,10 +52,10 @@ class RelocationResult:
     """Result of a relocation operation."""
     model: ModelInfo
     success: bool
-    new_path: Optional[str] = None
+    new_path: str | None = None
     symlink_created: bool = False
     verified: bool = False
-    error: Optional[str] = None
+    error: str | None = None
     time_taken_ms: int = 0
 
 
@@ -115,7 +111,7 @@ class ModelRelocator:
 
     def __init__(
         self,
-        user_dir: Optional[Path] = None,
+        user_dir: Path | None = None,
         workers: int = 4,
         verify_hashes: bool = True,
     ):
@@ -151,7 +147,7 @@ class ModelRelocator:
         except Exception:
             return False
 
-    def _compute_hash(self, path: Path, quick: bool = True) -> Optional[str]:
+    def _compute_hash(self, path: Path, quick: bool = True) -> str | None:
         """Compute file hash for verification."""
         try:
             if quick:
@@ -176,7 +172,7 @@ class ModelRelocator:
             logger.warning(f"Failed to hash {path}: {e}")
             return None
 
-    def scan_models(self, app: Optional[str] = None) -> List[ModelInfo]:
+    def scan_models(self, app: str | None = None) -> list[ModelInfo]:
         """
         Scan for model files in known locations.
 
@@ -186,7 +182,7 @@ class ModelRelocator:
         Returns:
             List of ModelInfo objects
         """
-        models: List[ModelInfo] = []
+        models: list[ModelInfo] = []
 
         locations = self.MODEL_LOCATIONS if app is None else {app: self.MODEL_LOCATIONS.get(app, [])}
 
@@ -229,7 +225,7 @@ class ModelRelocator:
         self,
         dest_drive: str,
         min_size_gb: float = 1.0,
-        apps: Optional[List[str]] = None,
+        apps: list[str] | None = None,
         max_models: int = 100,
     ) -> RelocationPlan:
         """
@@ -276,8 +272,8 @@ class ModelRelocator:
         self,
         plan: RelocationPlan,
         dry_run: bool = False,
-        progress_callback: Optional[callable] = None,
-    ) -> List[RelocationResult]:
+        progress_callback: callable | None = None,
+    ) -> list[RelocationResult]:
         """
         Execute a relocation plan.
 
@@ -289,7 +285,7 @@ class ModelRelocator:
         Returns:
             List of RelocationResult objects
         """
-        results: List[RelocationResult] = []
+        results: list[RelocationResult] = []
         dest_base = Path(plan.dest_dir)
 
         # Ensure destination exists
@@ -392,11 +388,11 @@ class ModelRelocator:
             logger.error(f"Failed to restore model: {e}")
             return False
 
-    def get_app_storage_summary(self) -> Dict[str, Dict[str, Any]]:
+    def get_app_storage_summary(self) -> dict[str, dict[str, Any]]:
         """Get storage summary by app."""
         models = self.scan_models()
 
-        summary: Dict[str, Dict[str, Any]] = {}
+        summary: dict[str, dict[str, Any]] = {}
 
         for model in models:
             if model.app not in summary:
@@ -469,7 +465,7 @@ class ModelRelocator:
         models.sort(key=lambda x: -x.size)
 
         # Select models until we reach target
-        selected: List[ModelInfo] = []
+        selected: list[ModelInfo] = []
         current_size = 0
 
         for model in models:
@@ -488,7 +484,7 @@ class ModelRelocator:
         print(f"\nSuggested relocations to free {target_free_gb} GB:")
         print(f"  Models to move: {len(selected)}")
         print(f"  Space to free: {current_size / 1024**3:.2f} GB")
-        print(f"\nTop models to relocate:")
+        print("\nTop models to relocate:")
         for m in selected[:10]:
             print(f"  {m.size / 1024**3:.2f} GB - {m.app}/{m.name}")
 

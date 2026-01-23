@@ -7,14 +7,12 @@ Faster than Everything Search with AI-powered features.
 
 import sys
 from pathlib import Path
-from typing import Optional, List
-from datetime import datetime, timedelta
 
 import typer
 from rich.console import Console
-from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -54,7 +52,7 @@ app.add_typer(mcp_app, name="mcp")
 @app.command()
 def init(
     global_: bool = typer.Option(False, "--global", "-g", help="Initialize globally"),
-    data_dir: Optional[str] = typer.Option(None, "--data-dir", help="Custom data directory"),
+    data_dir: str | None = typer.Option(None, "--data-dir", help="Custom data directory"),
 ):
     """Initialize NexusFS configuration and data directories."""
     from nexus_ai.config import NexusConfig, set_config
@@ -121,14 +119,14 @@ def status():
 
 @index_app.command("build")
 def index_build(
-    path: Optional[str] = typer.Argument(None, help="Path to index (default: all drives)"),
+    path: str | None = typer.Argument(None, help="Path to index (default: all drives)"),
     deep: bool = typer.Option(False, "--deep", "-d", help="Include content embeddings"),
     watch: bool = typer.Option(False, "--watch", "-w", help="Start real-time monitoring"),
     threads: int = typer.Option(0, "--threads", "-t", help="Number of threads (0=auto)"),
 ):
     """Build or rebuild the file index."""
-    from nexus_ai.indexer.hyper_indexer import HyperIndexer
     from nexus_ai.config import get_config
+    from nexus_ai.indexer.hyper_indexer import HyperIndexer
 
     config = get_config()
 
@@ -157,7 +155,7 @@ def index_build(
         else:
             stats = indexer.index_all_drives(config.index.drives, progress_callback=update_progress)
 
-    console.print(f"\n[green]Indexing complete![/green]")
+    console.print("\n[green]Indexing complete![/green]")
     console.print(f"  Files: {stats['file_count']:,}")
     console.print(f"  Directories: {stats['dir_count']:,}")
     console.print(f"  Time: {stats['time_ms']}ms")
@@ -187,13 +185,13 @@ def index_status():
 @search_app.callback(invoke_without_command=True)
 def search_main(
     ctx: typer.Context,
-    query: Optional[str] = typer.Argument(None, help="Search query"),
+    query: str | None = typer.Argument(None, help="Search query"),
     type_: str = typer.Option("semantic", "--type", "-t", help="Search type: semantic, glob, regex, exact"),
     limit: int = typer.Option(20, "--limit", "-l", help="Maximum results"),
-    extensions: Optional[str] = typer.Option(None, "--ext", "-e", help="Filter by extensions (comma-separated)"),
-    min_size: Optional[str] = typer.Option(None, "--min-size", help="Minimum file size (e.g., 100MB, 1GB)"),
-    max_size: Optional[str] = typer.Option(None, "--max-size", help="Maximum file size"),
-    drives: Optional[str] = typer.Option(None, "--drives", "-d", help="Filter by drives (comma-separated)"),
+    extensions: str | None = typer.Option(None, "--ext", "-e", help="Filter by extensions (comma-separated)"),
+    min_size: str | None = typer.Option(None, "--min-size", help="Minimum file size (e.g., 100MB, 1GB)"),
+    max_size: str | None = typer.Option(None, "--max-size", help="Maximum file size"),
+    drives: str | None = typer.Option(None, "--drives", "-d", help="Filter by drives (comma-separated)"),
     dirs_only: bool = typer.Option(False, "--dirs", help="Only show directories"),
     files_only: bool = typer.Option(False, "--files", help="Only show files"),
 ):
@@ -234,7 +232,7 @@ def search_similar(
 
 @search_app.command("duplicates")
 def search_duplicates(
-    path: Optional[str] = typer.Argument(None, help="Path to scan (default: all indexed)"),
+    path: str | None = typer.Argument(None, help="Path to scan (default: all indexed)"),
     min_size: str = typer.Option("1MB", "--min-size", help="Minimum file size for duplicates"),
 ):
     """Find duplicate files."""
@@ -316,7 +314,7 @@ def space_large(
 
 @model_app.command("scan")
 def model_scan(
-    app: Optional[str] = typer.Option(None, "--app", "-a", help="Specific app (lmstudio, ollama, huggingface)"),
+    app: str | None = typer.Option(None, "--app", "-a", help="Specific app (lmstudio, ollama, huggingface)"),
 ):
     """Scan for AI model files."""
     from nexus_ai.tools.model_relocator import ModelRelocator
@@ -340,7 +338,7 @@ def model_relocate(
         min_size_gb=min_gb,
     )
 
-    console.print(f"\n[cyan]Relocation Plan:[/cyan]")
+    console.print("\n[cyan]Relocation Plan:[/cyan]")
     console.print(f"  Models: {len(plan.models)}")
     console.print(f"  Total Size: {plan.total_size / 1024**3:.2f} GB")
     console.print(f"  Destination: {plan.dest_dir}")
@@ -375,7 +373,7 @@ def model_suggest(
 
 @rollback_app.command("list")
 def rollback_list(
-    hours: Optional[int] = typer.Option(None, "--hours", "-h", help="Show transactions from last N hours"),
+    hours: int | None = typer.Option(None, "--hours", "-h", help="Show transactions from last N hours"),
     limit: int = typer.Option(20, "--limit", "-l", help="Maximum transactions to show"),
 ):
     """List recent file transactions."""
@@ -422,8 +420,8 @@ def rollback_list(
 
 @rollback_app.command("undo")
 def rollback_undo(
-    tx_id: Optional[str] = typer.Argument(None, help="Transaction ID to rollback"),
-    hours: Optional[int] = typer.Option(None, "--hours", "-h", help="Rollback all in last N hours"),
+    tx_id: str | None = typer.Argument(None, help="Transaction ID to rollback"),
+    hours: int | None = typer.Option(None, "--hours", "-h", help="Rollback all in last N hours"),
 ):
     """Rollback file operations."""
     from nexus_ai.config import get_config
@@ -452,7 +450,7 @@ def rollback_undo(
 def rollback_script(
     hours: int = typer.Option(1, "--hours", "-h", help="Generate script for last N hours"),
     format_: str = typer.Option("ps1", "--format", "-f", help="Script format: ps1 or bat"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
 ):
     """Generate a rollback script."""
     from nexus_ai.config import get_config

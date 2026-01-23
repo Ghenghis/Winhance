@@ -12,16 +12,16 @@ Features:
 
 from __future__ import annotations
 
-import os
 import hashlib
+import os
+import threading
+import time
 from collections import defaultdict
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Callable
-import threading
-import time
 
 from loguru import logger
 
@@ -44,7 +44,7 @@ class FileInfo:
     modified: datetime
     extension: str
     is_hidden: bool = False
-    content_hash: Optional[str] = None
+    content_hash: str | None = None
     category: str = "other"
 
 
@@ -56,8 +56,8 @@ class DirectoryInfo:
     total_size: int = 0
     file_count: int = 0
     dir_count: int = 0
-    largest_file: Optional[FileInfo] = None
-    modified: Optional[datetime] = None
+    largest_file: FileInfo | None = None
+    modified: datetime | None = None
 
 
 @dataclass
@@ -72,17 +72,17 @@ class SpaceAnalysis:
     scan_time_ms: int = 0
 
     # Categorized files
-    large_files: List[FileInfo] = field(default_factory=list)
-    huge_files: List[FileInfo] = field(default_factory=list)
-    model_files: List[FileInfo] = field(default_factory=list)
-    cache_files: List[FileInfo] = field(default_factory=list)
-    temp_files: List[FileInfo] = field(default_factory=list)
-    duplicate_groups: Dict[str, List[FileInfo]] = field(default_factory=dict)
+    large_files: list[FileInfo] = field(default_factory=list)
+    huge_files: list[FileInfo] = field(default_factory=list)
+    model_files: list[FileInfo] = field(default_factory=list)
+    cache_files: list[FileInfo] = field(default_factory=list)
+    temp_files: list[FileInfo] = field(default_factory=list)
+    duplicate_groups: dict[str, list[FileInfo]] = field(default_factory=dict)
 
     # Top consumers
-    largest_dirs: List[DirectoryInfo] = field(default_factory=list)
-    by_extension: Dict[str, int] = field(default_factory=dict)
-    by_category: Dict[str, int] = field(default_factory=dict)
+    largest_dirs: list[DirectoryInfo] = field(default_factory=list)
+    by_extension: dict[str, int] = field(default_factory=dict)
+    by_category: dict[str, int] = field(default_factory=dict)
 
 
 class SpaceAnalyzer:
@@ -131,9 +131,9 @@ class SpaceAnalyzer:
         self,
         large_threshold_gb: float = 1.0,
         huge_threshold_gb: float = 10.0,
-        max_workers: Optional[int] = None,
+        max_workers: int | None = None,
         compute_hashes: bool = False,
-        progress_callback: Optional[Callable[[str, int], None]] = None,
+        progress_callback: Callable[[str, int], None] | None = None,
     ):
         """
         Initialize the space analyzer.
@@ -158,8 +158,8 @@ class SpaceAnalyzer:
         self._lock = threading.Lock()
 
         # Results
-        self._files: List[FileInfo] = []
-        self._dirs: Dict[str, DirectoryInfo] = {}
+        self._files: list[FileInfo] = []
+        self._dirs: dict[str, DirectoryInfo] = {}
 
         logger.info(f"SpaceAnalyzer initialized with {self.max_workers} workers")
 
@@ -181,7 +181,7 @@ class SpaceAnalyzer:
         path_lower = path.lower()
         return any(pattern in path_lower for pattern in self.TEMP_PATTERNS)
 
-    def _compute_quick_hash(self, path: Path) -> Optional[str]:
+    def _compute_quick_hash(self, path: Path) -> str | None:
         """Compute a quick hash (first 64KB + size)."""
         try:
             with open(path, "rb") as f:
@@ -191,7 +191,7 @@ class SpaceAnalyzer:
         except Exception:
             return None
 
-    def _scan_file(self, path: Path) -> Optional[FileInfo]:
+    def _scan_file(self, path: Path) -> FileInfo | None:
         """Scan a single file and return its info."""
         try:
             stat = path.stat()
@@ -217,7 +217,7 @@ class SpaceAnalyzer:
             logger.debug(f"Cannot access file {path}: {e}")
             return None
 
-    def _scan_directory_shallow(self, path: Path) -> Tuple[List[Path], List[Path]]:
+    def _scan_directory_shallow(self, path: Path) -> tuple[list[Path], list[Path]]:
         """
         Shallow scan a directory (one level only).
 
@@ -352,7 +352,7 @@ class SpaceAnalyzer:
         )
 
         # Categorize files
-        hash_groups: Dict[str, List[FileInfo]] = defaultdict(list)
+        hash_groups: dict[str, list[FileInfo]] = defaultdict(list)
 
         for f in self._files:
             # Size categories
@@ -415,7 +415,7 @@ class SpaceAnalyzer:
         path: Path | str,
         min_size_gb: float = 1.0,
         limit: int = 100,
-    ) -> List[FileInfo]:
+    ) -> list[FileInfo]:
         """
         Quick scan to find large files only.
 
@@ -423,7 +423,7 @@ class SpaceAnalyzer:
         """
         path = Path(path)
         min_size = int(min_size_gb * 1024**3)
-        large_files: List[FileInfo] = []
+        large_files: list[FileInfo] = []
 
         def scan_dir(dir_path: Path) -> None:
             try:
@@ -517,13 +517,13 @@ class SpaceAnalyzer:
         for f in analysis.large_files[:10]:
             print(f"  {self.format_size(f.size):>12}  {f.path}")
 
-        print(f"\n--- MODEL FILES ---")
+        print("\n--- MODEL FILES ---")
         total_models = sum(f.size for f in analysis.model_files)
         print(f"Total model storage: {self.format_size(total_models)}")
         for f in analysis.model_files[:10]:
             print(f"  {self.format_size(f.size):>12}  {f.path}")
 
-        print(f"\n--- LARGEST DIRECTORIES ---")
+        print("\n--- LARGEST DIRECTORIES ---")
         for d in analysis.largest_dirs[:10]:
             print(f"  {self.format_size(d.total_size):>12}  {d.path}")
 

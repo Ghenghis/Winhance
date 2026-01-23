@@ -12,22 +12,19 @@ Provides:
 
 from __future__ import annotations
 
-import os
-import sys
-import shutil
+import gzip
 import hashlib
 import json
-import gzip
+import shutil
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Callable
-import threading
-import queue
-from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
-from nexus_ai.core.logging_config import get_logger, LogPerformance
+from nexus_ai.core.logging_config import LogPerformance, get_logger
 
 logger = get_logger("backup_system")
 
@@ -96,15 +93,15 @@ class BackupRecord:
     status: BackupStatus
     created_at: datetime
     expires_at: datetime
-    source_paths: List[str]
-    backup_locations: List[str]  # Location IDs
-    entries: List[BackupEntry] = field(default_factory=list)
+    source_paths: list[str]
+    backup_locations: list[str]  # Location IDs
+    entries: list[BackupEntry] = field(default_factory=list)
     total_size: int = 0
     verified: bool = False
-    verification_time: Optional[datetime] = None
-    verification_result: Optional[VerificationResult] = None
-    error_message: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    verification_time: datetime | None = None
+    verification_result: VerificationResult | None = None
+    error_message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -124,7 +121,7 @@ class BackupConfig:
     """Backup system configuration."""
     # Locations
     primary_backup_path: Path = field(default_factory=lambda: Path("D:/NexusFS/backups"))
-    secondary_backup_paths: List[Path] = field(default_factory=lambda: [
+    secondary_backup_paths: list[Path] = field(default_factory=lambda: [
         Path("E:/NexusFS_Backup"),
         Path("F:/NexusFS_Backup"),
     ])
@@ -144,7 +141,7 @@ class BackupConfig:
 
     # Automation
     auto_restore_points: bool = True
-    restore_point_on_operations: List[str] = field(default_factory=lambda: [
+    restore_point_on_operations: list[str] = field(default_factory=lambda: [
         "move", "delete", "rename", "organize"
     ])
 
@@ -184,7 +181,7 @@ class BackupVerifier:
 
         return VerificationResult.SUCCESS
 
-    def verify_record(self, record: BackupRecord) -> tuple[bool, List[tuple[str, VerificationResult]]]:
+    def verify_record(self, record: BackupRecord) -> tuple[bool, list[tuple[str, VerificationResult]]]:
         """Verify all entries in a backup record."""
         results = []
         all_success = True
@@ -210,30 +207,30 @@ class BackupManager:
     - Cross-drive distribution
     """
 
-    def __init__(self, config: Optional[BackupConfig] = None):
+    def __init__(self, config: BackupConfig | None = None):
         self.config = config or BackupConfig()
         self.verifier = BackupVerifier(self.config.verify_hash_algorithm)
-        self._locations: Dict[str, BackupLocation] = {}
-        self._records: Dict[str, BackupRecord] = {}
-        self._restore_points: Dict[str, RestorePoint] = {}
+        self._locations: dict[str, BackupLocation] = {}
+        self._records: dict[str, BackupRecord] = {}
+        self._restore_points: dict[str, RestorePoint] = {}
         self._lock = threading.Lock()
-        self._alert_callbacks: List[Callable[[str, Dict], None]] = []
+        self._alert_callbacks: list[Callable[[str, dict], None]] = []
 
         self._initialize_locations()
         self._load_state()
 
     @property
-    def locations(self) -> Dict[str, BackupLocation]:
+    def locations(self) -> dict[str, BackupLocation]:
         """Get all backup locations."""
         return dict(self._locations)
 
     @property
-    def records(self) -> Dict[str, BackupRecord]:
+    def records(self) -> dict[str, BackupRecord]:
         """Get all backup records."""
         return dict(self._records)
 
     @property
-    def restore_points(self) -> Dict[str, RestorePoint]:
+    def restore_points(self) -> dict[str, RestorePoint]:
         """Get all restore points."""
         return dict(self._restore_points)
 
@@ -256,7 +253,7 @@ class BackupManager:
         path: Path,
         is_primary: bool = False,
         priority: int = 1,
-    ) -> Optional[BackupLocation]:
+    ) -> BackupLocation | None:
         """Add a backup location."""
         try:
             path.mkdir(parents=True, exist_ok=True)
@@ -278,7 +275,7 @@ class BackupManager:
             logger.error(f"Failed to add backup location {path}: {e}")
             return None
 
-    def _get_available_locations(self, prefer_different_drives: bool = True) -> List[BackupLocation]:
+    def _get_available_locations(self, prefer_different_drives: bool = True) -> list[BackupLocation]:
         """Get available backup locations, preferring different drives."""
         available = [loc for loc in self._locations.values() if loc.is_available]
         available.sort(key=lambda x: x.priority)
@@ -364,7 +361,7 @@ class BackupManager:
             return
 
         try:
-            with open(state_file, "r") as f:
+            with open(state_file) as f:
                 state = json.load(f)
 
             # Load records
@@ -419,11 +416,11 @@ class BackupManager:
         except Exception as e:
             logger.error(f"Failed to load backup state: {e}")
 
-    def add_alert_callback(self, callback: Callable[[str, Dict], None]) -> None:
+    def add_alert_callback(self, callback: Callable[[str, dict], None]) -> None:
         """Add a callback for backup alerts."""
         self._alert_callbacks.append(callback)
 
-    def _send_alert(self, alert_type: str, data: Dict) -> None:
+    def _send_alert(self, alert_type: str, data: dict) -> None:
         """Send alert to all registered callbacks."""
         for callback in self._alert_callbacks:
             try:
@@ -434,7 +431,7 @@ class BackupManager:
     def create_restore_point(
         self,
         name: str,
-        paths: List[Path],
+        paths: list[Path],
         description: str = "",
         auto_created: bool = False,
     ) -> RestorePoint:
@@ -477,9 +474,9 @@ class BackupManager:
 
     def backup(
         self,
-        paths: List[Path],
+        paths: list[Path],
         backup_type: BackupType = BackupType.FULL,
-        metadata: Optional[Dict] = None,
+        metadata: dict | None = None,
     ) -> BackupRecord:
         """
         Create a backup of specified paths.
@@ -540,7 +537,7 @@ class BackupManager:
         self,
         source: Path,
         record: BackupRecord,
-        locations: List[BackupLocation],
+        locations: list[BackupLocation],
     ) -> None:
         """Backup a single path to multiple locations."""
         for location in locations:
@@ -613,7 +610,7 @@ class BackupManager:
     def restore(
         self,
         record_id: str,
-        target_path: Optional[Path] = None,
+        target_path: Path | None = None,
         overwrite: bool = False,
     ) -> bool:
         """
@@ -651,7 +648,7 @@ class BackupManager:
     def _restore_entry(
         self,
         entry: BackupEntry,
-        target_path: Optional[Path],
+        target_path: Path | None,
         overwrite: bool,
     ) -> None:
         """Restore a single backup entry."""
@@ -681,7 +678,7 @@ class BackupManager:
         if restored_hash != entry.hash_original:
             logger.warning(f"Restored file hash mismatch: {restore_path}")
 
-    def restore_from_point(self, restore_point_id: str, target_path: Optional[Path] = None) -> bool:
+    def restore_from_point(self, restore_point_id: str, target_path: Path | None = None) -> bool:
         """Restore from a restore point."""
         rp = self._restore_points.get(restore_point_id)
         if not rp:
@@ -690,7 +687,7 @@ class BackupManager:
 
         return self.restore(rp.backup_record_id, target_path)
 
-    def check_expiring_backups(self) -> List[BackupRecord]:
+    def check_expiring_backups(self) -> list[BackupRecord]:
         """Check for backups that will expire soon and need review."""
         expiring = []
         alert_threshold = datetime.now() + timedelta(days=self.config.alert_before_delete_days)
@@ -761,7 +758,7 @@ class BackupManager:
         logger.info(f"Extended retention for {record_id} by {days} days")
         return True
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get backup system status."""
         return {
             "locations": [
@@ -780,7 +777,7 @@ class BackupManager:
             "total_backup_size_gb": sum(r.total_size for r in self._records.values()) / (1024**3),
         }
 
-    def list_restore_points(self) -> List[RestorePoint]:
+    def list_restore_points(self) -> list[RestorePoint]:
         """List all restore points."""
         return sorted(
             [rp for rp in self._restore_points.values() if rp.is_valid],
@@ -788,7 +785,7 @@ class BackupManager:
             reverse=True,
         )
 
-    def list_backups(self, status: Optional[BackupStatus] = None) -> List[BackupRecord]:
+    def list_backups(self, status: BackupStatus | None = None) -> list[BackupRecord]:
         """List backup records, optionally filtered by status."""
         records = list(self._records.values())
         if status:
@@ -797,7 +794,7 @@ class BackupManager:
 
 
 # Global backup manager
-_backup_manager: Optional[BackupManager] = None
+_backup_manager: BackupManager | None = None
 
 
 def get_backup_manager() -> BackupManager:
@@ -808,7 +805,7 @@ def get_backup_manager() -> BackupManager:
     return _backup_manager
 
 
-def create_restore_point_before(operation: str, paths: List[Path]) -> Optional[RestorePoint]:
+def create_restore_point_before(operation: str, paths: list[Path]) -> RestorePoint | None:
     """
     Convenience function to create restore point before an operation.
 

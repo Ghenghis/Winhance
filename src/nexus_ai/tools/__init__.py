@@ -9,23 +9,23 @@ Epic Features:
 - SmartFileManager: Touch/mouse seamless interface
 """
 
-from nexus_ai.tools.space_analyzer import SpaceAnalyzer
 from nexus_ai.tools.model_relocator import ModelRelocator
+from nexus_ai.tools.space_analyzer import SpaceAnalyzer
 
 # Epic feature imports with fallback
 try:
     from nexus_ai.tools.file_classifier import (
-        FileClassifier,
         FileClassification,
-        SafetyLevel,
+        FileClassifier,
         FileOrigin,
-        WindowsSystemDetector,
         InstalledAppDetector,
+        SafetyLevel,
         UserFileDetector,
-        get_classifier,
+        WindowsSystemDetector,
         classify_file,
-        is_safe_to_move,
+        get_classifier,
         is_safe_to_delete,
+        is_safe_to_move,
     )
     _HAS_FILE_CLASSIFIER = True
 except ImportError:
@@ -33,11 +33,11 @@ except ImportError:
 
 try:
     from nexus_ai.tools.realtime_organizer import (
-        RealtimeOrganizer,
-        OrganizationRule,
-        OrganizationDecision,
-        OrganizationAction,
         ConfirmationLevel,
+        OrganizationAction,
+        OrganizationDecision,
+        OrganizationRule,
+        RealtimeOrganizer,
         UserPreference,
         get_organizer,
         start_organizing,
@@ -49,18 +49,18 @@ except ImportError:
 
 try:
     from nexus_ai.tools.smart_filemanager import (
-        SmartFileManager,
-        GestureManager,
-        QuickActionWheel,
-        DropZoneManager,
-        GestureType,
         ActionType,
-        ViewMode,
-        FileCard,
-        QuickAction,
-        DropZone,
         BreadcrumbItem,
+        DropZone,
+        DropZoneManager,
+        FileCard,
+        GestureManager,
+        GestureType,
+        QuickAction,
+        QuickActionWheel,
+        SmartFileManager,
         UndoAction,
+        ViewMode,
         get_smart_manager,
     )
     _HAS_SMART_FILEMANAGER = True

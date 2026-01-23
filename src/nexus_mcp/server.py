@@ -16,14 +16,13 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from loguru import logger
 
-
 # Security: Allowed root directories for path validation
 # Prevents path traversal attacks by restricting access to known safe directories
-ALLOWED_ROOTS: List[str] = [
+ALLOWED_ROOTS: list[str] = [
     os.path.expanduser("~"),
     "C:\\Users",
     "C:\\Program Files",
@@ -72,7 +71,7 @@ def validate_path(path: str, param_name: str = "path") -> str:
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import TextContent, Tool, Resource
+    from mcp.types import Resource, TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -90,7 +89,7 @@ def create_server():
         raise ImportError("MCP package not installed")
 
     @server.list_tools()
-    async def list_tools() -> List[Tool]:
+    async def list_tools() -> list[Tool]:
         """List available NexusFS tools."""
         return [
             Tool(
@@ -277,7 +276,7 @@ def create_server():
         ]
 
     @server.call_tool()
-    async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         """Handle tool calls."""
         try:
             if name == "nexus_search":
@@ -306,7 +305,7 @@ def create_server():
     return server
 
 
-async def handle_search(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_search(args: dict[str, Any]) -> dict[str, Any]:
     """Handle search requests."""
     query = args.get("query", "")
     search_type = args.get("type", "semantic")
@@ -321,7 +320,7 @@ async def handle_search(args: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-async def handle_index(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_index(args: dict[str, Any]) -> dict[str, Any]:
     """Handle indexing requests."""
     path = args.get("path")
     deep = args.get("deep", False)
@@ -349,7 +348,7 @@ async def handle_index(args: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Indexer not available: {e}"}
 
 
-async def handle_organize(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_organize(args: dict[str, Any]) -> dict[str, Any]:
     """Handle organization requests."""
     path = args.get("path")
     strategy = args.get("strategy", "semantic")
@@ -364,7 +363,7 @@ async def handle_organize(args: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-async def handle_rollback(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_rollback(args: dict[str, Any]) -> dict[str, Any]:
     """Handle rollback requests."""
     tx_id = args.get("transaction_id")
     hours = args.get("hours")
@@ -408,7 +407,7 @@ async def handle_rollback(args: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Transaction manager not available: {e}"}
 
 
-async def handle_space(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_space(args: dict[str, Any]) -> dict[str, Any]:
     """Handle space analysis requests."""
     path = args.get("path", os.path.expanduser("~"))
     large_gb = args.get("large_gb", 1.0)
@@ -450,7 +449,7 @@ async def handle_space(args: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Space analyzer not available: {e}"}
 
 
-async def handle_models(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_models(args: dict[str, Any]) -> dict[str, Any]:
     """Handle model management requests."""
     action = args.get("action", "scan")
     dest_drive = args.get("dest_drive", "G")
@@ -509,7 +508,7 @@ async def handle_models(args: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Model relocator not available: {e}"}
 
 
-async def handle_similar(args: Dict[str, Any]) -> Dict[str, Any]:
+async def handle_similar(args: dict[str, Any]) -> dict[str, Any]:
     """Handle similar file search."""
     file_path = args.get("file_path")
     limit = args.get("limit", 10)

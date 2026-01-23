@@ -14,24 +14,23 @@ Supports parallel agent execution and task queuing.
 from __future__ import annotations
 
 import asyncio
+import queue
+import threading
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Callable, Awaitable
-import threading
-import queue
+from typing import Any
 
-from nexus_ai.core.logging_config import get_logger, LogPerformance
 from nexus_ai.core.ai_providers import (
-    AIProviderManager,
     AIMessage,
-    AIResponse,
+    AIProviderManager,
     ProviderType,
     get_ai_manager,
 )
+from nexus_ai.core.logging_config import LogPerformance, get_logger
 
 logger = get_logger("agents")
 
@@ -73,16 +72,16 @@ class AgentTask:
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     type: AgentType = AgentType.ORGANIZER
     description: str = ""
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     priority: TaskPriority = TaskPriority.NORMAL
     created_at: datetime = field(default_factory=datetime.now)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     status: AgentStatus = AgentStatus.IDLE
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
-    parent_task_id: Optional[str] = None
-    subtasks: List[str] = field(default_factory=list)
+    result: dict[str, Any] | None = None
+    error: str | None = None
+    parent_task_id: str | None = None
+    subtasks: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -95,20 +94,20 @@ class AgentConfig:
     auto_run: bool = False
     run_interval_seconds: int = 300
     max_concurrent_tasks: int = 5
-    ai_provider: Optional[ProviderType] = None
-    ai_model: Optional[str] = None
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    ai_provider: ProviderType | None = None
+    ai_model: str | None = None
+    parameters: dict[str, Any] = field(default_factory=dict)
 
 
 class Agent(ABC):
     """Abstract base class for all agents."""
 
-    def __init__(self, config: AgentConfig, ai_manager: Optional[AIProviderManager] = None):
+    def __init__(self, config: AgentConfig, ai_manager: AIProviderManager | None = None):
         self.config = config
         self.ai_manager = ai_manager or get_ai_manager()
         self._status = AgentStatus.IDLE
-        self._current_task: Optional[AgentTask] = None
-        self._task_history: List[AgentTask] = []
+        self._current_task: AgentTask | None = None
+        self._task_history: list[AgentTask] = []
         self._lock = threading.Lock()
 
     @property
@@ -116,7 +115,7 @@ class Agent(ABC):
         return self._status
 
     @abstractmethod
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         """Execute a task. Must be implemented by subclasses."""
         pass
 
@@ -155,7 +154,7 @@ class Agent(ABC):
 
         return task
 
-    async def ai_chat(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    async def ai_chat(self, prompt: str, system_prompt: str | None = None) -> str:
         """Send a prompt to the configured AI provider."""
         messages = []
         if system_prompt:
@@ -190,7 +189,7 @@ Output format: JSON with structure:
     "summary": "brief summary"
 }"""
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         path = task.parameters.get("path", ".")
         strategy = task.parameters.get("strategy", "semantic")
         dry_run = task.parameters.get("dry_run", True)
@@ -266,7 +265,7 @@ Output format: JSON with structure:
     "warnings": ["any concerns"]
 }"""
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         path = task.parameters.get("path", "C:\\")
         min_age_days = task.parameters.get("min_age_days", 30)
         categories = task.parameters.get("categories", ["temp", "cache", "logs"])
@@ -330,7 +329,7 @@ Your tasks:
 
 Be thorough but concise. Cite sources when possible."""
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         query = task.parameters.get("query", "")
         file_path = task.parameters.get("file_path")
         context = task.parameters.get("context", {})
@@ -365,7 +364,7 @@ Your capabilities:
 
 Always preserve original files before any repair attempt."""
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         path = task.parameters.get("path", ".")
         repair_type = task.parameters.get("repair_type", "all")
 
@@ -403,12 +402,12 @@ Watch for:
 
 Alert immediately for critical issues."""
 
-    def __init__(self, config: AgentConfig, ai_manager: Optional[AIProviderManager] = None):
+    def __init__(self, config: AgentConfig, ai_manager: AIProviderManager | None = None):
         super().__init__(config, ai_manager)
-        self._watchers: Dict[str, Any] = {}
+        self._watchers: dict[str, Any] = {}
         self._events: queue.Queue = queue.Queue()
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         action = task.parameters.get("action", "status")
         paths = task.parameters.get("paths", [])
 
@@ -445,7 +444,7 @@ Capabilities:
 
 Optimize queries for speed and relevance."""
 
-    async def execute(self, task: AgentTask) -> Dict[str, Any]:
+    async def execute(self, task: AgentTask) -> dict[str, Any]:
         query = task.parameters.get("query", "")
         search_type = task.parameters.get("type", "semantic")
         scope = task.parameters.get("scope", ["C:\\"])
@@ -490,15 +489,15 @@ class AgentOrchestrator:
     - Inter-agent communication
     """
 
-    def __init__(self, ai_manager: Optional[AIProviderManager] = None):
+    def __init__(self, ai_manager: AIProviderManager | None = None):
         self.ai_manager = ai_manager or get_ai_manager()
-        self._agents: Dict[AgentType, Agent] = {}
+        self._agents: dict[AgentType, Agent] = {}
         self._task_queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
         self._running = False
-        self._workers: List[asyncio.Task] = []
+        self._workers: list[asyncio.Task] = []
         self._max_workers = 5
 
-    def register_agent(self, agent_type: AgentType, config: Optional[AgentConfig] = None) -> None:
+    def register_agent(self, agent_type: AgentType, config: AgentConfig | None = None) -> None:
         """Register an agent with the orchestrator."""
         if config is None:
             config = AgentConfig(
@@ -547,7 +546,7 @@ class AgentOrchestrator:
                         self._task_queue.get(),
                         timeout=1.0
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     continue
 
                 agent = self._agents.get(task.type)
@@ -606,11 +605,11 @@ class AgentOrchestrator:
 
         return await agent.run_task(task)
 
-    def get_agent(self, agent_type: AgentType) -> Optional[Agent]:
+    def get_agent(self, agent_type: AgentType) -> Agent | None:
         """Get a registered agent."""
         return self._agents.get(agent_type)
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get orchestrator status."""
         return {
             "running": self._running,
@@ -627,7 +626,7 @@ class AgentOrchestrator:
 
 
 # Global orchestrator instance
-_orchestrator: Optional[AgentOrchestrator] = None
+_orchestrator: AgentOrchestrator | None = None
 
 
 def get_orchestrator() -> AgentOrchestrator:
@@ -641,9 +640,9 @@ def get_orchestrator() -> AgentOrchestrator:
 
 async def quick_task(
     agent_type: AgentType,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     description: str = "",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Convenience function to run a quick task."""
     orchestrator = get_orchestrator()
     task = AgentTask(
