@@ -16,7 +16,7 @@ permissions:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  RUST_VERSION: "1.75"
+  RUST_VERSION: "1.82"
   PROJECT_PATH: "src/Winhance.WPF/Winhance.WPF.csproj"
   APP_NAME: "Winhance"
 

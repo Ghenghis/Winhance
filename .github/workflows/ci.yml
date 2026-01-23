@@ -9,7 +9,7 @@ on:
 
 env:
   DOTNET_VERSION: "9.0.x"
-  RUST_VERSION: "1.75"
+  RUST_VERSION: "1.82"
   PYTHON_VERSION: "3.11"
 
 jobs:
@@ -110,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black pytest pytest-asyncio pytest-timeout
+          pip install ruff black pytest pytest-asyncio pytest-timeout toml
 
       - name: Run Ruff linter
         run: ruff check src/nexus_ai src/nexus_cli src/nexus_mcp
