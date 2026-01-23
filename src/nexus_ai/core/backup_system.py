@@ -722,7 +722,7 @@ class BackupManager:
         now = datetime.now()
         cleaned = 0
 
-        for record_id, record in list(self._records.items()):
+        for _record_id, record in list(self._records.items()):
             if record.expires_at <= now:
                 if record.status == BackupStatus.PENDING_REVIEW and not force:
                     continue  # Skip pending review unless forced

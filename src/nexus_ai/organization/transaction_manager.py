@@ -149,7 +149,7 @@ class TransactionManager:
 
         try:
             # Try to open with exclusive access
-            with open(path, "r+b") as f:
+            with open(path, "r+b"):
                 pass
             return False
         except (OSError, PermissionError):

@@ -175,7 +175,7 @@ class CodeAnalyzer:
 
         for node in ast.walk(tree):
             # Missing docstrings
-            if isinstance(node, (ast.ClassDef, ast.FunctionDef)):
+            if isinstance(node, ast.ClassDef | ast.FunctionDef):
                 if not ast.get_docstring(node):
                     self.issues.append(IssueEntry(
                         id=f"missing_doc_{file_path.name}_{node.name}",

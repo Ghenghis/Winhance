@@ -71,7 +71,7 @@ def validate_path(path: str, param_name: str = "path") -> str:
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import Resource, TextContent, Tool
+    from mcp.types import TextContent, Tool
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -309,12 +309,13 @@ async def handle_search(args: dict[str, Any]) -> dict[str, Any]:
     """Handle search requests."""
     query = args.get("query", "")
     search_type = args.get("type", "semantic")
-    limit = args.get("limit", 20)
+    result_limit = args.get("limit", 20)
 
-    # TODO: Implement actual search
+    # TODO: Implement actual search with result_limit
     return {
         "query": query,
         "type": search_type,
+        "limit": result_limit,
         "results": [],
         "message": "Search index not built yet. Run 'nexus index build' first."
     }
@@ -511,10 +512,11 @@ async def handle_models(args: dict[str, Any]) -> dict[str, Any]:
 async def handle_similar(args: dict[str, Any]) -> dict[str, Any]:
     """Handle similar file search."""
     file_path = args.get("file_path")
-    limit = args.get("limit", 10)
+    result_limit = args.get("limit", 10)
 
     return {
         "file_path": file_path,
+        "limit": result_limit,
         "similar_files": [],
         "message": "Semantic similarity requires deep index with embeddings"
     }

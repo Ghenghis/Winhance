@@ -195,9 +195,6 @@ Output format: JSON with structure:
         dry_run = task.parameters.get("dry_run", True)
 
         # Analyze files
-        from nexus_ai.tools.space_analyzer import SpaceAnalyzer
-        analyzer = SpaceAnalyzer()
-
         files = []
         if Path(path).is_dir():
             for f in Path(path).iterdir():

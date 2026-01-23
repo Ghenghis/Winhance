@@ -138,7 +138,7 @@ class ModelRelocator:
         try:
             # Try to check for admin or developer mode
             import subprocess
-            result = subprocess.run(
+            subprocess.run(
                 ["fsutil", "behavior", "query", "SymlinkEvaluation"],
                 capture_output=True,
                 text=True,
@@ -194,7 +194,7 @@ class ModelRelocator:
 
                 logger.info(f"Scanning {full_path} for {app_name} models...")
 
-                for root, dirs, files in os.walk(full_path):
+                for root, _dirs, files in os.walk(full_path):
                     for file in files:
                         file_path = Path(root) / file
                         ext = file_path.suffix.lower()

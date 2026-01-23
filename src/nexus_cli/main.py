@@ -203,9 +203,9 @@ def search_main(
         console.print("[yellow]Please provide a search query[/yellow]")
         raise typer.Exit(1)
 
-    # Parse options
-    ext_list = [e.strip() for e in extensions.split(",")] if extensions else None
-    drive_list = [d.strip().upper() for d in drives.split(",")] if drives else None
+    # Parse options (reserved for future use)
+    _ = [e.strip() for e in extensions.split(",")] if extensions else None
+    _ = [d.strip().upper() for d in drives.split(",")] if drives else None
 
     console.print(f"Searching for: [cyan]{query}[/cyan]")
 

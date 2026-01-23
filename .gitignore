@@ -234,3 +234,9 @@ $RECYCLE.BIN/
 
 # Claude folder
 .claude/
+
+# Antigravity tools (external/optional)
+antigravity_tools/
+
+# Phase 3 temporary files
+phase3_*.txt
