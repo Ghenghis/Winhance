@@ -925,24 +925,28 @@ jobs:
           $installScript | Out-File -FilePath "./choco-package/tools/chocolateyinstall.ps1" -Encoding UTF8
 
           # Copy portable build
-          Copy-Item -Path ./portable-build/*.zip -Destination ./choco-package/tools/
+          Copy-Item -Path "${{ github.workspace }}/portable-build/*.zip" -Destination "${{ github.workspace }}/choco-package/tools/"
+
+          # Create output directory
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/choco-output"
 
           # Create nupkg
           $nupkgName = "winhance.${{ steps.version.outputs.choco_version }}.nupkg"
-          Compress-Archive -Path ./choco-package/* -DestinationPath "./choco-output/$nupkgName.zip" -Force
-          Rename-Item -Path "./choco-output/$nupkgName.zip" -NewName $nupkgName
+          $outputDir = "${{ github.workspace }}/choco-output"
+          Compress-Archive -Path "${{ github.workspace }}/choco-package/*" -DestinationPath "$outputDir/$nupkgName.zip" -Force
+          Rename-Item -Path "$outputDir/$nupkgName.zip" -NewName $nupkgName
 
           # Calculate SHA256
-          $hash = Get-FileHash "./choco-output/$nupkgName" -Algorithm SHA256
-          Set-Content -Path "./choco-output/$nupkgName.sha256" -Value "$($hash.Hash)  $nupkgName"
+          $hash = Get-FileHash "$outputDir/$nupkgName" -Algorithm SHA256
+          Set-Content -Path "$outputDir/$nupkgName.sha256" -Value "$($hash.Hash)  $nupkgName"
 
       - name: Upload Chocolatey artifact
         uses: actions/upload-artifact@v4
         with:
           name: Winhance-Chocolatey
           path: |
-            ./choco-output/*.nupkg
-            ./choco-output/*.sha256
+            ${{ github.workspace }}/choco-output/*.nupkg
+            ${{ github.workspace }}/choco-output/*.sha256
           retention-days: 30
 
   # WinGet Manifest Build
