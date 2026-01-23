@@ -412,8 +412,16 @@ jobs:
             }
             
             # Create .msixbundle (combines x64, x86, arm64)
+            # Extract numeric version for bundle (X.X.X.X format required)
+            $numericVersion = "${{ steps.version.outputs.version }}" -replace '^v','' -replace '-.*$',''
+            if ($numericVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+              $parts = $numericVersion.Split('.')
+              while ($parts.Count -lt 4) { $parts += '0' }
+              $numericVersion = $parts[0..3] -join '.'
+            }
+            
             $bundleFile = "./Winhance-${{ steps.version.outputs.version }}.msixbundle"
-            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv ${{ steps.version.outputs.version }}
+            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv $numericVersion
             
             if (Test-Path $bundleFile) {
               $hash = Get-FileHash $bundleFile -Algorithm SHA256
@@ -621,8 +629,16 @@ jobs:
               Write-Host "Added to bundle: $($_.Name)"
             }
             
+            # Extract numeric version for bundle (X.X.X.X format required)
+            $numericVersion = "${{ steps.version.outputs.version }}" -replace '^v','' -replace '-.*$',''
+            if ($numericVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+              $parts = $numericVersion.Split('.')
+              while ($parts.Count -lt 4) { $parts += '0' }
+              $numericVersion = $parts[0..3] -join '.'
+            }
+            
             $bundleFile = "./Winhance-${{ steps.version.outputs.version }}.appxbundle"
-            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv ${{ steps.version.outputs.version }}
+            & $makeAppx bundle /d ./bundle-input /p $bundleFile /bv $numericVersion
             
             if (Test-Path $bundleFile) {
               $hash = Get-FileHash $bundleFile -Algorithm SHA256
