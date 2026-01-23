@@ -1,0 +1,58 @@
+[workspace]
+resolver = "2"
+members = ["nexus_core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Winhance Team"]
+
+[workspace.dependencies]
+# Search
+tantivy = "0.22"
+
+# File System
+walkdir = "2.5"
+notify = "6.1"
+globset = "0.4"
+
+# Windows APIs
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Ioctl",
+    "Win32_Security",
+] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async
+tokio = { version = "1.40", features = ["full"] }
+
+# Python bindings
+pyo3 = { version = "0.22", features = ["extension-module"] }
+
+# Hashing
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+sha2 = "0.10"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Date/Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# Additional
+num_cpus = "1.16"

@@ -123,7 +123,7 @@ public class CommandService(ILogService logService) : ICommandService
 
             return false;
         }
-        catch
+        catch (Exception)
         {
             return false;
         }

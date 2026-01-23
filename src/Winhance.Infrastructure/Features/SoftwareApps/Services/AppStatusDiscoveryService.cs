@@ -293,8 +293,9 @@ public class AppStatusDiscoveryService(
 
                 await Task.WhenAll(wmiTask, registryTask);
 
-                var wmiPrograms = wmiTask.Result;
-                var registryPrograms = registryTask.Result;
+                // Use await to get results instead of .Result to avoid blocking
+                var wmiPrograms = await wmiTask;
+                var registryPrograms = await registryTask;
 
                 var foundByWmi = 0;
                 var foundByRegistry = 0;
@@ -374,7 +375,7 @@ public class AppStatusDiscoveryService(
                     {
                         process.Kill(true);
                     }
-                    catch { }
+                    catch (Exception) { }
 
                     logService.LogWarning("WinGet list command timed out after 30 seconds");
                     return;
@@ -591,10 +592,10 @@ public class AppStatusDiscoveryService(
                         if (!string.IsNullOrEmpty(displayName))
                             installedPrograms.Add((displayName, publisher ?? ""));
                     }
-                    catch { }
+                    catch (Exception) { }
                 }
             }
-            catch { }
+            catch (Exception) { }
         }
     }
 

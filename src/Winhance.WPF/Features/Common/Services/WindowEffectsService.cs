@@ -93,9 +93,9 @@ namespace Winhance.WPF.Features.Common.Services
                 SetWindowCompositionAttribute(windowHelper.Handle, ref data);
                 Marshal.FreeHGlobal(accentPtr);
             }
-            catch
+            catch (Exception)
             {
-                // Silently fail
+                // Silently handle window composition failures
             }
         }
 
@@ -133,7 +133,7 @@ namespace Winhance.WPF.Features.Common.Services
                     dpiScaleY = presentationSource.CompositionTarget.TransformToDevice.M22;
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Use default DPI
             }

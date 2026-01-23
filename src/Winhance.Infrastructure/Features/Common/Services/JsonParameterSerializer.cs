@@ -111,7 +111,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                        input.StartsWith("H4sI") &&
                        input.Length % 4 == 0;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }

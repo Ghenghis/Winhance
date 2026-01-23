@@ -73,6 +73,7 @@ namespace Winhance.WPF.Features.Common.Views
                     }
                     catch (Exception)
                     {
+                        // Registry access may fail for theme detection - fall back to default theme
                     }
 
                     IsThemeDark = !systemUsesLightTheme;
@@ -205,14 +206,14 @@ namespace Winhance.WPF.Features.Common.Views
                         {
                             return dialog.ShowDialog() ?? false;
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             return false;
                         }
                     });
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

@@ -130,8 +130,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     try
                     {
                         // Make a HEAD request to minimize data transfer
-                        var request = new HttpRequestMessage(HttpMethod.Head, url);
-                        var response = _httpClient.SendAsync(request).GetAwaiter().GetResult();
+                        // NOTE: Blocking call required for synchronous IsConnected interface
+                        using var request = new HttpRequestMessage(HttpMethod.Head, url);
+                        using var response = _httpClient.SendAsync(request).GetAwaiter().GetResult();
 
                         if (response.IsSuccessStatusCode)
                         {
@@ -283,8 +284,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         }
 
                         // Make a HEAD request to minimize data transfer
-                        var request = new HttpRequestMessage(HttpMethod.Head, url);
-                        var response = await _httpClient.SendAsync(request, cancellationToken);
+                        using var request = new HttpRequestMessage(HttpMethod.Head, url);
+                        using var response = await _httpClient.SendAsync(request, cancellationToken);
 
                         if (response.IsSuccessStatusCode)
                         {

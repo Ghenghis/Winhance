@@ -61,15 +61,27 @@ namespace Winhance.WPF.Features.Common.ViewModels
             localizationService.LanguageChanged += OnLanguageChanged;
         }
 
-        private async void OnLanguageChanged(object? sender, EventArgs e)
+        private void OnLanguageChanged(object? sender, EventArgs e)
         {
-            lock (_loadingLock)
-            {
-                _settingsLoaded = false;
-            }
+            _ = OnLanguageChangedAsync();
+        }
 
-            OnPropertyChanged(nameof(DisplayName));
-            await LoadSettingsAsync();
+        private async Task OnLanguageChangedAsync()
+        {
+            try
+            {
+                lock (_loadingLock)
+                {
+                    _settingsLoaded = false;
+                }
+
+                OnPropertyChanged(nameof(DisplayName));
+                await LoadSettingsAsync();
+            }
+            catch (Exception ex)
+            {
+                logService?.Log(Core.Features.Common.Enums.LogLevel.Error, $"Error during language change: {ex.Message}");
+            }
         }
 
         public override string DisplayName => GetDisplayName();

@@ -17,6 +17,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
         IPowerPlanComboBoxService powerPlanComboBoxService,
         ISystemSettingsDiscoveryService systemSettingsDiscoveryService) : IComboBoxSetupService
     {
+        /// <summary>
+        /// Synchronous wrapper required by IComboBoxSetupService interface.
+        /// NOTE: This blocks the calling thread. Prefer SetupComboBoxOptionsAsync when possible.
+        /// </summary>
         public ComboBoxSetupResult SetupComboBoxOptions(SettingDefinition setting, object? currentValue)
         {
             return SetupComboBoxOptionsAsync(setting, currentValue).GetAwaiter().GetResult();
@@ -164,7 +168,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 result.SelectedValue = isCustomState ? ComboBoxResolver.CUSTOM_STATE_INDEX : currentIndex;
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -205,8 +209,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 result.SelectedValue = isCustomState ? ComboBoxResolver.CUSTOM_STATE_INDEX : currentIndex;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                logService.Log(LogLevel.Warning, $"Failed to setup from command value mappings for '{setting.Id}': {ex.Message}");
                 return false;
             }
         }

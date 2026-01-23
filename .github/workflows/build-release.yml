@@ -1,0 +1,291 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        default: "v0.0.0-dev"
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  RUST_VERSION: "1.75"
+  PROJECT_PATH: "src/Winhance.WPF/Winhance.WPF.csproj"
+  APP_NAME: "Winhance"
+
+jobs:
+  # Build Rust library first (optional - only if Rust components exist)
+  rust-build:
+    name: Build Rust Library
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src/target/
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('src/Cargo.lock') }}
+
+      - name: Build Rust library
+        run: cargo build --manifest-path src/Cargo.toml --release
+
+      - name: Run Rust tests
+        run: cargo test --manifest-path src/Cargo.toml --release
+
+  build:
+    name: Build ${{ matrix.config.name }}
+    runs-on: windows-latest
+    needs: rust-build
+    strategy:
+      matrix:
+        config:
+          - name: Windows x64
+            runtime: win-x64
+            artifact_name: Winhance-x64
+            self_contained: true
+            single_file: false
+          - name: Windows x64 Portable
+            runtime: win-x64
+            artifact_name: Winhance-x64-Portable
+            self_contained: true
+            single_file: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          # Remove 'v' prefix if present
+          VERSION_NUM=${VERSION#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_num=$VERSION_NUM" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            --configuration Release `
+            --runtime ${{ matrix.config.runtime }} `
+            --self-contained ${{ matrix.config.self_contained }} `
+            -p:PublishSingleFile=${{ matrix.config.single_file }} `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:Version=${{ steps.version.outputs.version_num }} `
+            -p:AssemblyVersion=${{ steps.version.outputs.version_num }} `
+            -p:FileVersion=${{ steps.version.outputs.version_num }} `
+            --output ./publish/${{ matrix.config.artifact_name }}
+
+      - name: Create release package
+        shell: pwsh
+        run: |
+          $publishPath = "./publish/${{ matrix.config.artifact_name }}"
+          $zipName = "${{ matrix.config.artifact_name }}-${{ steps.version.outputs.version }}.zip"
+
+          # Create zip archive
+          Compress-Archive -Path "$publishPath/*" -DestinationPath "./publish/$zipName" -Force
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./publish/$zipName" -Algorithm SHA256
+          $hashValue = $hash.Hash
+          Set-Content -Path "./publish/$zipName.sha256" -Value "$hashValue  $zipName"
+
+          echo "Created: $zipName"
+          echo "SHA256: $hashValue"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.artifact_name }}
+          path: |
+            ./publish/${{ matrix.config.artifact_name }}-${{ steps.version.outputs.version }}.zip
+            ./publish/${{ matrix.config.artifact_name }}-${{ steps.version.outputs.version }}.zip.sha256
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: [rust-build, build]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 $CURRENT_TAG^ 2>/dev/null || echo "")
+
+          cat << 'HEADER' > release_body.md
+          ## Winhance ${{ steps.version.outputs.version }}
+
+          ### Downloads
+
+          | Package | Description |
+          |---------|-------------|
+          | `Winhance-x64-${{ steps.version.outputs.version }}.zip` | Full installation with .NET runtime |
+          | `Winhance-x64-Portable-${{ steps.version.outputs.version }}.zip` | Single-file portable executable |
+
+          ### System Requirements
+
+          - **OS**: Windows 10/11 (x64)
+          - **Runtime**: .NET 9.0 (included in downloads)
+          - **Permissions**: Administrator required for system optimization features
+
+          ### Installation
+
+          **Standard Installation:**
+          1. Download `Winhance-x64-${{ steps.version.outputs.version }}.zip`
+          2. Extract to desired location
+          3. Run `Winhance.WPF.exe` as Administrator
+
+          **Portable:**
+          1. Download `Winhance-x64-Portable-${{ steps.version.outputs.version }}.zip`
+          2. Extract the single executable
+          3. Run as Administrator
+
+          HEADER
+
+          echo "" >> release_body.md
+          echo "### Changes" >> release_body.md
+          echo "" >> release_body.md
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "Initial release" >> release_body.md
+          else
+            git log --pretty=format:"- %s" $PREVIOUS_TAG..$CURRENT_TAG --no-merges >> release_body.md
+          fi
+
+          echo "" >> release_body.md
+          echo "" >> release_body.md
+          echo "### Checksums (SHA256)" >> release_body.md
+          echo "" >> release_body.md
+          echo '```' >> release_body.md
+          find ./artifacts -name "*.sha256" -exec cat {} \; >> release_body.md
+          echo '```' >> release_body.md
+
+          cat release_body.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Winhance ${{ steps.version.outputs.version }}
+          body_path: release_body.md
+          draft: true
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          files: |
+            ./artifacts/**/*.zip
+            ./artifacts/**/*.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  verify:
+    name: Verify Build
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Winhance-x64
+          path: ./verify
+
+      - name: Verify x64 package
+        shell: pwsh
+        run: |
+          $zipFiles = Get-ChildItem -Path ./verify -Filter "*.zip"
+          foreach ($zip in $zipFiles) {
+            Write-Host "Verifying: $($zip.Name)"
+
+            # Verify SHA256
+            $sha256File = "$($zip.FullName).sha256"
+            if (Test-Path $sha256File) {
+              $expectedHash = (Get-Content $sha256File).Split(" ")[0]
+              $actualHash = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash
+
+              if ($expectedHash -eq $actualHash) {
+                Write-Host "✅ SHA256 verified: $actualHash" -ForegroundColor Green
+              } else {
+                Write-Host "❌ SHA256 mismatch!" -ForegroundColor Red
+                Write-Host "Expected: $expectedHash"
+                Write-Host "Actual: $actualHash"
+                exit 1
+              }
+            }
+
+            # Extract and verify contents
+            $extractPath = "./extract"
+            Expand-Archive -Path $zip.FullName -DestinationPath $extractPath -Force
+
+            $exeFiles = Get-ChildItem -Path $extractPath -Filter "*.exe" -Recurse
+            if ($exeFiles.Count -eq 0) {
+              Write-Host "❌ No executable found in package!" -ForegroundColor Red
+              exit 1
+            }
+
+            foreach ($exe in $exeFiles) {
+              Write-Host "✅ Found executable: $($exe.Name)" -ForegroundColor Green
+            }
+          }
+
+          Write-Host ""
+          Write-Host "✅ All verifications passed!" -ForegroundColor Green

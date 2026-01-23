@@ -27,10 +27,18 @@ namespace Winhance.WPF.Features.Common.Views
             this.Closing += MainWindow_Closing;
         }
 
-        private async void MainWindow_Closing(object sender, CancelEventArgs e)
+        private async void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
             e.Cancel = true;
-            await _applicationCloseService.CheckOperationsAndCloseAsync();
+            try
+            {
+                await _applicationCloseService.CheckOperationsAndCloseAsync();
+            }
+            catch (Exception)
+            {
+                // Force close if service fails
+                Application.Current.Shutdown();
+            }
         }
 
         public void OnThemeChanged(bool isDarkTheme)
@@ -38,7 +46,7 @@ namespace Winhance.WPF.Features.Common.Views
             UpdateThemeIcon();
         }
 
-        private void MainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private void MainWindow_PreviewMouseWheel(object? sender, MouseWheelEventArgs e)
         {
             var scrollViewer = VisualTreeHelpers.FindVisualChild<ScrollViewer>(this);
             if (scrollViewer != null)
@@ -52,13 +60,13 @@ namespace Winhance.WPF.Features.Common.Views
             }
         }
 
-        private void MoreMenuOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void MoreMenuOverlay_MouseLeftButtonDown(object? sender, MouseButtonEventArgs e)
         {
             if (DataContext is MainViewModel mainViewModel)
                 mainViewModel.CloseMoreMenuFlyout();
         }
 
-        private void MoreMenuOverlay_KeyDown(object sender, KeyEventArgs e)
+        private void MoreMenuOverlay_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && DataContext is MainViewModel mainViewModel)
             {
@@ -67,13 +75,13 @@ namespace Winhance.WPF.Features.Common.Views
             }
         }
 
-        private void AdvancedToolsOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void AdvancedToolsOverlay_MouseLeftButtonDown(object? sender, MouseButtonEventArgs e)
         {
             if (DataContext is MainViewModel mainViewModel)
                 mainViewModel.CloseAdvancedToolsFlyout();
         }
 
-        private void AdvancedToolsOverlay_KeyDown(object sender, KeyEventArgs e)
+        private void AdvancedToolsOverlay_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && DataContext is MainViewModel mainViewModel)
             {

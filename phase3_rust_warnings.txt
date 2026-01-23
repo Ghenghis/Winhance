@@ -1,0 +1,289 @@
+    Checking nexus_core v0.1.0 (D:\Winhance-FS-Repo\src\nexus_core)
+warning: unused import: `NexusError`
+ --> nexus_core\src\indexer\usn_journal.rs:6:13
+  |
+6 | use crate::{NexusError, Result};
+  |             ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `debug`
+ --> nexus_core\src\indexer\usn_journal.rs:9:15
+  |
+9 | use tracing::{debug, info, warn};
+  |               ^^^^^
+
+warning: unused import: `HANDLE`
+  --> nexus_core\src\indexer\usn_journal.rs:53:43
+   |
+53 |                 Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE},
+   |                                           ^^^^^^
+
+warning: unused import: `std::io::Write`
+   --> nexus_core\src\indexer\content_hasher.rs:112:9
+    |
+112 |     use std::io::Write;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused import: `c_void`
+ --> nexus_core\src\ffi\mod.rs:9:28
+  |
+9 | use std::os::raw::{c_char, c_void};
+  |                            ^^^^^^
+
+warning: unused variable: `volume_data`
+   --> nexus_core\src\indexer\mft_reader.rs:119:9
+    |
+119 |         volume_data: &NTFS_VOLUME_DATA_BUFFER,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_volume_data`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: field `content_hasher` is never read
+  --> nexus_core\src\indexer\mod.rs:77:5
+   |
+74 | pub struct FastIndexer {
+   |            ----------- field in this struct
+...
+77 |     content_hasher: ContentHasher,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field `drive` is never read
+  --> nexus_core\src\indexer\mft_reader.rs:27:5
+   |
+26 | pub struct MftReader {
+   |            --------- field in this struct
+27 |     drive: char,
+   |     ^^^^^
+
+warning: field `schema` is never read
+  --> nexus_core\src\search\tantivy_engine.rs:84:5
+   |
+80 | pub struct SearchEngine {
+   |            ------------ field in this struct
+...
+84 |     schema: Schema,
+   |     ^^^^^^
+
+warning: static `PHASE_INDEXING` is never used
+  --> nexus_core\src\ffi\mod.rs:37:8
+   |
+37 | static PHASE_INDEXING: &[u8] = b"indexing\0";
+   |        ^^^^^^^^^^^^^^
+
+warning: static `PHASE_SEARCHING` is never used
+  --> nexus_core\src\ffi\mod.rs:38:8
+   |
+38 | static PHASE_SEARCHING: &[u8] = b"searching\0";
+   |        ^^^^^^^^^^^^^^^
+
+warning: static `PHASE_COMPLETE` is never used
+  --> nexus_core\src\ffi\mod.rs:39:8
+   |
+39 | static PHASE_COMPLETE: &[u8] = b"complete\0";
+   |        ^^^^^^^^^^^^^^
+
+warning: static `PHASE_HASHING` is never used
+  --> nexus_core\src\ffi\mod.rs:40:8
+   |
+40 | static PHASE_HASHING: &[u8] = b"hashing\0";
+   |        ^^^^^^^^^^^^^
+
+warning: static `PHASE_UNKNOWN` is never used
+  --> nexus_core\src\ffi\mod.rs:41:8
+   |
+41 | static PHASE_UNKNOWN: &[u8] = b"unknown\0";
+   |        ^^^^^^^^^^^^^
+
+warning: function `get_phase_ptr` is never used
+  --> nexus_core\src\ffi\mod.rs:43:4
+   |
+43 | fn get_phase_ptr(phase: &str) -> *const c_char {
+   |    ^^^^^^^^^^^^^
+
+warning: function `report_progress` is never used
+  --> nexus_core\src\ffi\mod.rs:53:4
+   |
+53 | fn report_progress(current: u64, total: u64, phase: &str) {
+   |    ^^^^^^^^^^^^^^^
+
+warning: redundant closure
+  --> nexus_core\src\indexer\metadata_extractor.rs:64:23
+   |
+64 |             .and_then(|t| system_time_to_datetime(t));
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the function itself: `system_time_to_datetime`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure
+   = note: `#[warn(clippy::redundant_closure)]` on by default
+
+warning: redundant closure
+  --> nexus_core\src\indexer\metadata_extractor.rs:69:23
+   |
+69 |             .and_then(|t| system_time_to_datetime(t));
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the function itself: `system_time_to_datetime`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure
+
+warning: redundant closure
+  --> nexus_core\src\indexer\metadata_extractor.rs:74:23
+   |
+74 |             .and_then(|t| system_time_to_datetime(t));
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the function itself: `system_time_to_datetime`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure
+
+warning: called `map(..).flatten()` on `Option`
+   --> nexus_core\src\indexer\metadata_extractor.rs:107:10
+    |
+107 |           .map(|d| DateTime::from_timestamp(d.as_secs() as i64, d.subsec_nanos()))
+    |  __________^
+108 | |         .flatten()
+    | |__________________^ help: try replacing `map` with `and_then` and remove the `.flatten()`: `and_then(|d| DateTime::from_timestamp(d.as_secs() as i64, d.subsec_nanos()))`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#map_flatten
+    = note: `#[warn(clippy::map_flatten)]` on by default
+
+warning: this can be `std::io::Error::other(_)`
+  --> nexus_core\src\watcher\mod.rs:60:44
+   |
+60 |         .map_err(|e| crate::NexusError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+   |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#io_other_error
+   = note: `#[warn(clippy::io_other_error)]` on by default
+help: use `std::io::Error::other`
+   |
+60 -         .map_err(|e| crate::NexusError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+60 +         .map_err(|e| crate::NexusError::Io(std::io::Error::other(e)))?;
+   |
+
+warning: this can be `std::io::Error::other(_)`
+  --> nexus_core\src\watcher\mod.rs:64:48
+   |
+64 |             .map_err(|e| crate::NexusError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+   |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#io_other_error
+help: use `std::io::Error::other`
+   |
+64 -             .map_err(|e| crate::NexusError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+64 +             .map_err(|e| crate::NexusError::Io(std::io::Error::other(e)))?;
+   |
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+  --> nexus_core\src\ffi\mod.rs:95:39
+   |
+95 |             let _ = CString::from_raw(s);
+   |                                       ^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+   = note: `#[deny(clippy::not_unsafe_ptr_arg_deref)]` on by default
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+   --> nexus_core\src\ffi\mod.rs:121:30
+    |
+121 |         match CStr::from_ptr(path).to_str() {
+    |                              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+   --> nexus_core\src\ffi\mod.rs:174:35
+    |
+174 |             let r = Box::from_raw(result);
+    |                                   ^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+   --> nexus_core\src\ffi\mod.rs:236:30
+    |
+236 |         match CStr::from_ptr(query).to_str() {
+    |                              ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+   --> nexus_core\src\ffi\mod.rs:304:30
+    |
+304 |         match CStr::from_ptr(path).to_str() {
+    |                              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+
+error: this public function might dereference a raw pointer but is not marked `unsafe`
+   --> nexus_core\src\ffi\mod.rs:322:30
+    |
+322 |         match CStr::from_ptr(path).to_str() {
+    |                              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref
+
+warning: unused `std::result::Result` that must be used
+  --> nexus_core\src\indexer\mft_reader.rs:96:22
+   |
+96 |             unsafe { CloseHandle(handle) };
+   |                      ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this `Result` may be an `Err` variant, which should be handled
+   = note: `#[warn(unused_must_use)]` on by default
+help: use `let _ = ...` to ignore the resulting value
+   |
+96 |             unsafe { let _ = CloseHandle(handle); };
+   |                      +++++++                    +
+
+warning: unused `std::result::Result` that must be used
+   --> nexus_core\src\indexer\mft_reader.rs:110:18
+    |
+110 |         unsafe { CloseHandle(handle) };
+    |                  ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+110 |         unsafe { let _ = CloseHandle(handle); };
+    |                  +++++++                    +
+
+warning: unused `std::result::Result` that must be used
+   --> nexus_core\src\indexer\mft_reader.rs:337:26
+    |
+337 |                 unsafe { CloseHandle(handle) };
+    |                          ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+337 |                 unsafe { let _ = CloseHandle(handle); };
+    |                          +++++++                    +
+
+warning: unused `std::result::Result` that must be used
+   --> nexus_core\src\indexer\usn_journal.rs:135:26
+    |
+135 |                 unsafe { CloseHandle(handle) };
+    |                          ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+135 |                 unsafe { let _ = CloseHandle(handle); };
+    |                          +++++++                    +
+
+warning: unused `std::result::Result` that must be used
+   --> nexus_core\src\indexer\usn_journal.rs:246:22
+    |
+246 |             unsafe { CloseHandle(handle) };
+    |                      ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+246 |             unsafe { let _ = CloseHandle(handle); };
+    |                      +++++++                    +
+
+warning: `nexus_core` (lib) generated 26 warnings (5 duplicates)
+error: could not compile `nexus_core` (lib) due to 6 previous errors; 26 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+warning: `nexus_core` (lib test) generated 27 warnings (21 duplicates)
+error: could not compile `nexus_core` (lib test) due to 6 previous errors; 27 warnings emitted

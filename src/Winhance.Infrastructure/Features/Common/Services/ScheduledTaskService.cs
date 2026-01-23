@@ -61,7 +61,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                         logService.LogInformation($"Unregistered task: {taskName}");
                     }
                 }
-                catch
+                catch (System.Runtime.InteropServices.COMException)
                 {
                     // Task doesn't exist
                 }
@@ -90,7 +90,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                 var task = folder.GetTask(taskName);
                 return task != null;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -151,7 +151,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
         {
             return rootFolder.GetFolder("Winhance");
         }
-        catch
+        catch (System.Runtime.InteropServices.COMException)
         {
             return rootFolder.CreateFolder("Winhance");
         }
@@ -164,7 +164,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
             dynamic rootFolder = taskService.GetFolder("\\");
             return rootFolder.GetFolder("Winhance");
         }
-        catch
+        catch (Exception)
         {
             return null;
         }
@@ -185,7 +185,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                 logService.LogInformation("Waited 2 seconds for task cache reset");
             }
         }
-        catch
+        catch (System.Runtime.InteropServices.COMException)
         {
             // Task doesn't exist
         }

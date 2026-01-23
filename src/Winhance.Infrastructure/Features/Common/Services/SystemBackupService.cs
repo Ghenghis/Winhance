@@ -189,7 +189,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var output = await _psService.ExecuteScriptAsync(script);
                 return !string.IsNullOrWhiteSpace(output);
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }

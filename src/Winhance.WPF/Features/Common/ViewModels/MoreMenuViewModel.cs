@@ -119,8 +119,9 @@ public class MoreMenuViewModel : ObservableObject
             var versionInfo = _versionService.GetCurrentVersion();
             return $"Winhance {versionInfo.Version}";
         }
-        catch
+        catch (Exception ex)
         {
+            _logService.LogError($"Error getting version info: {ex.Message}", ex);
             return "Winhance";
         }
     }
@@ -320,14 +321,15 @@ public class MoreMenuViewModel : ObservableObject
                         return;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logService.LogError($"Error checking windows: {ex.Message}", ex);
                 }
             }
         }
         catch (Exception ex)
         {
-            _logService.LogWarning($"Error checking windows: {ex.Message}");
+            _logService.LogError($"Error checking windows: {ex.Message}", ex);
         }
 
         var psi = new ProcessStartInfo

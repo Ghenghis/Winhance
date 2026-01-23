@@ -408,11 +408,11 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             logService.LogInformation("[ExternalAppsViewModel] LoadItemsAsync starting");
             await LoadItemsAsync().ConfigureAwait(false);
             logService.LogInformation("[ExternalAppsViewModel] LoadItemsAsync completed");
-            
+
             logService.LogInformation("[ExternalAppsViewModel] CheckInstallationStatusAsync starting");
             await CheckInstallationStatusAsync().ConfigureAwait(false);
             logService.LogInformation("[ExternalAppsViewModel] CheckInstallationStatusAsync completed");
-            
+
             IsAllSelected = false;
             IsInitialized = true;
             logService.LogInformation("[ExternalAppsViewModel] LoadAppsAndCheckInstallationStatusAsync fully completed");
@@ -487,7 +487,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             _collectionHandlersSetup = false;
         }
 
-        private void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (IsTableViewMode) UpdateAllItemsCollection();
         }

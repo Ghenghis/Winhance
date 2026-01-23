@@ -25,6 +25,28 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
         private readonly IWinGetService _winGetService;
         private readonly ILocalizationService _localization;
 
+        /// <summary>
+        /// Validates and escapes a path for safe use in PowerShell scripts.
+        /// Prevents command injection by ensuring the path contains only valid characters.
+        /// </summary>
+        private static string ValidateAndEscapePath(string path, string parameterName)
+        {
+            ArgumentNullException.ThrowIfNull(path, parameterName);
+
+            // Check for invalid path characters and potential injection patterns
+            var invalidChars = new[] { '\0', '\r', '\n', '`', '$', '@', '&', ';', '|', '<', '>' };
+            if (path.IndexOfAny(invalidChars) >= 0)
+            {
+                throw new ArgumentException($"Path contains invalid characters: {parameterName}", parameterName);
+            }
+
+            // Normalize and validate the path
+            var fullPath = Path.GetFullPath(path);
+
+            // Escape single quotes for PowerShell string interpolation
+            return fullPath.Replace("'", "''");
+        }
+
         private static readonly string[] AdkDownloadSources = new[]
         {
             "https://go.microsoft.com/fwlink/?linkid=2289980",
@@ -243,9 +265,10 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                     FileSizeBytes = fileInfo.Length
                 };
 
+                var safeImagePath = ValidateAndEscapePath(imagePath, nameof(imagePath));
                 var script = $@"
 $ErrorActionPreference = 'Stop'
-$imagePath = '{imagePath.Replace("'", "''")}'
+$imagePath = '{safeImagePath}'
 
 try {{
     $images = Get-WindowsImage -ImagePath $imagePath
@@ -400,10 +423,12 @@ catch {{
                             : $"Index {i}"
                     });
 
+                    var safeSourceFile = ValidateAndEscapePath(sourceFile, nameof(sourceFile));
+                    var safeTargetFile = ValidateAndEscapePath(targetFile, nameof(targetFile));
                     var script = $@"
 $ErrorActionPreference = 'Stop'
-$sourceFile = '{sourceFile.Replace("'", "''")}'
-$targetFile = '{targetFile.Replace("'", "''")}'
+$sourceFile = '{safeSourceFile}'
+$targetFile = '{safeTargetFile}'
 $index = {i}
 $compressionType = '{compressionType}'
 $isFirstIndex = {(i == 1 ? "$true" : "$false")}
@@ -666,10 +691,12 @@ catch {{
                 });
 
                 var logPath = Path.Combine(Path.GetTempPath(), "adk_install.log");
+                var safeAdkSetupPath = ValidateAndEscapePath(adkSetupPath, nameof(adkSetupPath));
+                var safeLogPath = ValidateAndEscapePath(logPath, nameof(logPath));
                 var installScript = $@"
 $ErrorActionPreference = 'Stop'
-$adkSetup = '{adkSetupPath.Replace("'", "''")}'
-$logPath = '{logPath.Replace("'", "''")}'
+$adkSetup = '{safeAdkSetupPath}'
+$logPath = '{safeLogPath}'
 
 try {{
     Write-Host 'Starting ADK Deployment Tools installation...'
@@ -726,7 +753,10 @@ catch {{
                         File.Delete(adkSetupPath);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logService?.Log(Winhance.Core.Features.Common.Enums.LogLevel.Debug, $"Failed to cleanup ADK setup file: {ex.Message}");
+                }
             }
         }
 
@@ -767,9 +797,10 @@ catch {{
                 });
 
                 var logPath = Path.Combine(Path.GetTempPath(), "adk_winget_install.log");
+                var safeLogPath = ValidateAndEscapePath(logPath, nameof(logPath));
                 var installScript = $@"
 $ErrorActionPreference = 'Stop'
-$logPath = '{logPath.Replace("'", "''")}'
+$logPath = '{safeLogPath}'
 
 try {{
     Write-Host 'Starting ADK installation via winget...'
@@ -817,7 +848,13 @@ catch {{
         {
             try
             {
-                var drive = new DriveInfo(Path.GetPathRoot(path)!);
+                var pathRoot = Path.GetPathRoot(path);
+                if (string.IsNullOrEmpty(pathRoot))
+                {
+                    _logService.LogError($"Cannot determine drive root for path: {path}");
+                    return false;
+                }
+                var drive = new DriveInfo(pathRoot);
                 var availableBytes = drive.AvailableFreeSpace;
 
                 var availableGB = availableBytes / (1024.0 * 1024 * 1024);
@@ -1214,7 +1251,9 @@ catch {{
 
                 var xmlContent = await _httpClient.GetStringAsync(UnattendedWinstallXmlUrl, cancellationToken);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                var destDir = Path.GetDirectoryName(destinationPath);
+                if (!string.IsNullOrEmpty(destDir))
+                    Directory.CreateDirectory(destDir);
                 await File.WriteAllTextAsync(destinationPath, xmlContent, cancellationToken);
 
                 progress?.Report(new TaskProgressDetail
@@ -1254,9 +1293,10 @@ catch {{
                     var tempDriverPath = Path.Combine(Path.GetTempPath(), $"WinhanceDrivers_{Guid.NewGuid()}");
                     Directory.CreateDirectory(tempDriverPath);
 
+                    var safeTempDriverPath = ValidateAndEscapePath(tempDriverPath, nameof(tempDriverPath));
                     string script = $@"
 $ErrorActionPreference = 'Stop'
-$destPath = '{tempDriverPath.Replace("'", "''")}'
+$destPath = '{safeTempDriverPath}'
 
 try {{
     Write-Host 'Exporting drivers from current system...'
@@ -1282,7 +1322,8 @@ catch {{
                     }
                     catch (Exception ex)
                     {
-                        try { Directory.Delete(tempDriverPath, recursive: true); } catch { }
+                        try { Directory.Delete(tempDriverPath, recursive: true); } 
+                        catch (Exception cleanupEx) { _logService?.Log(Winhance.Core.Features.Common.Enums.LogLevel.Debug, $"Failed to cleanup temp driver path: {cleanupEx.Message}"); }
                         _logService.LogError($"Failed to export system drivers: {ex.Message}", ex);
                         return false;
                     }
@@ -1437,13 +1478,18 @@ exit
                 var efisysPath = Path.Combine(workingDirectory, "efi", "microsoft", "boot", "efisys.bin");
                 var etfsbootPath = Path.Combine(workingDirectory, "boot", "etfsboot.com");
 
+                var safeOscdimgPath = ValidateAndEscapePath(oscdimgPath, nameof(oscdimgPath));
+                var safeWorkingDir = ValidateAndEscapePath(workingDirectory, nameof(workingDirectory));
+                var safeOutputPath = ValidateAndEscapePath(outputPath, nameof(outputPath));
+                var safeEtfsbootPath = ValidateAndEscapePath(etfsbootPath, nameof(etfsbootPath));
+                var safeEfisysPath = ValidateAndEscapePath(efisysPath, nameof(efisysPath));
                 var script = $@"
 $ErrorActionPreference = 'Stop'
-$oscdimgPath = '{oscdimgPath.Replace("'", "''")}'
-$workingDir = '{workingDirectory.Replace("'", "''")}'
-$outputPath = '{outputPath.Replace("'", "''")}'
-$etfsbootPath = '{etfsbootPath.Replace("'", "''")}'
-$efisysPath = '{efisysPath.Replace("'", "''")}'
+$oscdimgPath = '{safeOscdimgPath}'
+$workingDir = '{safeWorkingDir}'
+$outputPath = '{safeOutputPath}'
+$etfsbootPath = '{safeEtfsbootPath}'
+$efisysPath = '{safeEfisysPath}'
 
 try {{
     Write-Host 'Creating bootable ISO with oscdimg.exe...'

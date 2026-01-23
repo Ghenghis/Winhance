@@ -320,7 +320,7 @@ public class DirectDownloadService : IDirectDownloadService
         catch (Exception ex)
         {
             _logService?.LogError($"Failed to download {fileName}: {ex.Message}");
-            return null!;
+            throw new InvalidOperationException($"Download failed for {fileName}: {ex.Message}", ex);
         }
     }
 

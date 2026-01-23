@@ -167,7 +167,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             try
             {
                 logService.LogInformation("[SoftwareAppsViewModel] InitializeAsync started");
-                
+
                 if (!WindowsAppsViewModel.IsInitialized)
                 {
                     logService.LogInformation("[SoftwareAppsViewModel] Loading WindowsAppsViewModel");
@@ -281,13 +281,13 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             UpdateButtonStates();
         }
 
-        protected override void OnSearchTextChanged(object sender, SearchTextChangedEventArgs e)
+        protected override void OnSearchTextChanged(object? sender, SearchTextChangedEventArgs e)
         {
             base.OnSearchTextChanged(sender, e);
             RouteSearchTextToActiveViewModel();
         }
 
-        private void SoftwareAppsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void SoftwareAppsViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(SearchText))
             {
@@ -314,7 +314,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             }
         }
 
-        private void ChildViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void ChildViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName?.Contains("Selected") == true
                 || e.PropertyName == nameof(WindowsAppsViewModel.HasSelectedItems)
@@ -324,20 +324,19 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             }
         }
 
-        private void OnLanguageChanged(object sender, EventArgs e)
+        private void OnLanguageChanged(object? sender, EventArgs e)
         {
             OnPropertyChanged(nameof(RemoveButtonText));
         }
 
-        private bool _isUpdatingButtonStates = false;
+        private int _isUpdatingButtonStates = 0;
 
         private void UpdateButtonStates()
         {
-            if (_isUpdatingButtonStates) return;
+            if (System.Threading.Interlocked.CompareExchange(ref _isUpdatingButtonStates, 1, 0) != 0) return;
 
             try
             {
-                _isUpdatingButtonStates = true;
 
                 bool oldCanInstallItems = CanInstallItems;
                 bool oldCanRemoveItems = CanRemoveItems;
@@ -378,7 +377,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             }
             finally
             {
-                _isUpdatingButtonStates = false;
+                System.Threading.Interlocked.Exchange(ref _isUpdatingButtonStates, 0);
             }
         }
 
@@ -545,12 +544,6 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             CurrentHelpContent = null;
 
             disposableViewModel?.Dispose();
-
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                System.Threading.Thread.Sleep(100);
-                GC.Collect(0, GCCollectionMode.Optimized);
-            });
         }
 
         private static void StopHelpContentAnimations(DependencyObject parent)
@@ -586,7 +579,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             return null;
         }
 
-        private void ChildViewModel_SelectedItemsChanged(object sender, EventArgs e)
+        private void ChildViewModel_SelectedItemsChanged(object? sender, EventArgs e)
         {
             UpdateButtonStates();
         }

@@ -55,7 +55,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Silent failure for bulk operations
             }
@@ -69,7 +69,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 return await GetTooltipDataForSettingAsync(setting);
             }
-            catch
+            catch (Exception)
             {
                 return null;
             }
@@ -90,7 +90,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Silent failure for bulk operations
             }
@@ -143,7 +143,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                                 primaryDisplayValue = formattedValue;
                             }
                         }
-                        catch
+                        catch (Exception)
                         {
                             individualValues[registrySetting] = null;
                         }
@@ -156,7 +156,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 return tooltipData;
             }
-            catch
+            catch (Exception)
             {
                 return null;
             }

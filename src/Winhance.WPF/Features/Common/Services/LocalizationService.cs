@@ -52,7 +52,7 @@ namespace Winhance.WPF.Features.Common.Services
             {
                 return string.Format(format, args);
             }
-            catch
+            catch (FormatException)
             {
                 return format;
             }
@@ -73,7 +73,7 @@ namespace Winhance.WPF.Features.Common.Services
                 LanguageChanged?.Invoke(this, EventArgs.Empty);
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -102,7 +102,7 @@ namespace Winhance.WPF.Features.Common.Services
 
                 return languages;
             }
-            catch
+            catch (Exception)
             {
                 return new[] { "en" };
             }
@@ -124,7 +124,7 @@ namespace Winhance.WPF.Features.Common.Services
 
                 return dictionary ?? new Dictionary<string, string>();
             }
-            catch
+            catch (Exception)
             {
                 return new Dictionary<string, string>();
             }

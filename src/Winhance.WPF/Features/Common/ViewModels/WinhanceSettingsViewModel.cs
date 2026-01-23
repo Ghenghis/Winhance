@@ -70,7 +70,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
             ToggleThemeCommand = new RelayCommand(_windowManagementService.ToggleTheme);
         }
 
-        private void OnLanguageChanged(object sender, EventArgs e)
+        private void OnLanguageChanged(object? sender, EventArgs e)
         {
             UpdateThemeOptions();
         }

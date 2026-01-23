@@ -400,7 +400,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             if (app == null) return;
 
             if (!await CheckConnectivityAsync()) return;
-            if (ShowOperationConfirmationDialog("Install", new[] { app }) != true) return;
+            if (!await ShowOperationConfirmationDialogAsync("Install", new[] { app })) return;
 
             IsLoading = true;
             StatusText = $"Installing {app.Name}...";
@@ -479,7 +479,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
         {
             if (app == null) return;
 
-            if (ShowOperationConfirmationDialog("Remove", new[] { app }) != true) return;
+            if (!await ShowOperationConfirmationDialogAsync("Remove", new[] { app })) return;
 
             IsLoading = true;
             StatusText = $"Removing {app.Name}...";
@@ -544,11 +544,11 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             logService.LogInformation("[WindowsAppsViewModel] LoadItemsAsync starting");
             await LoadItemsAsync().ConfigureAwait(false);
             logService.LogInformation("[WindowsAppsViewModel] LoadItemsAsync completed");
-            
+
             logService.LogInformation("[WindowsAppsViewModel] CheckInstallationStatusAsync starting");
             await CheckInstallationStatusAsync().ConfigureAwait(false);
             logService.LogInformation("[WindowsAppsViewModel] CheckInstallationStatusAsync completed");
-            
+
             IsAllSelected = false;
             IsInitialized = true;
             logService.LogInformation("[WindowsAppsViewModel] Calling RefreshScriptStatus");
@@ -558,9 +558,17 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
 
         private async void RefreshUIAfterOperation()
         {
-            await CheckInstallationStatusAsync(showLoadingOverlay: false);
-            ClearAllSelections();
-            UpdateAllItemsCollection();
+            try
+            {
+                await CheckInstallationStatusAsync(showLoadingOverlay: false);
+                ClearAllSelections();
+                UpdateAllItemsCollection();
+            }
+            catch (Exception ex)
+            {
+                // Log refresh errors but don't crash UI
+                logService.LogWarning($"Failed to refresh UI after operation: {ex.Message}");
+            }
         }
 
         private void ClearAllSelections()
@@ -649,7 +657,7 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
             _collectionHandlersSetup = false;
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateAllItemsCollection();
         }
@@ -987,7 +995,8 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
 
         private void SetAllItemsSelection(bool value)
         {
-            Items.ToList().ForEach(app => app.IsSelected = value);
+            foreach (var app in Items)
+                app.IsSelected = value;
 
             // Only notify filtered properties in grid view mode (table view handles this automatically)
             if (!IsTableViewMode)
@@ -1008,7 +1017,8 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
 
         private void SetInstalledItemsSelection(bool value)
         {
-            Items.Where(a => a.IsInstalled).ToList().ForEach(app => app.IsSelected = value);
+            foreach (var app in Items.Where(a => a.IsInstalled))
+                app.IsSelected = value;
 
             // Only notify filtered properties in grid view mode (table view handles this automatically)
             if (!IsTableViewMode)
@@ -1021,7 +1031,8 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
 
         private void SetNotInstalledItemsSelection(bool value)
         {
-            Items.Where(a => !a.IsInstalled).ToList().ForEach(app => app.IsSelected = value);
+            foreach (var app in Items.Where(a => !a.IsInstalled))
+                app.IsSelected = value;
 
             // Only notify filtered properties in grid view mode (table view handles this automatically)
             if (!IsTableViewMode)
@@ -1095,14 +1106,10 @@ namespace Winhance.WPF.Features.SoftwareApps.ViewModels
 
         private void UnsubscribeFromItemPropertyChangedEvents()
         {
-            Items.ToList().ForEach(app => app.PropertyChanged -= Item_PropertyChanged);
+            foreach (var app in Items)
+                app.PropertyChanged -= Item_PropertyChanged;
         }
 
-
-        private bool? ShowOperationConfirmationDialog(string operationType, IEnumerable<AppItemViewModel> selectedApps)
-        {
-            return ShowOperationConfirmationDialogAsync(operationType, selectedApps).GetAwaiter().GetResult() ? true : (bool?)false;
-        }
 
         private async Task<bool> ShowOperationConfirmationDialogAsync(string operationType, IEnumerable<AppItemViewModel> selectedApps)
         {

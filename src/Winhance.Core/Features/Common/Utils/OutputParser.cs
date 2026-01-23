@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Text;
+using System.Diagnostics;
 using Winhance.Core.Features.Optimize.Models;
 
 namespace Winhance.Core.Features.Common.Utils
@@ -99,8 +100,14 @@ namespace Winhance.Core.Features.Common.Utils
                     }
                     return null;
                 }
-                catch
+                catch (FormatException ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParsePowerSettingValue format error: {ex.Message}");
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"OutputParser.ParsePowerSettingValue unexpected error: {ex.Message}");
                     return null;
                 }
             }
@@ -120,8 +127,14 @@ namespace Winhance.Core.Features.Common.Utils
                     }
                     return null;
                 }
-                catch
+                catch (FormatException ex)
                 {
+                    Debug.WriteLine($"OutputParser.ExtractPowerSchemeGuid format error: {ex.Message}");
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"OutputParser.ExtractPowerSchemeGuid unexpected error: {ex.Message}");
                     return null;
                 }
             }
@@ -145,8 +158,9 @@ namespace Winhance.Core.Features.Common.Utils
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParseBulkPowerSettingsOutput error: {ex.Message}");
                     // Return partial results if parsing fails
                 }
 
@@ -182,8 +196,9 @@ namespace Winhance.Core.Features.Common.Utils
                         powerSettings = FlattenPowerSettings(bulkResults);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParseDelimitedPowerOutput error: {ex.Message}");
                     // Return partial results if parsing fails
                 }
 
@@ -219,8 +234,9 @@ namespace Winhance.Core.Features.Common.Utils
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParsePowerPlansFromListOutput error: {ex.Message}");
                     // Return empty list if parsing fails
                 }
 
@@ -337,8 +353,9 @@ namespace Winhance.Core.Features.Common.Utils
                         results[currentSettingGuid] = currentACValue;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParseFilteredPowerSettingsOutput error: {ex.Message}");
                     // Return partial results if parsing fails
                 }
 
@@ -449,8 +466,9 @@ namespace Winhance.Core.Features.Common.Utils
 
                     return (minValue, maxValue);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine($"OutputParser.ParsePowerSettingMinMax error: {ex.Message}");
                     return (null, null);
                 }
             }

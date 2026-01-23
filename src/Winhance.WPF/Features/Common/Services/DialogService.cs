@@ -37,7 +37,7 @@ namespace Winhance.WPF.Features.Common.Services
         {
             string finalOkText = okButtonText == "OK" ? _localization.GetString("Button_OK") : okButtonText;
             string finalCancelText = cancelButtonText == "Cancel" ? _localization.GetString("Button_Cancel") : cancelButtonText;
-            
+
             if (string.IsNullOrEmpty(title))
             {
                 title = _localization.GetString("Dialog_Confirmation");
@@ -139,7 +139,7 @@ namespace Winhance.WPF.Features.Common.Services
         {
             title = title == "Warning" ? _localization.GetString("Dialog_Warning") : title;
             // MessageBox uses system language for buttons
-            
+
             return Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -187,9 +187,9 @@ namespace Winhance.WPF.Features.Common.Services
                 if (parsedContent.IsAppList)
                 {
                     var dialogResult = CustomDialog.ShowYesNoCancel(
-                        title, 
-                        parsedContent.HeaderText, 
-                        parsedContent.Apps, 
+                        title,
+                        parsedContent.HeaderText,
+                        parsedContent.Apps,
                         parsedContent.FooterText,
                         _localization.GetString("Button_Yes"),
                         _localization.GetString("Button_No"),
@@ -199,10 +199,10 @@ namespace Winhance.WPF.Features.Common.Services
                 else
                 {
                     var dialogResult = CustomDialog.ShowYesNoCancel(
-                        title, 
-                        title, 
-                        message, 
-                        "", 
+                        title,
+                        title,
+                        message,
+                        "",
                         _localization.GetString("Button_Yes"),
                         _localization.GetString("Button_No"),
                         _localization.GetString("Button_Cancel"));
@@ -225,7 +225,7 @@ namespace Winhance.WPF.Features.Common.Services
                 {
                     dialog.Owner = Application.Current.MainWindow;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
@@ -255,8 +255,9 @@ namespace Winhance.WPF.Features.Common.Services
                 {
                     dialog.Owner = Application.Current.MainWindow;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
+                    // Ignore owner assignment failures
                 }
             }
 
@@ -280,7 +281,7 @@ namespace Winhance.WPF.Features.Common.Services
                 var dialog = await DonationDialog.ShowDonationDialogAsync(title, supportMessage);
                 return (dialog?.DialogResult, dialog?.DontShowAgain ?? false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return (false, false);
             }
@@ -298,7 +299,7 @@ namespace Winhance.WPF.Features.Common.Services
                     {
                         dialog.Owner = Application.Current.MainWindow;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                 }
@@ -312,7 +313,7 @@ namespace Winhance.WPF.Features.Common.Services
 
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }
@@ -328,7 +329,7 @@ namespace Winhance.WPF.Features.Common.Services
         {
             // Localize title if default
             if (title == "Confirmation") title = _localization.GetString("Dialog_Confirmation");
-            
+
             // Localize buttons if default or keys
             string finalContinueText = continueButtonText == "Continue" ? _localization.GetString("Button_Continue") : continueButtonText;
             string finalCancelText = cancelButtonText == "Cancel" ? _localization.GetString("Button_Cancel") : cancelButtonText;

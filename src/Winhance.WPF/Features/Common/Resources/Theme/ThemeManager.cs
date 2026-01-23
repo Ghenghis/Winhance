@@ -95,10 +95,13 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
             { "ScrollBarThumbPressedColor", Color.FromRgb(34, 34, 34) },
         };
 
-        public ThemeManager(INavigationService navigationService, IWindowsThemeQueryService windowsThemeQueryService)
+        private readonly ILogService? _logService;
+
+        public ThemeManager(INavigationService navigationService, IWindowsThemeQueryService windowsThemeQueryService, ILogService? logService = null)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _windowsThemeQueryService = windowsThemeQueryService ?? throw new ArgumentNullException(nameof(windowsThemeQueryService));
+            _logService = logService;
 
             LoadThemePreference();
             ApplyTheme();
@@ -183,6 +186,7 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
             }
             catch (Exception ex)
             {
+                _logService?.LogWarning($"Failed to apply theme: {ex.Message}");
             }
         }
 
@@ -194,8 +198,9 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
                 Settings.Default.IsDarkTheme = IsDarkTheme;
                 Settings.Default.Save();
             }
-            catch
+            catch (Exception ex)
             {
+                _logService?.LogWarning($"Failed to save theme preference: {ex.Message}");
             }
         }
 
@@ -212,8 +217,9 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
                     IsDarkTheme = Settings.Default.IsDarkTheme;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logService?.LogWarning($"Failed to load theme preference: {ex.Message}");
                 IsDarkTheme = true;
             }
         }
@@ -230,8 +236,9 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
                 LoadThemePreference();
                 ApplyTheme();
             }
-            catch
+            catch (Exception ex)
             {
+                _logService?.LogWarning($"Failed to reset theme preference: {ex.Message}");
             }
         }
 
@@ -247,8 +254,9 @@ namespace Winhance.WPF.Features.Common.Resources.Theme
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logService?.LogWarning($"Failed to notify windows of theme change: {ex.Message}");
             }
         }
     }

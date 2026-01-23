@@ -28,7 +28,7 @@ namespace Winhance.WPF.Features.Common.Services
                 image.Freeze();
                 iconImage.Source = image;
             }
-            catch
+            catch (Exception)
             {
                 try
                 {
@@ -38,7 +38,7 @@ namespace Winhance.WPF.Features.Common.Services
                     defaultImage.Freeze();
                     iconImage.Source = defaultImage;
                 }
-                catch
+                catch (Exception)
                 {
                     // Silently fail
                 }

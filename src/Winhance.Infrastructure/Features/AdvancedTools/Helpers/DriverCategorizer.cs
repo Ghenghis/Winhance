@@ -28,6 +28,65 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
             "rst"
         };
 
+        /// <summary>
+        /// Validates a directory path for safe file operations.
+        /// Prevents path traversal attacks and symlink-based attacks.
+        /// </summary>
+        private static string ValidateDirectoryPath(string path, string parameterName, ILogService? logService = null)
+        {
+            ArgumentNullException.ThrowIfNull(path, parameterName);
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException($"{parameterName} cannot be empty", parameterName);
+            }
+
+            // Get the full path to normalize it
+            var fullPath = Path.GetFullPath(path);
+
+            // Check for path traversal patterns
+            if (path.Contains(".."))
+            {
+                logService?.LogWarning($"Path traversal attempt detected in {parameterName}: {path}");
+                throw new ArgumentException($"Path traversal not allowed: {parameterName}", parameterName);
+            }
+
+            // Check if the path is a reparse point (symlink/junction)
+            if (Directory.Exists(fullPath))
+            {
+                var dirInfo = new DirectoryInfo(fullPath);
+                if (dirInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                {
+                    logService?.LogWarning($"Symlink/junction detected at {fullPath}, skipping for security");
+                    throw new ArgumentException($"Symbolic links and junctions are not allowed: {parameterName}", parameterName);
+                }
+            }
+
+            return fullPath;
+        }
+
+        /// <summary>
+        /// Validates a file path for safe file operations.
+        /// </summary>
+        private static string ValidateFilePath(string path, string parameterName)
+        {
+            ArgumentNullException.ThrowIfNull(path, parameterName);
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException($"{parameterName} cannot be empty", parameterName);
+            }
+
+            var fullPath = Path.GetFullPath(path);
+
+            if (path.Contains(".."))
+            {
+                throw new ArgumentException($"Path traversal not allowed: {parameterName}", parameterName);
+            }
+
+            return fullPath;
+        }
+
         public static bool IsStorageDriver(string infPath, ILogService logService)
         {
             try
@@ -45,7 +104,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
                 {
                     fileContent = File.ReadAllText(infPath, Encoding.Unicode);
                 }
-                catch
+                catch (Exception)
                 {
                     fileContent = File.ReadAllText(infPath, Encoding.UTF8);
                 }
@@ -87,7 +146,12 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
             ILogService logService,
             string? workingDirectoryToExclude = null)
         {
-            var infFiles = Directory.GetFiles(sourceDirectory, "*.inf", SearchOption.AllDirectories);
+            // Validate input paths
+            var validatedSourceDir = ValidateDirectoryPath(sourceDirectory, nameof(sourceDirectory), logService);
+            var validatedWinpeDir = ValidateDirectoryPath(winpeDriverPath, nameof(winpeDriverPath), logService);
+            var validatedOemDir = ValidateDirectoryPath(oemDriverPath, nameof(oemDriverPath), logService);
+
+            var infFiles = Directory.GetFiles(validatedSourceDir, "*.inf", SearchOption.AllDirectories);
 
             if (infFiles.Length == 0)
             {
@@ -124,7 +188,9 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
             {
                 try
                 {
-                    var sourceDir = Path.GetDirectoryName(infFile)!;
+                    var sourceDir = Path.GetDirectoryName(infFile);
+                    if (string.IsNullOrEmpty(sourceDir))
+                        continue;
 
                     if (processedFolders.Contains(sourceDir))
                         continue;
@@ -132,10 +198,26 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
                     processedFolders.Add(sourceDir);
 
                     var isStorage = IsStorageDriver(infFile, logService);
-                    var targetBase = isStorage ? winpeDriverPath : oemDriverPath;
+                    var targetBase = isStorage ? validatedWinpeDir : validatedOemDir;
 
                     var folderName = Path.GetFileName(sourceDir);
+
+                    // Sanitize folder name to prevent path injection
+                    if (string.IsNullOrWhiteSpace(folderName) || folderName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                    {
+                        logService.LogWarning($"Invalid folder name: {folderName}, skipping");
+                        continue;
+                    }
+
                     var targetDirectory = Path.Combine(targetBase, folderName);
+
+                    // Verify the combined path is still under the target base
+                    var normalizedTarget = Path.GetFullPath(targetDirectory);
+                    if (!normalizedTarget.StartsWith(targetBase, StringComparison.OrdinalIgnoreCase))
+                    {
+                        logService.LogWarning($"Path escape attempt detected: {targetDirectory}");
+                        continue;
+                    }
 
                     int counter = 1;
                     while (Directory.Exists(targetDirectory) && counter < 100)
@@ -166,18 +248,38 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
 
         public static void MergeDriverDirectory(string sourceDirectory, string targetDirectory, ILogService logService)
         {
-            if (!Directory.Exists(sourceDirectory))
+            // Validate input paths
+            var validatedSource = ValidateDirectoryPath(sourceDirectory, nameof(sourceDirectory), logService);
+            var validatedTarget = ValidateDirectoryPath(targetDirectory, nameof(targetDirectory), logService);
+
+            if (!Directory.Exists(validatedSource))
             {
-                logService.LogWarning($"Source directory does not exist: {sourceDirectory}");
+                logService.LogWarning($"Source directory does not exist: {validatedSource}");
                 return;
             }
 
-            Directory.CreateDirectory(targetDirectory);
+            Directory.CreateDirectory(validatedTarget);
 
-            foreach (var file in Directory.GetFiles(sourceDirectory))
+            foreach (var file in Directory.GetFiles(validatedSource))
             {
                 var fileName = Path.GetFileName(file);
-                var targetFile = Path.Combine(targetDirectory, fileName);
+
+                // Validate file name doesn't contain path separators
+                if (string.IsNullOrWhiteSpace(fileName) || fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                {
+                    logService.LogWarning($"Invalid file name: {fileName}, skipping");
+                    continue;
+                }
+
+                var targetFile = Path.Combine(validatedTarget, fileName);
+
+                // Verify target is still under validated directory
+                var normalizedTarget = Path.GetFullPath(targetFile);
+                if (!normalizedTarget.StartsWith(validatedTarget, StringComparison.OrdinalIgnoreCase))
+                {
+                    logService.LogWarning($"Path escape attempt in file: {fileName}");
+                    continue;
+                }
 
                 if (File.Exists(targetFile))
                 {
@@ -188,10 +290,18 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
                 File.Copy(file, targetFile, overwrite: false);
             }
 
-            foreach (var dir in Directory.GetDirectories(sourceDirectory))
+            foreach (var dir in Directory.GetDirectories(validatedSource))
             {
                 var dirName = Path.GetFileName(dir);
-                var targetSubDir = Path.Combine(targetDirectory, dirName);
+
+                // Validate directory name
+                if (string.IsNullOrWhiteSpace(dirName) || dirName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                {
+                    logService.LogWarning($"Invalid directory name: {dirName}, skipping");
+                    continue;
+                }
+
+                var targetSubDir = Path.Combine(validatedTarget, dirName);
                 MergeDriverDirectory(dir, targetSubDir, logService);
             }
         }

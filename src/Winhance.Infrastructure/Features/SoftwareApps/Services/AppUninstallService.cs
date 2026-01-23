@@ -148,10 +148,10 @@ exit $process.ExitCode
                                 }
                             }
                         }
-                        catch { }
+                        catch (Exception) { }
                     }
                 }
-                catch { }
+                catch (Exception) { }
             }
 
             return (false, string.Empty);

@@ -83,7 +83,7 @@ namespace Winhance.WPF.Features.Common.Services
                             await viewModel.SetupComboBoxAsync(setting, currentState.CurrentValue, comboBoxSetupService, logService, settingLocalizationService.LocalizationService, currentState.RawValues);
                             return (viewModel, success: true);
                         }
-                        catch
+                        catch (Exception)
                         {
                             return (viewModel, success: false);
                         }

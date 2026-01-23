@@ -101,7 +101,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
             PopulateQuickNavItems();
         }
 
-        protected override void OnSearchTextChanged(object sender, SearchTextChangedEventArgs e)
+        protected override void OnSearchTextChanged(object? sender, SearchTextChangedEventArgs e)
         {
             base.OnSearchTextChanged(sender, e);
 

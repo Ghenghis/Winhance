@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.Common.Services
             }
             catch (Exception ex)
             {
-                // Fallback if file write fails
+                System.Diagnostics.Debug.WriteLine($"WINHANCE LOG STARTUP FAILURE: {ex.Message}");
             }
         }
 
@@ -119,7 +119,7 @@ namespace Winhance.Core.Features.Common.Services
                 }
                 catch (Exception ex)
                 {
-                    // Error stopping log
+                    System.Diagnostics.Debug.WriteLine($"WINHANCE LOG STOP FAILURE: {ex.Message}");
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace Winhance.Core.Features.Common.Services
                 }
                 catch (Exception ex)
                 {
-                    // Logging failed
+                    System.Diagnostics.Debug.WriteLine($"WINHANCE WRITE LOG FAILURE: {ex.Message}");
                 }
             }
         }

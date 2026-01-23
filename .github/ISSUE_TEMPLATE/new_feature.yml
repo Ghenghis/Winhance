@@ -1,5 +1,5 @@
 name: "💡 Propose a new feature"
-description: "Propose a new feature or request software that could be useful in Winhance."
+description: "Propose a new feature for Winhance-FS Storage Intelligence."
 title: "[FEATURE] "
 labels: ["feature-request"]
 body:
@@ -23,10 +23,13 @@ body:
       label: "Feature Type"
       description: "What type of feature are you requesting?"
       options:
-        - "New functionality"
-        - "New software to be added"
-        - "UI improvement"
+        - "Storage Intelligence"
+        - "Deep Scan / Forensics"
+        - "AI Model Management"
+        - "Borg Theme Studio"
+        - "MCP Server / AI Agents"
         - "Performance improvement"
+        - "UI improvement"
         - "Other"
     validations:
       required: true
@@ -50,21 +53,22 @@ body:
       required: true
       
   - type: textarea
-    id: software_details
+    id: technical_details
     attributes:
-      label: "Software Details (Only for 'New software to be added' requests)"
-      description: "If you're requesting new software to be added to Winhance, please provide the following information:"
+      label: "Technical Details (if applicable)"
+      description: "Provide any technical details that would help implement this feature."
       placeholder: |
-        Software Name: 
-        
-        Package ID (use one of the following):
-        - Winget ID: (e.g., Microsoft.PowerToys)
-          You can find this by running the following in an elevated Terminal/PowerShell Window: winget search *software name* (Note, WinGet must be installed)
-        - Microsoft Store ID: (e.g., 9NBLGGH5R558)
-          You can find this in the URL when viewing the app in the Microsoft Store or by running the winget command above. If the app is availabe on the store, it will have an "msstore" id.
-        - Direct download link: (must always download the latest version)
-        
-        Why this software should be added:
+        For Storage Intelligence features:
+        - File types/patterns to detect
+        - API or service integrations needed
+
+        For AI Agent features:
+        - LLM provider preferences
+        - Workflow automation requirements
+
+        For Performance features:
+        - Specific benchmarks or targets
+        - File system operations involved
     validations:
       required: false
       

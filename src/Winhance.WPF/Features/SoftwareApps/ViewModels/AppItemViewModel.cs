@@ -32,7 +32,7 @@ public partial class AppItemViewModel : ObservableObject, ISelectable
         _localizationService.LanguageChanged += OnLanguageChanged;
     }
 
-    private void OnLanguageChanged(object sender, EventArgs e)
+    private void OnLanguageChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(InstalledStatusText));
         OnPropertyChanged(nameof(ReinstallableStatusText));

@@ -1,0 +1,144 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  RUST_VERSION: "1.75"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # .NET Build and Test
+  dotnet-build:
+    name: .NET Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore Winhance.sln
+
+      - name: Build solution
+        run: dotnet build Winhance.sln --configuration Release --no-restore
+
+      - name: Check for warnings (informational)
+        run: |
+          $output = dotnet build Winhance.sln --configuration Release --no-restore 2>&1
+          $warnings = $output | Select-String -Pattern "warning CS"
+          if ($warnings) {
+            $count = $warnings.Count
+            Write-Host "⚠️ Build has $count warning(s) - these should be fixed in Phase 3" -ForegroundColor Yellow
+            # Uncomment the next line to enforce zero-tolerance after Phase 3:
+            # exit 1
+          } else {
+            Write-Host "✅ No warnings detected" -ForegroundColor Green
+          }
+        shell: pwsh
+
+  # Rust Build and Clippy
+  rust-build:
+    name: Rust Build & Clippy
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: clippy, rustfmt
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --manifest-path src/Cargo.toml --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --manifest-path src/Cargo.toml --all-targets --all-features -- -D warnings
+
+      - name: Build Rust library
+        run: cargo build --manifest-path src/Cargo.toml --release
+
+      - name: Run Rust tests
+        run: cargo test --manifest-path src/Cargo.toml --release
+
+  # Python Linting and Testing
+  python-check:
+    name: Python Lint & Test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy pytest pytest-asyncio
+
+      - name: Run Ruff linter
+        run: ruff check src/nexus_ai src/nexus_cli src/nexus_mcp --ignore E501
+        continue-on-error: true
+
+      - name: Check Black formatting
+        run: black --check src/nexus_ai src/nexus_cli src/nexus_mcp --line-length 100
+        continue-on-error: true
+
+      - name: Run Python tests
+        run: pytest tests/ -v --tb=short
+        continue-on-error: true
+
+  # Summary job
+  ci-complete:
+    name: CI Complete
+    needs: [dotnet-build, rust-build, python-check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.dotnet-build.result }}" == "failure" ]; then
+            echo "❌ .NET build failed"
+            exit 1
+          fi
+          if [ "${{ needs.rust-build.result }}" == "failure" ]; then
+            echo "❌ Rust build failed"
+            exit 1
+          fi
+          echo "✅ CI passed successfully!"

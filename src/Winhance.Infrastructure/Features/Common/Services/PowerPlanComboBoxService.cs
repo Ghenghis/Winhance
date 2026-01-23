@@ -212,6 +212,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
             return name?.Trim() ?? string.Empty;
         }
 
+        /// <summary>
+        /// Resolves the index from raw values. NOTE: This blocks the calling thread
+        /// due to interface requirements. Consider using async alternatives when possible.
+        /// </summary>
         public int ResolveIndexFromRawValues(SettingDefinition setting, Dictionary<string, object?> rawValues)
         {
             try

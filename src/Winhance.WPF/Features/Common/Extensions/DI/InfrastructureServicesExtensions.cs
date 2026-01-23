@@ -160,6 +160,26 @@ namespace Winhance.WPF.Features.Common.Extensions.DI
                 Winhance.Infrastructure.Features.AdvancedTools.Services.WimUtilService>();
             services.AddSingleton<Winhance.Infrastructure.Features.AdvancedTools.Services.AutounattendScriptBuilder>();
 
+            // File Manager Services
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.IFileManagerService,
+                Winhance.Infrastructure.Features.FileManager.Services.FileManagerService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.IBatchRenameService,
+                Winhance.Infrastructure.Features.FileManager.Services.BatchRenameService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.IOrganizerService,
+                Winhance.Infrastructure.Features.FileManager.Services.OrganizerService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.INexusIndexerService,
+                Winhance.Infrastructure.Features.FileManager.Services.NexusIndexerService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.IAdvancedFileOperations,
+                Winhance.Infrastructure.Features.FileManager.Services.AdvancedFileOperationsService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.IDuplicateFinderService,
+                Winhance.Infrastructure.Features.FileManager.Services.DuplicateFinderService>();
+            services.AddSingleton<Winhance.Core.Features.FileManager.Interfaces.ISpaceAnalyzerService,
+                Winhance.Infrastructure.Features.FileManager.Services.SpaceAnalyzerService>();
+
+            // Agent Orchestration Services
+            services.AddSingleton<Winhance.Core.Features.Agents.Interfaces.IAgentOrchestrationService,
+                Winhance.Infrastructure.Features.Agents.Services.AgentOrchestrationService>();
+
             return services;
         }
 
@@ -225,6 +245,13 @@ namespace Winhance.WPF.Features.Common.Extensions.DI
                 "WinhanceSettings",
                 typeof(Winhance.WPF.Features.Common.Views.WinhanceSettingsView),
                 typeof(Winhance.WPF.Features.Common.ViewModels.WinhanceSettingsViewModel)
+            );
+
+            // File Manager view mapping
+            navigationService.RegisterViewMapping(
+                "FileManager",
+                typeof(Winhance.WPF.Features.FileManager.Views.FileManagerView),
+                typeof(Winhance.WPF.Features.FileManager.ViewModels.FileManagerViewModel)
             );
         }
     }

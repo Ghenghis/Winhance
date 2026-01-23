@@ -64,7 +64,7 @@ namespace Winhance.WPF.Features.Common.Services
                 {
                     await CloseApplicationWithSupportDialogAsync();
                 }
-                catch
+                catch (Exception)
                 {
                     Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
                 }

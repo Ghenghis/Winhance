@@ -49,7 +49,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                 // This ensures consistent behavior regardless of WindowStartupLocation
                 CenterWindowOnScreen();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Error initializing window size manager
             }
@@ -78,7 +78,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                         dpiScaleY = presentationSource.CompositionTarget.TransformToDevice.M22;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Error getting DPI scale
                 }
@@ -98,7 +98,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                 _window.Top = top;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Error centering window
             }
@@ -127,7 +127,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                         dpiScaleY = presentationSource.CompositionTarget.TransformToDevice.M22;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Error getting DPI scale
                 }
@@ -149,7 +149,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                 _window.Height = windowHeight;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Error setting dynamic window size
             }
@@ -181,7 +181,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Error getting current screen
             }

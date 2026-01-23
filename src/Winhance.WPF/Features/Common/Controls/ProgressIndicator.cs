@@ -79,7 +79,7 @@ namespace Winhance.WPF.Features.Common.Controls
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Silently handle exceptions to avoid crashes
             }

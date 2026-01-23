@@ -69,8 +69,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var productName = key?.GetValue("ProductName")?.ToString() ?? "";
                 return productName.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0;
             }
-            catch
+            catch (Exception ex)
             {
+                _logService.LogError("Error checking Windows 11 version", ex);
                 return false;
             }
         }

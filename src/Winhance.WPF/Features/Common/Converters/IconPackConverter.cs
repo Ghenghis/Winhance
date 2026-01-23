@@ -34,7 +34,7 @@ namespace Winhance.WPF.Features.Common.Converters
                     "Material" or _ => CreateMaterialIcon(iconName)
                 };
             }
-            catch
+            catch (Exception)
             {
                 return CreateMaterialIcon(iconName);
             }

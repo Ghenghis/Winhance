@@ -40,7 +40,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 releaseDate = new DateTime(2000 + year, month, day);
             }
-            catch
+            catch (Exception)
             {
                 // Invalid date components
                 return new VersionInfo();

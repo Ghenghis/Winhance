@@ -154,7 +154,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     var hasBattery = await HasBatteryAsync();
                     var hasLid = await HasLidAsync();
-                    
+
                     if (hasBattery && hasLid)
                         return true;
 
@@ -162,7 +162,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     using var collection = searcher.Get();
                     return collection.Count > 0;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Don't log the expected error, it means brightness is not supported
                     return false;

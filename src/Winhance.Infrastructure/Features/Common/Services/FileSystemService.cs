@@ -46,7 +46,7 @@ namespace Winhance.Infrastructure.FileSystem
                 }
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -113,7 +113,7 @@ namespace Winhance.Infrastructure.FileSystem
                 File.WriteAllText(path, contents);
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -222,7 +222,7 @@ namespace Winhance.Infrastructure.FileSystem
                 }
                 return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }

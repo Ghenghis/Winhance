@@ -52,7 +52,7 @@ namespace Winhance.WPF.Features.Common.Services
                 view.DataContext = viewModel;
                 return view;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

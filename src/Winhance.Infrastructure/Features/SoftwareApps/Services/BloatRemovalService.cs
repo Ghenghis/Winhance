@@ -202,7 +202,9 @@ public class BloatRemovalService(
         }
         else
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(scriptPath)!);
+            var scriptDir = Path.GetDirectoryName(scriptPath);
+            if (!string.IsNullOrEmpty(scriptDir))
+                Directory.CreateDirectory(scriptDir);
             scriptContent = GenerateScriptContent(packages, capabilities, optionalFeatures, specialApps);
         }
 
@@ -230,12 +232,14 @@ public class BloatRemovalService(
     {
         var scriptName = CreateScriptName(app.Id);
         var scriptPath = Path.Combine(ScriptPaths.ScriptsDirectory, scriptName);
-        var scriptContent = app.RemovalScript!();
+        var scriptContent = app.RemovalScript();
 
         int baseProgress = 10 + (currentIndex * 80 / totalCount);
         int scriptProgressRange = 80 / totalCount;
 
-        Directory.CreateDirectory(Path.GetDirectoryName(scriptPath)!);
+        var dedicatedScriptDir = Path.GetDirectoryName(scriptPath);
+        if (!string.IsNullOrEmpty(dedicatedScriptDir))
+            Directory.CreateDirectory(dedicatedScriptDir);
         await File.WriteAllTextAsync(scriptPath, scriptContent);
         logService.LogInformation($"Dedicated removal script created at: {scriptPath}");
 

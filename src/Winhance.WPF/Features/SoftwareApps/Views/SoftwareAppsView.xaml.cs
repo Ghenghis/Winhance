@@ -13,7 +13,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             DataContextChanged += SoftwareAppsView_DataContextChanged;
         }
 
-        private void HelpButton_Loaded(object sender, RoutedEventArgs e)
+        private void HelpButton_Loaded(object? sender, RoutedEventArgs e)
         {
             if (DataContext is SoftwareAppsViewModel viewModel && sender is FrameworkElement button)
             {
@@ -21,7 +21,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             }
         }
 
-        private void HelpFlyoutOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void HelpFlyoutOverlay_MouseLeftButtonDown(object? sender, MouseButtonEventArgs e)
         {
             if (DataContext is SoftwareAppsViewModel viewModel)
             {
@@ -29,7 +29,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             }
         }
 
-        private void HelpFlyoutOverlay_KeyDown(object sender, KeyEventArgs e)
+        private void HelpFlyoutOverlay_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && DataContext is SoftwareAppsViewModel viewModel)
             {
@@ -38,7 +38,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             }
         }
 
-        private void HelpFlyoutPopup_Closed(object sender, System.EventArgs e)
+        private void HelpFlyoutPopup_Closed(object? sender, System.EventArgs e)
         {
             if (DataContext is SoftwareAppsViewModel viewModel)
             {
@@ -46,7 +46,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             }
         }
 
-        private void SoftwareAppsView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void SoftwareAppsView_DataContextChanged(object? sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.OldValue is SoftwareAppsViewModel oldViewModel)
             {
@@ -59,7 +59,7 @@ namespace Winhance.WPF.Features.SoftwareApps.Views
             }
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(SoftwareAppsViewModel.ShouldFocusHelpOverlay))
             {

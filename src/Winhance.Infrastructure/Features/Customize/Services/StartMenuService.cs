@@ -195,9 +195,11 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 );
 
                 // Ensure the directory exists for the layout file
-                Directory.CreateDirectory(
-                    Path.GetDirectoryName(StartMenuLayouts.Win10StartLayoutPath)!
-                );
+                var layoutDir = Path.GetDirectoryName(StartMenuLayouts.Win10StartLayoutPath);
+                if (!string.IsNullOrEmpty(layoutDir))
+                {
+                    Directory.CreateDirectory(layoutDir);
+                }
 
                 // Always setup scheduled tasks for all existing users
                 if (scheduledTaskService != null)
@@ -341,7 +343,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                     process.Kill();
                     process.WaitForExit(5000); // Wait up to 5 seconds for the process to exit
                 }
-                catch
+                catch (Exception)
                 {
                     // Ignore errors - the process might have already exited or be inaccessible
                 }
@@ -499,7 +501,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                     }
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Return empty list if we can't enumerate users
             }

@@ -64,8 +64,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                     return "winget";
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                logService?.LogError($"Error resolving WinGet path: {ex.Message}");
             }
 
             logService?.LogWarning("WinGet not in PATH, searching AppX location...");
@@ -222,7 +223,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 taskProgressService?.UpdateProgress(0, errorMessage);
                 return false;
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 taskProgressService?.UpdateProgress(0, _localization.GetString("Progress_WinGet_InstallationCancelled", displayName));
                 throw;
@@ -421,7 +422,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                     if (cancellationToken.IsCancellationRequested)
                     {
                         ((IProgress<WinGetProgress>)progress).Report(new WinGetProgress { Status = "Cancelling...", IsCancelled = true });
-                        try { process.Kill(); } catch { }
+                        try { process.Kill(); } catch (Exception) { }
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
@@ -528,8 +529,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 var result = await ExecuteProcessAsync("winget", "--version", "Checking WinGet availability", cancellationToken);
                 return result.ExitCode == 0;
             }
-            catch
+            catch (Exception ex)
             {
+                logService?.LogError($"Error checking WinGet installation: {ex.Message}");
                 return false;
             }
         }
@@ -643,7 +645,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 {
                     return await InstallWinGetAsync(cancellationToken);
                 }
-                catch
+                catch (Exception)
                 {
                     return false;
                 }

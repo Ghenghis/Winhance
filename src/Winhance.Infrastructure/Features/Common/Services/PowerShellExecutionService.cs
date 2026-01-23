@@ -428,7 +428,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
                 if (File.Exists(tempScriptPath))
                     File.Delete(tempScriptPath);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to cleanup temp script: {ex.Message}"); }
         }
     }
 }

@@ -120,8 +120,9 @@ namespace Winhance.WPF
                     return; // Should never reach here
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogStartupError($"Error during admin check: {ex.Message}");
                 // If admin check completely fails, continue (failsafe)
             }
 
@@ -133,7 +134,7 @@ namespace Winhance.WPF
             try
             {
                 LogStartupMessage("Creating host using composition root");
-                
+
                 // Create host using the new composition root
                 _host = CompositionRoot
                     .CreateWinhanceHost()
@@ -557,19 +558,19 @@ namespace Winhance.WPF
 
         #region Exception Handlers
 
-        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
+        private void OnUnhandledException(object? sender, UnhandledExceptionEventArgs args)
         {
             var ex = args.ExceptionObject as Exception;
             LogStartupError($"Unhandled AppDomain exception: {ex?.Message}", ex);
         }
 
-        private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs args)
+        private void OnDispatcherUnhandledException(object? sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs args)
         {
             LogStartupError($"Unhandled Dispatcher exception: {args.Exception.Message}", args.Exception);
             args.Handled = true; // Prevent the application from crashing
         }
 
-        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
+        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
         {
             LogStartupError($"Unobserved Task exception: {args.Exception.Message}", args.Exception);
             args.SetObserved(); // Prevent the application from crashing
@@ -605,12 +606,16 @@ namespace Winhance.WPF
                     "WinhanceStartupLog.txt"
                 );
 
-                Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-                File.AppendAllText(logPath, $"{fullMessage}\n");
+                var logDir = Path.GetDirectoryName(logPath);
+                if (!string.IsNullOrEmpty(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                    File.AppendAllText(logPath, $"{fullMessage}\n");
+                }
             }
-            catch
+            catch (Exception logEx)
             {
-                // Silently fail if logging is not possible
+                System.Diagnostics.Debug.WriteLine($"Startup logging failed: {logEx.Message}");
             }
         }
 

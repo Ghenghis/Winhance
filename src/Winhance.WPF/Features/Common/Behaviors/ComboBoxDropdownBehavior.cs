@@ -64,7 +64,7 @@ namespace Winhance.WPF.Features.Common.Behaviors
             }
         }
 
-        private static void ComboBox_DropDownOpened(object sender, EventArgs e)
+        private static void ComboBox_DropDownOpened(object? sender, EventArgs e)
         {
             if (sender is ComboBox comboBox)
             {
@@ -73,7 +73,7 @@ namespace Winhance.WPF.Features.Common.Behaviors
                     Point position = comboBox.PointToScreen(new Point(0, 0));
                     comboBox.SetValue(OriginalPositionProperty, position);
                 }
-                catch
+                catch (Exception)
                 {
                     comboBox.SetValue(OriginalPositionProperty, null);
                 }
@@ -91,7 +91,7 @@ namespace Winhance.WPF.Features.Common.Behaviors
             }
         }
 
-        private static void ComboBox_DropDownClosed(object sender, EventArgs e)
+        private static void ComboBox_DropDownClosed(object? sender, EventArgs e)
         {
             if (sender is ComboBox comboBox)
             {
@@ -107,7 +107,7 @@ namespace Winhance.WPF.Features.Common.Behaviors
             }
         }
 
-        private static void PopupChild_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private static void PopupChild_PreviewMouseWheel(object? sender, MouseWheelEventArgs e)
         {
             if (sender is DependencyObject element)
             {
@@ -153,7 +153,7 @@ namespace Winhance.WPF.Features.Common.Behaviors
                     comboBox.IsDropDownOpen = false;
                 }
             }
-            catch
+            catch (Exception)
             {
                 comboBox.IsDropDownOpen = false;
             }

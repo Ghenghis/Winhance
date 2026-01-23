@@ -53,7 +53,7 @@ namespace Winhance.WPF.Features.Common.Converters
                 var defaultBrush = Application.Current.Resources["NavigationButtonBackground"] as SolidColorBrush;
                 return defaultBrush?.Color ?? Colors.Transparent;
             }
-            catch
+            catch (Exception)
             {
                 var defaultBrush = Application.Current.Resources["NavigationButtonBackground"] as SolidColorBrush;
                 return defaultBrush?.Color ?? Colors.Transparent;

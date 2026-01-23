@@ -96,7 +96,7 @@ namespace Winhance.WPF.Features.Common.Services
                                 var format = _localization.GetString(key);
                                 customProps[CustomPropertyKeys.VersionCompatibilityMessage] = string.Format(format, args);
                             }
-                            catch
+                            catch (FormatException)
                             {
                                 customProps[CustomPropertyKeys.VersionCompatibilityMessage] = _localization.GetString(key);
                             }

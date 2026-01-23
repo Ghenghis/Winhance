@@ -49,7 +49,7 @@ namespace Winhance.WPF.Features.Common.Views
                 if (helper.Handle != IntPtr.Zero)
                     _windowEffectsService.EnableBlur(this);
             }
-            catch
+            catch (Exception)
             {
                 // Ignore blur errors
             }

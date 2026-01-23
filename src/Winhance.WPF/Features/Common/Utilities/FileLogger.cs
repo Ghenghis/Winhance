@@ -40,7 +40,7 @@ namespace Winhance.WPF.Features.Common.Utilities
                     File.AppendAllText(logPath, logMessage + Environment.NewLine);
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Ignore errors in logging to avoid affecting the application
             }

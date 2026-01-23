@@ -1,5 +1,5 @@
 name: "🚀 Suggest an improvement for an existing feature"
-description: "Propose an improvement to Winhance."
+description: "Propose an improvement to Winhance-FS."
 title: "[SUGGESTION] "
 labels: ["enhancement"]
 body:
@@ -19,6 +19,23 @@ body:
         - label: "This is an improvement to an existing feature (not a new feature request)."
           required: true
           
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: "Which component does this suggestion relate to?"
+      options:
+        - Storage Intelligence
+        - Deep Scan
+        - AI Model Manager
+        - Borg Theme Studio
+        - MCP Server
+        - Rust Backend
+        - AI Agents
+        - Other
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:

@@ -50,7 +50,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public bool CanGoBack => _backStack.Count > 1;
         public IReadOnlyList<string> NavigationHistory => _navigationHistory.AsReadOnly();
         public string CurrentView => _currentRoute;
-        
+
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs> Navigated;
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs> Navigating;
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs> NavigationFailed;
@@ -77,7 +77,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     {
                         await PreloadAndNavigateToAsync(viewName);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         var args = new Winhance.Core.Features.Common.Interfaces.NavigationEventArgs(
                             CurrentView,
@@ -90,7 +90,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 });
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var args = new Winhance.Core.Features.Common.Interfaces.NavigationEventArgs(
                     CurrentView,
@@ -132,7 +132,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _logService?.Log(LogLevel.Info, $"[FrameNavigationService] Creating ViewModel of type: {mapping.ViewModelType.Name}");
                 var viewModel = _serviceProvider.GetRequiredService(mapping.ViewModelType);
                 _logService?.Log(LogLevel.Info, $"[FrameNavigationService] ViewModel created successfully: {viewModel.GetType().Name}");
-                
+
                 if (viewModel is IInitializableViewModel initializable)
                 {
                     initializable.Initialize();
@@ -148,7 +148,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     _logService?.Log(LogLevel.Info, $"[FrameNavigationService] ViewModel does not implement IPreloadableViewModel: {viewModel.GetType().Name}");
                 }
-                
+
                 if (viewModel is IFeatureViewModel vm)
                 {
                     _logService?.Log(LogLevel.Info, $"[FrameNavigationService] Calling OnNavigatedTo for: {viewModel.GetType().Name}");
@@ -177,7 +177,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     {
                         await PreloadAndNavigateToAsync(viewName);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         var args = new Winhance.Core.Features.Common.Interfaces.NavigationEventArgs(
                             CurrentView,
@@ -190,7 +190,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 });
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var args = new Winhance.Core.Features.Common.Interfaces.NavigationEventArgs(
                     CurrentView,
@@ -225,6 +225,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
+        /// <summary>
+        /// Synchronous navigation back. NOTE: This blocks the calling thread.
+        /// Required for INavigationService interface compatibility.
+        /// </summary>
         public bool NavigateBack()
         {
             try
@@ -232,7 +236,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 GoBackAsync().GetAwaiter().GetResult();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -395,7 +399,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             var currentType = _backStack.Pop();
             _forwardStack.Push((currentType, _currentParameter));
             var previousViewModelType = _backStack.Peek();
-            
+
             var route = GetRouteForViewModelType(previousViewModelType);
             await PreloadAndNavigateToAsync(route);
         }
@@ -407,7 +411,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             var (nextType, nextParameter) = _forwardStack.Pop();
             _backStack.Push(nextType);
-            
+
             var route = GetRouteForViewModelType(nextType);
             await PreloadAndNavigateToAsync(route);
         }

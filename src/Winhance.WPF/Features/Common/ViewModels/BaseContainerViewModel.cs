@@ -47,7 +47,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
             searchTextCoordinationService.SearchTextChanged += OnSearchTextChanged;
         }
 
-        protected virtual void OnSearchTextChanged(object sender, SearchTextChangedEventArgs e)
+        protected virtual void OnSearchTextChanged(object? sender, SearchTextChangedEventArgs e)
         {
             SearchText = e.SearchText ?? string.Empty;
         }

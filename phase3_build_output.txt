@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Winhance.Core -> D:\Winhance-FS-Repo\src\Winhance.Core\bin\Release\net9.0-windows\Winhance.Core.dll
+  Winhance.Infrastructure -> D:\Winhance-FS-Repo\src\Winhance.Infrastructure\bin\Release\net9.0-windows\Winhance.Infrastructure.dll
+  Winhance.WPF -> D:\Winhance-FS-Repo\src\Winhance.WPF\bin\Release\net9.0-windows\Winhance.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.40

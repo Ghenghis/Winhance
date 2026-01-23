@@ -178,7 +178,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         {
                             return assembly.GetTypes();
                         }
-                        catch
+                        catch (ReflectionTypeLoadException)
                         {
                             return Enumerable.Empty<Type>();
                         }
@@ -209,20 +209,20 @@ namespace Winhance.Infrastructure.Features.Common.Services
                                     var settingsProperty = result.GetType().GetProperty("Settings");
                                     return (IEnumerable<SettingDefinition>)settingsProperty.GetValue(result);
                                 }
-                                catch
+                                catch (Exception)
                                 {
                                     return Enumerable.Empty<SettingDefinition>();
                                 }
                             };
                         }
                     }
-                    catch
+                    catch (Exception)
                     {
                         // Continue processing other classes
                     }
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Return empty providers if discovery fails
             }
@@ -246,26 +246,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var featureIdProperty = result.GetType().GetProperty("FeatureId");
                 return (string)featureIdProperty.GetValue(result);
             }
-            catch
+            catch (Exception)
             {
                 return "Unknown";
             }
-        }
-
-
-        private IEnumerable<SettingDefinition> FilterSettingsForFeature(string featureId, IEnumerable<SettingDefinition> rawSettings)
-        {
-            var filtered = rawSettings.AsEnumerable();
-
-            filtered = _windowsFilter.FilterSettingsByWindowsVersion(filtered);
-
-            if (featureId == FeatureIds.Power)
-            {
-                filtered = _hardwareFilter.FilterSettingsByHardwareAsync(filtered).GetAwaiter().GetResult();
-                filtered = _powerValidation.FilterSettingsByExistenceAsync(filtered).GetAwaiter().GetResult();
-            }
-
-            return filtered;
         }
     }
 }

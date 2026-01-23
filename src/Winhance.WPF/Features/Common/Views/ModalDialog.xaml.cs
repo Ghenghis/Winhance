@@ -57,7 +57,7 @@ namespace Winhance.WPF.Features.Common.Views
                     return; // Style applied successfully
                 }
             }
-            catch
+            catch (Exception)
             {
                 // Style not found, continue to fallback
             }

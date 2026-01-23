@@ -888,7 +888,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
                 var settings = await domainService.GetSettingsAsync();
                 return settings.FirstOrDefault(s => s.Id == SettingId);
             }
-            catch
+            catch (Exception)
             {
                 return null;
             }
@@ -896,9 +896,17 @@ namespace Winhance.WPF.Features.Common.ViewModels
 
         private async void HandleSettingApplied(SettingAppliedEvent evt)
         {
-            if (evt.SettingId == SettingId)
+            try
             {
-                await RefreshStateAsync();
+                if (evt.SettingId == SettingId)
+                {
+                    await RefreshStateAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log refresh errors but don't crash UI
+                _logService.Log(LogLevel.Warning, $"Failed to refresh setting {SettingId} after apply: {ex.Message}");
             }
         }
 
@@ -957,26 +965,34 @@ namespace Winhance.WPF.Features.Common.ViewModels
 
         private async void UpdateWarningText(object? value)
         {
-            if (SettingDefinition == null || value is not int selectedIndex)
+            try
             {
-                WarningText = null;
-                return;
-            }
+                if (SettingDefinition == null || value is not int selectedIndex)
+                {
+                    WarningText = null;
+                    return;
+                }
 
-            if (SettingDefinition.CustomProperties?.TryGetValue(CustomPropertyKeys.OptionWarnings, out var warnings) == true &&
-                warnings is Dictionary<int, string> warningDict &&
-                warningDict.TryGetValue(selectedIndex, out var warning))
-            {
-                WarningText = warning;
+                if (SettingDefinition.CustomProperties?.TryGetValue(CustomPropertyKeys.OptionWarnings, out var warnings) == true &&
+                    warnings is Dictionary<int, string> warningDict &&
+                    warningDict.TryGetValue(selectedIndex, out var warning))
+                {
+                    WarningText = warning;
+                }
+                else if (SettingDefinition.CustomProperties?.TryGetValue(CustomPropertyKeys.VersionCompatibilityMessage, out var compatMessage) == true &&
+                    compatMessage is string messageText)
+                {
+                    WarningText = messageText;
+                }
+                else
+                {
+                    await UpdateCrossGroupInfoMessageAsync();
+                }
             }
-            else if (SettingDefinition.CustomProperties?.TryGetValue(CustomPropertyKeys.VersionCompatibilityMessage, out var compatMessage) == true &&
-                compatMessage is string messageText)
+            catch (Exception ex)
             {
-                WarningText = messageText;
-            }
-            else
-            {
-                await UpdateCrossGroupInfoMessageAsync();
+                _logService.Log(LogLevel.Warning, $"Failed to update warning text for {SettingId}: {ex.Message}");
+                WarningText = null;
             }
         }
 
@@ -1037,7 +1053,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
                             childSettingsList.Add(childSetting);
                         }
                     }
-                    catch
+                    catch (Exception)
                     {
                         continue;
                     }

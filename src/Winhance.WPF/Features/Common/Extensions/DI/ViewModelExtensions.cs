@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Winhance.WPF.Features.AdvancedTools.ViewModels;
 using Winhance.WPF.Features.Common.ViewModels;
 using Winhance.WPF.Features.Customize.ViewModels;
+using Winhance.WPF.Features.FileManager.ViewModels;
 using Winhance.WPF.Features.Optimize.ViewModels;
 using Winhance.WPF.Features.SoftwareApps.ViewModels;
 
@@ -16,7 +17,9 @@ namespace Winhance.WPF.Features.Common.Extensions.DI
                 .AddSoftwareAppViewModels()
                 .AddOptimizationViewModels()
                 .AddCustomizationViewModels()
-                .AddAdvancedToolsViewModels();
+                .AddAdvancedToolsViewModels()
+                .AddFileManagerViewModels()
+                .AddAgentViewModels();
         }
 
         public static IServiceCollection AddMainViewModels(this IServiceCollection services)
@@ -66,6 +69,21 @@ namespace Winhance.WPF.Features.Common.Extensions.DI
         {
             services.AddSingleton<AdvancedToolsMenuViewModel>();
             services.AddSingleton<WimUtilViewModel>();
+            return services;
+        }
+
+        public static IServiceCollection AddFileManagerViewModels(this IServiceCollection services)
+        {
+            services.AddSingleton<FileManagerViewModel>();
+            services.AddTransient<DualPaneBrowserViewModel>();
+            services.AddTransient<BatchRenameViewModel>();
+            services.AddTransient<OrganizerViewModel>();
+            return services;
+        }
+
+        public static IServiceCollection AddAgentViewModels(this IServiceCollection services)
+        {
+            services.AddSingleton<AgentStatusBarViewModel>();
             return services;
         }
 

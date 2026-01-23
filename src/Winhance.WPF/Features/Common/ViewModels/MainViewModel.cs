@@ -27,8 +27,9 @@ using Winhance.WPF.Features.Common.Views;
 
 namespace Winhance.WPF.Features.Common.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
+        private bool _disposed = false;
         private readonly INavigationService _navigationService;
         private readonly IEventBus _eventBus;
         private readonly ITaskProgressService _taskProgressService;
@@ -104,6 +105,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
 
         public MoreMenuViewModel MoreMenuViewModel { get; }
         public Winhance.WPF.Features.AdvancedTools.ViewModels.AdvancedToolsMenuViewModel AdvancedToolsMenuViewModel { get; }
+        public AgentStatusBarViewModel AgentStatusBarViewModel { get; }
         public ICommand SaveUnifiedConfigCommand { get; }
         public ICommand ImportUnifiedConfigCommand { get; }
         public ICommand OpenDonateCommand { get; }
@@ -128,7 +130,8 @@ namespace Winhance.WPF.Features.Common.ViewModels
             IFilterUpdateService filterUpdateService,
             ILocalizationService localizationService,
             MoreMenuViewModel moreMenuViewModel,
-            Winhance.WPF.Features.AdvancedTools.ViewModels.AdvancedToolsMenuViewModel advancedToolsMenuViewModel
+            Winhance.WPF.Features.AdvancedTools.ViewModels.AdvancedToolsMenuViewModel advancedToolsMenuViewModel,
+            AgentStatusBarViewModel agentStatusBarViewModel
         )
         {
             _navigationService = navigationService;
@@ -144,6 +147,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
             _localizationService = localizationService;
             MoreMenuViewModel = moreMenuViewModel;
             AdvancedToolsMenuViewModel = advancedToolsMenuViewModel;
+            AgentStatusBarViewModel = agentStatusBarViewModel;
 
             SaveUnifiedConfigCommand = new AsyncRelayCommand(async () => await _configurationService.ExportConfigurationAsync());
             ImportUnifiedConfigCommand = new AsyncRelayCommand(async () => await _configurationService.ImportConfigurationAsync());
@@ -158,7 +162,7 @@ namespace Winhance.WPF.Features.Common.ViewModels
             _taskProgressService.ProgressUpdated += OnProgressUpdated;
         }
 
-        private void OnProgressUpdated(object sender, TaskProgressDetail detail)
+        private void OnProgressUpdated(object? sender, TaskProgressDetail detail)
         {
             IsLoading = _taskProgressService.IsTaskRunning;
 
@@ -170,12 +174,12 @@ namespace Winhance.WPF.Features.Common.ViewModels
             LastTerminalLine = detail.TerminalOutput ?? string.Empty;
         }
 
-        private void NavigationService_Navigating(object sender, NavigationEventArgs e)
+        private void NavigationService_Navigating(object? sender, NavigationEventArgs e)
         {
             LoadingRoute = e.Route;
         }
 
-        private void NavigationService_Navigated(object sender, NavigationEventArgs e)
+        private void NavigationService_Navigated(object? sender, NavigationEventArgs e)
         {
             LoadingRoute = string.Empty;
             CurrentViewName = e.Route;
@@ -447,6 +451,35 @@ namespace Winhance.WPF.Features.Common.ViewModels
             {
                 await _filterUpdateService.UpdateFeatureSettingsAsync(settingsViewModel);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                if (_navigationService != null)
+                {
+                    _navigationService.Navigated -= NavigationService_Navigated;
+                    _navigationService.Navigating -= NavigationService_Navigating;
+                }
+
+                if (_taskProgressService != null)
+                {
+                    _taskProgressService.ProgressUpdated -= OnProgressUpdated;
+                }
+
+                (_currentViewModel as IDisposable)?.Dispose();
+            }
+
+            _disposed = true;
         }
 
     }

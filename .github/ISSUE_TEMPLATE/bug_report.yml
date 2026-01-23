@@ -26,9 +26,25 @@ body:
   - type: input
     id: version
     attributes:
-      label: "Winhance Version"
-      description: "Which version of Winhance are you using?"
-      placeholder: "x.y.z (e.g., v25.05.22)"
+      label: "Winhance-FS Version"
+      description: "Which version of Winhance-FS are you using?"
+      placeholder: "x.y.z (e.g., v1.0.0)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected Component"
+      description: "Which component is affected?"
+      options:
+        - Storage Intelligence
+        - Deep Scan
+        - AI Model Manager
+        - Borg Theme Studio
+        - MCP Server
+        - Rust Backend
+        - Other
     validations:
       required: true
       
@@ -85,7 +101,7 @@ body:
     id: logs
     attributes:
       label: "Screenshots or Logs (if applicable)"
-      description: "If possible, add screenshots or logs to help explain your issue. Logs can be found in: 'C:/ProgramData/Winhance/Logs'(Hidden folder by default, just paste the path into file explorer.)"
+      description: "If possible, add screenshots or logs to help explain your issue. Logs can be found in: 'C:/ProgramData/Winhance-FS/Logs' (Hidden folder by default, just paste the path into file explorer.)"
       placeholder: "Paste screenshots or logs here"
     validations:
       required: false

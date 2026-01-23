@@ -13,10 +13,77 @@ namespace Winhance.Infrastructure.Features.Common.Services
     [SupportedOSPlatform("windows")]
     public class WindowsRegistryService(ILogService logService) : IWindowsRegistryService
     {
+        /// <summary>
+        /// Sensitive registry paths that should not be modified by this service.
+        /// These are critical system paths that could compromise security if modified.
+        /// </summary>
+        private static readonly HashSet<string> SensitiveRegistryPaths = new(StringComparer.OrdinalIgnoreCase)
+        {
+            @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication",
+            @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders",
+            @"HKEY_LOCAL_MACHINE\SAM",
+            @"HKEY_LOCAL_MACHINE\SECURITY",
+        };
+
+        /// <summary>
+        /// Validates a registry key path for safety.
+        /// Prevents injection attacks and access to sensitive system keys.
+        /// </summary>
+        private static void ValidateRegistryPath(string keyPath, string parameterName)
+        {
+            ArgumentNullException.ThrowIfNull(keyPath, parameterName);
+
+            if (string.IsNullOrWhiteSpace(keyPath))
+            {
+                throw new ArgumentException("Registry path cannot be empty", parameterName);
+            }
+
+            // Check for invalid characters that could be used for injection
+            var invalidChars = new[] { '\0', '\r', '\n', '\t' };
+            if (keyPath.IndexOfAny(invalidChars) >= 0)
+            {
+                throw new ArgumentException($"Registry path contains invalid characters: {parameterName}", parameterName);
+            }
+
+            // Check for path traversal patterns
+            if (keyPath.Contains(".."))
+            {
+                throw new ArgumentException("Registry path traversal not allowed", parameterName);
+            }
+
+            // Block access to sensitive registry paths
+            foreach (var sensitivePath in SensitiveRegistryPaths)
+            {
+                if (keyPath.StartsWith(sensitivePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new UnauthorizedAccessException($"Access to sensitive registry path is not allowed: {sensitivePath}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates a registry value name for safety.
+        /// </summary>
+        private static void ValidateValueName(string? valueName)
+        {
+            if (valueName == null)
+                return;
+
+            var invalidChars = new[] { '\0', '\r', '\n' };
+            if (valueName.IndexOfAny(invalidChars) >= 0)
+            {
+                throw new ArgumentException("Value name contains invalid characters", nameof(valueName));
+            }
+        }
+
         public bool CreateKey(string keyPath)
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+
                 if (KeyExists(keyPath))
                     return true;
 
@@ -24,8 +91,19 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 using var createdKey = rootKey.CreateSubKey(subKeyPath, true);
                 return createdKey != null;
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException ex)
             {
+                logService.Log(LogLevel.Warning, $"Access denied to registry key '{keyPath}': {ex.Message}");
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                logService.Log(LogLevel.Warning, $"Invalid registry key path '{keyPath}': {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Warning, $"Failed to create registry key '{keyPath}': {ex.Message}");
                 return false;
             }
         }
@@ -39,6 +117,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+                ValidateValueName(valueName);
+
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var targetKey = rootKey.CreateSubKey(subKeyPath, true);
                 if (targetKey == null)
@@ -47,8 +128,19 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 targetKey.SetValue(valueName, value, valueKind);
                 return true;
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException ex)
             {
+                logService.Log(LogLevel.Warning, $"Access denied to registry value '{keyPath}\\{valueName}': {ex.Message}");
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                logService.Log(LogLevel.Warning, $"Invalid registry path or value '{keyPath}\\{valueName}': {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Warning, $"Failed to set registry value '{keyPath}\\{valueName}': {ex.Message}");
                 return false;
             }
         }
@@ -57,12 +149,26 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+                ValidateValueName(valueName);
+
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var key = rootKey.OpenSubKey(subKeyPath, false);
                 return key?.GetValue(valueName);
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException ex)
             {
+                logService.Log(LogLevel.Warning, $"Access denied to registry value '{keyPath}\\{valueName}': {ex.Message}");
+                return null;
+            }
+            catch (ArgumentException ex)
+            {
+                logService.Log(LogLevel.Warning, $"Invalid registry path or value '{keyPath}\\{valueName}': {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Warning, $"Failed to get registry value '{keyPath}\\{valueName}': {ex.Message}");
                 return null;
             }
         }
@@ -71,6 +177,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+
                 if (!KeyExists(keyPath))
                     return true;
 
@@ -78,8 +186,19 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 rootKey.DeleteSubKeyTree(subKeyPath, false);
                 return true;
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException ex)
             {
+                logService.Log(LogLevel.Warning, $"Access denied to delete registry key '{keyPath}': {ex.Message}");
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                logService.Log(LogLevel.Warning, $"Invalid registry key path '{keyPath}': {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Warning, $"Failed to delete registry key '{keyPath}': {ex.Message}");
                 return false;
             }
         }
@@ -88,6 +207,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+                ValidateValueName(valueName);
+
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var key = rootKey.OpenSubKey(subKeyPath, true);
                 if (key == null)
@@ -96,8 +218,19 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 key.DeleteValue(valueName, false);
                 return true;
             }
-            catch (Exception)
+            catch (UnauthorizedAccessException ex)
             {
+                logService.Log(LogLevel.Warning, $"Access denied to delete registry value '{keyPath}\\{valueName}': {ex.Message}");
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                logService.Log(LogLevel.Warning, $"Invalid registry path or value '{keyPath}\\{valueName}': {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Warning, $"Failed to delete registry value '{keyPath}\\{valueName}': {ex.Message}");
                 return false;
             }
         }
@@ -106,12 +239,23 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
+                ValidateRegistryPath(keyPath, nameof(keyPath));
+
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var key = rootKey.OpenSubKey(subKeyPath, false);
                 return key != null;
             }
-            catch
+            catch (UnauthorizedAccessException)
             {
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logService.Log(LogLevel.Debug, $"Failed to check if registry key exists '{keyPath}': {ex.Message}");
                 return false;
             }
         }
@@ -127,8 +271,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 return key.GetValueNames().Contains(valueName, StringComparer.OrdinalIgnoreCase);
             }
-            catch
+            catch (Exception ex)
             {
+                logService.Log(LogLevel.Debug, $"Failed to check if registry value exists '{keyPath}\\{valueName}': {ex.Message}");
                 return false;
             }
         }
@@ -212,8 +357,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 // Value doesn't match either EnabledValue or DisabledValue
                 return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logService.Log(LogLevel.Debug, $"Failed to check if setting is applied '{setting?.KeyPath}': {ex.Message}");
                 return false;
             }
         }
@@ -261,8 +407,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 }
                 return null;
             }
-            catch
+            catch (Exception ex)
             {
+                logService.Log(LogLevel.Debug, $"Failed to get binary byte at index {byteIndex} in '{keyPath}\\{valueName}': {ex.Message}");
                 return null;
             }
         }
@@ -312,8 +459,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 return (currentByte.Value & bitMask) == bitMask;
             }
-            catch
+            catch (Exception ex)
             {
+                logService.Log(LogLevel.Debug, $"Failed to check if bit is set at index {byteIndex} in '{keyPath}\\{valueName}': {ex.Message}");
                 return false;
             }
         }
@@ -448,7 +596,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             results[resultKey] = subKey?.GetValue(valueName);
                         }
                     }
-                    catch
+                    catch (Exception)
                     {
                         var resultKey = valueName == null
                             ? $"{keyPath}\\__KEY_EXISTS__"

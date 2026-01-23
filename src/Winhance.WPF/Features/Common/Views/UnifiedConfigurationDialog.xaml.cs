@@ -65,8 +65,9 @@ namespace Winhance.WPF.Features.Common.Views
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
+                    // Ignore parsing errors
                 }
 
                 LogInfo(
