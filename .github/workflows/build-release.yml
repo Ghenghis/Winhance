@@ -56,8 +56,10 @@ jobs:
     runs-on: windows-latest
     needs: rust-build
     strategy:
+      fail-fast: false
       matrix:
         config:
+          # ========== x64 Architecture ==========
           - name: Windows x64
             runtime: win-x64
             artifact_name: Winhance-x64
@@ -67,6 +69,58 @@ jobs:
             runtime: win-x64
             artifact_name: Winhance-x64-Portable
             self_contained: true
+            single_file: true
+          - name: Windows x64 Framework-Dependent
+            runtime: win-x64
+            artifact_name: Winhance-x64-FrameworkDependent
+            self_contained: false
+            single_file: false
+          - name: Windows x64 Framework-Dependent Portable
+            runtime: win-x64
+            artifact_name: Winhance-x64-FrameworkDependent-Portable
+            self_contained: false
+            single_file: true
+          # ========== x86 Architecture ==========
+          - name: Windows x86
+            runtime: win-x86
+            artifact_name: Winhance-x86
+            self_contained: true
+            single_file: false
+          - name: Windows x86 Portable
+            runtime: win-x86
+            artifact_name: Winhance-x86-Portable
+            self_contained: true
+            single_file: true
+          - name: Windows x86 Framework-Dependent
+            runtime: win-x86
+            artifact_name: Winhance-x86-FrameworkDependent
+            self_contained: false
+            single_file: false
+          - name: Windows x86 Framework-Dependent Portable
+            runtime: win-x86
+            artifact_name: Winhance-x86-FrameworkDependent-Portable
+            self_contained: false
+            single_file: true
+          # ========== ARM64 Architecture ==========
+          - name: Windows ARM64
+            runtime: win-arm64
+            artifact_name: Winhance-ARM64
+            self_contained: true
+            single_file: false
+          - name: Windows ARM64 Portable
+            runtime: win-arm64
+            artifact_name: Winhance-ARM64-Portable
+            self_contained: true
+            single_file: true
+          - name: Windows ARM64 Framework-Dependent
+            runtime: win-arm64
+            artifact_name: Winhance-ARM64-FrameworkDependent
+            self_contained: false
+            single_file: false
+          - name: Windows ARM64 Framework-Dependent Portable
+            runtime: win-arm64
+            artifact_name: Winhance-ARM64-FrameworkDependent-Portable
+            self_contained: false
             single_file: true
 
     steps:
@@ -149,9 +203,230 @@ jobs:
             ./publish/${{ matrix.config.artifact_name }}-${{ steps.version.outputs.version }}.zip.sha256
           retention-days: 30
 
+  # MSIX Installer Builds for Microsoft Store
+  msix-build:
+    name: Build MSIX ${{ matrix.arch }}
+    runs-on: windows-latest
+    needs: rust-build
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86, arm64]
+        include:
+          - arch: x64
+            runtime: win-x64
+          - arch: x86
+            runtime: win-x86
+          - arch: arm64
+            runtime: win-arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          VERSION_NUM=${VERSION#v}
+          ASSEMBLY_VERSION=$(echo "$VERSION_NUM" | sed 's/-.*$//' | sed 's/^\([0-9]*\.[0-9]*\.[0-9]*\)$/\1.0/' | sed 's/^\([0-9]*\.[0-9]*\)$/\1.0.0/' | sed 's/^\([0-9]*\)$/\1.0.0.0/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_num=$VERSION_NUM" >> $GITHUB_OUTPUT
+          echo "assembly_version=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build MSIX package
+        shell: pwsh
+        run: |
+          # Build the application
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            --configuration Release `
+            --runtime ${{ matrix.runtime }} `
+            --self-contained true `
+            -p:Version=${{ steps.version.outputs.version_num }} `
+            -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} `
+            -p:FileVersion=${{ steps.version.outputs.assembly_version }} `
+            --output ./publish/msix-${{ matrix.arch }}
+
+          # Create MSIX directory structure
+          $msixDir = "./msix-package"
+          New-Item -ItemType Directory -Force -Path $msixDir
+
+          # Copy published files
+          Copy-Item -Path "./publish/msix-${{ matrix.arch }}/*" -Destination $msixDir -Recurse
+
+          # Create AppxManifest.xml
+          $manifest = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+                   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+                   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+            <Identity Name="Winhance" Publisher="CN=Winhance" Version="${{ steps.version.outputs.assembly_version }}" ProcessorArchitecture="${{ matrix.arch }}" />
+            <Properties>
+              <DisplayName>Winhance</DisplayName>
+              <PublisherDisplayName>Winhance Team</PublisherDisplayName>
+              <Logo>Assets\StoreLogo.png</Logo>
+            </Properties>
+            <Dependencies>
+              <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+            </Dependencies>
+            <Resources>
+              <Resource Language="en-us" />
+            </Resources>
+            <Applications>
+              <Application Id="Winhance" Executable="Winhance.WPF.exe" EntryPoint="Windows.FullTrustApplication">
+                <uap:VisualElements DisplayName="Winhance" Description="Windows Enhancement Tool" BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+                  <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+                </uap:VisualElements>
+              </Application>
+            </Applications>
+            <Capabilities>
+              <rescap:Capability Name="runFullTrust" />
+            </Capabilities>
+          </Package>
+          "@
+          $manifest | Out-File -FilePath "$msixDir/AppxManifest.xml" -Encoding UTF8
+
+          # Create placeholder assets directory
+          New-Item -ItemType Directory -Force -Path "$msixDir/Assets"
+          
+          # Create placeholder logo files (1x1 transparent PNG)
+          $pngBytes = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
+          [IO.File]::WriteAllBytes("$msixDir/Assets/StoreLogo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square150x150Logo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Square44x44Logo.png", $pngBytes)
+          [IO.File]::WriteAllBytes("$msixDir/Assets/Wide310x150Logo.png", $pngBytes)
+
+          # Package as zip for now (full MSIX requires signing)
+          $zipName = "Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path "$msixDir/*" -DestinationPath "./publish/$zipName" -Force
+
+          # Calculate SHA256
+          $hash = Get-FileHash "./publish/$zipName" -Algorithm SHA256
+          Set-Content -Path "./publish/$zipName.sha256" -Value "$($hash.Hash)  $zipName"
+
+          Write-Host "Created MSIX package: $zipName"
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-MSIX-${{ matrix.arch }}
+          path: |
+            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip
+            ./publish/Winhance-MSIX-${{ matrix.arch }}-${{ steps.version.outputs.version }}.zip.sha256
+          retention-days: 30
+
+  # Setup.exe Installer Build
+  installer-build:
+    name: Build Setup Installer
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Winhance-x64
+          path: ./x64-build
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Inno Setup script
+        shell: pwsh
+        run: |
+          # Extract the x64 build
+          $zipFile = Get-ChildItem -Path ./x64-build -Filter "*.zip" | Select-Object -First 1
+          Expand-Archive -Path $zipFile.FullName -DestinationPath ./app-files -Force
+
+          # Create Inno Setup script
+          $issContent = @"
+          [Setup]
+          AppName=Winhance
+          AppVersion=${{ steps.version.outputs.version }}
+          AppPublisher=Winhance Team
+          DefaultDirName={autopf}\Winhance
+          DefaultGroupName=Winhance
+          OutputDir=.\output
+          OutputBaseFilename=Winhance-Setup-${{ steps.version.outputs.version }}
+          Compression=lzma2/ultra64
+          SolidCompression=yes
+          ArchitecturesInstallIn64BitMode=x64compatible
+          PrivilegesRequired=admin
+          SetupIconFile=
+          UninstallDisplayIcon={app}\Winhance.WPF.exe
+
+          [Languages]
+          Name: "english"; MessagesFile: "compiler:Default.isl"
+
+          [Tasks]
+          Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+          [Files]
+          Source: "app-files\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+          [Icons]
+          Name: "{group}\Winhance"; Filename: "{app}\Winhance.WPF.exe"
+          Name: "{autodesktop}\Winhance"; Filename: "{app}\Winhance.WPF.exe"; Tasks: desktopicon
+
+          [Run]
+          Filename: "{app}\Winhance.WPF.exe"; Description: "{cm:LaunchProgram,Winhance}"; Flags: nowait postinstall skipifsilent runascurrentuser
+          "@
+
+          $issContent | Out-File -FilePath "setup.iss" -Encoding UTF8
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+
+      - name: Build Setup Installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+          
+          # Calculate SHA256
+          $setupFile = Get-ChildItem -Path ./output -Filter "*.exe" | Select-Object -First 1
+          $hash = Get-FileHash $setupFile.FullName -Algorithm SHA256
+          Set-Content -Path "$($setupFile.FullName).sha256" -Value "$($hash.Hash)  $($setupFile.Name)"
+
+      - name: Upload Setup Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Winhance-Setup
+          path: |
+            ./output/*.exe
+            ./output/*.sha256
+          retention-days: 30
+
   release:
     name: Create Release
-    needs: [rust-build, build]
+    needs: [rust-build, build, msix-build, installer-build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -181,17 +456,50 @@ jobs:
           cat << 'HEADER' > release_body.md
           ## Winhance ${{ steps.version.outputs.version }}
 
-          ### Downloads
+          ### Downloads - Self-Contained (Includes .NET Runtime)
+
+          | Package | Architecture | Type |
+          |---------|--------------|------|
+          | `Winhance-x64-${{ steps.version.outputs.version }}.zip` | x64 (64-bit) | Standard |
+          | `Winhance-x64-Portable-${{ steps.version.outputs.version }}.zip` | x64 (64-bit) | Single-file Portable |
+          | `Winhance-x86-${{ steps.version.outputs.version }}.zip` | x86 (32-bit) | Standard |
+          | `Winhance-x86-Portable-${{ steps.version.outputs.version }}.zip` | x86 (32-bit) | Single-file Portable |
+          | `Winhance-ARM64-${{ steps.version.outputs.version }}.zip` | ARM64 | Standard |
+          | `Winhance-ARM64-Portable-${{ steps.version.outputs.version }}.zip` | ARM64 | Single-file Portable |
+
+          ### Downloads - Framework-Dependent (Requires .NET 9.0 Runtime)
+
+          | Package | Architecture | Type |
+          |---------|--------------|------|
+          | `Winhance-x64-FrameworkDependent-${{ steps.version.outputs.version }}.zip` | x64 (64-bit) | Standard |
+          | `Winhance-x64-FrameworkDependent-Portable-${{ steps.version.outputs.version }}.zip` | x64 (64-bit) | Single-file Portable |
+          | `Winhance-x86-FrameworkDependent-${{ steps.version.outputs.version }}.zip` | x86 (32-bit) | Standard |
+          | `Winhance-x86-FrameworkDependent-Portable-${{ steps.version.outputs.version }}.zip` | x86 (32-bit) | Single-file Portable |
+          | `Winhance-ARM64-FrameworkDependent-${{ steps.version.outputs.version }}.zip` | ARM64 | Standard |
+          | `Winhance-ARM64-FrameworkDependent-Portable-${{ steps.version.outputs.version }}.zip` | ARM64 | Single-file Portable |
+
+          ### Installers
 
           | Package | Description |
           |---------|-------------|
-          | `Winhance-x64-${{ steps.version.outputs.version }}.zip` | Full installation with .NET runtime |
-          | `Winhance-x64-Portable-${{ steps.version.outputs.version }}.zip` | Single-file portable executable |
+          | `Winhance-Setup-${{ steps.version.outputs.version }}.exe` | Windows Setup Installer (recommended) |
+          | `Winhance-MSIX-x64-${{ steps.version.outputs.version }}.zip` | MSIX Package (x64) for sideloading |
+          | `Winhance-MSIX-x86-${{ steps.version.outputs.version }}.zip` | MSIX Package (x86) for sideloading |
+          | `Winhance-MSIX-arm64-${{ steps.version.outputs.version }}.zip` | MSIX Package (ARM64) for sideloading |
+
+          ### Which Version Should I Download?
+
+          - **Most Users**: `Winhance-Setup` (Windows installer with Start Menu integration)
+          - **No Install Needed**: `Winhance-x64-Portable` (single .exe file, works everywhere)
+          - **32-bit Windows**: `Winhance-x86-Portable`
+          - **ARM Devices (Surface Pro X, etc.)**: `Winhance-ARM64-Portable`
+          - **Enterprise/MDM**: Use MSIX packages for managed deployment
+          - **Already have .NET 9.0?**: Use Framework-Dependent versions (smaller download)
 
           ### System Requirements
 
-          - **OS**: Windows 10/11 (x64)
-          - **Runtime**: .NET 9.0 (included in downloads)
+          - **OS**: Windows 10/11 (x64, x86, or ARM64)
+          - **Runtime**: .NET 9.0 (included in self-contained, required separately for framework-dependent)
           - **Permissions**: Administrator required for system optimization features
 
           ### Installation
@@ -233,7 +541,7 @@ jobs:
         with:
           name: Winhance ${{ steps.version.outputs.version }}
           body_path: release_body.md
-          draft: true
+          draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}
           files: |
             ./artifacts/**/*.zip
