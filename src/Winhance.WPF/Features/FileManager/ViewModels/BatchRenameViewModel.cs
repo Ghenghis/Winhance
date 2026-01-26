@@ -71,26 +71,99 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
 
         private void LoadDesignTimeData()
         {
-            PreviewItems.Add(new RenamePreviewItemViewModel 
-            { 
-                OriginalName = "IMG_20260115_001.jpg", 
+            PreviewItems.Add(new RenamePreviewItemViewModel
+            {
+                OriginalName = "IMG_20260115_001.jpg",
                 NewName = "Vacation_001.jpg",
-                HasConflict = false
+                HasConflict = false,
             });
-            PreviewItems.Add(new RenamePreviewItemViewModel 
-            { 
-                OriginalName = "IMG_20260115_002.jpg", 
+            PreviewItems.Add(new RenamePreviewItemViewModel
+            {
+                OriginalName = "IMG_20260115_002.jpg",
                 NewName = "Vacation_002.jpg",
-                HasConflict = false
+                HasConflict = false,
             });
 
             Rules.Add(new RenameRuleViewModel { RuleType = RenameRuleType.FindReplace, FindText = "IMG_", ReplaceText = "Vacation_" });
         }
 
         [RelayCommand]
+        private void BrowseSource()
+        {
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Select Source Folder",
+                InitialDirectory = string.IsNullOrEmpty(SourcePath)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : SourcePath,
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                SourcePath = dialog.FolderName;
+                LoadFilesFromSource();
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseFiles()
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select Files to Rename",
+                Multiselect = true,
+                Filter = "All Files (*.*)|*.*",
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                foreach (var file in dialog.FileNames)
+                {
+                    if (!SelectedFiles.Contains(file))
+                    {
+                        SelectedFiles.Add(file);
+                    }
+                }
+                TotalFiles = SelectedFiles.Count;
+                _ = RefreshPreviewAsync();
+            }
+        }
+
+        private void LoadFilesFromSource()
+        {
+            if (string.IsNullOrEmpty(SourcePath) || !System.IO.Directory.Exists(SourcePath))
+            {
+                return;
+            }
+
+            SelectedFiles.Clear();
+            var searchOption = IncludeSubfolders
+                ? System.IO.SearchOption.AllDirectories
+                : System.IO.SearchOption.TopDirectoryOnly;
+
+            try
+            {
+                var files = System.IO.Directory.GetFiles(SourcePath, FilterPattern, searchOption);
+                foreach (var file in files)
+                {
+                    SelectedFiles.Add(file);
+                }
+                TotalFiles = SelectedFiles.Count;
+                StatusMessage = $"Loaded {TotalFiles} files";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error loading files: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
         private async Task LoadPresetsAsync()
         {
-            if (_batchRenameService == null) return;
+            if (_batchRenameService == null)
+            {
+                return;
+            }
 
             Presets.Clear();
             var presets = await _batchRenameService.GetPresetsAsync();
@@ -106,20 +179,30 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                         RuleType = r.Type,
                         FindText = r.FindText,
                         ReplaceText = r.ReplaceText,
-                        UseRegex = r.UseRegex
-                    }).ToList()
+                        UseRegex = r.UseRegex,
+                    }).ToList(),
                 });
             }
         }
 
         [RelayCommand]
-        private void AddRule(RenameRuleType ruleType)
+        private void AddRule(string? ruleTypeString)
         {
+            if (string.IsNullOrEmpty(ruleTypeString))
+            {
+                return;
+            }
+
+            if (!Enum.TryParse<RenameRuleType>(ruleTypeString, out var ruleType))
+            {
+                return;
+            }
+
             Rules.Add(new RenameRuleViewModel
             {
                 RuleType = ruleType,
                 Order = Rules.Count + 1,
-                Enabled = true
+                Enabled = true,
             });
             _ = RefreshPreviewAsync();
         }
@@ -191,16 +274,17 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                     CaseType = rule.CaseType,
                     CounterStart = rule.CounterStart,
                     CounterStep = rule.CounterStep,
-                    CounterPadding = rule.CounterPadding
+                    CounterPadding = rule.CounterPadding,
                 });
             }
+
             _ = RefreshPreviewAsync();
         }
 
         [RelayCommand]
         public async Task RefreshPreviewAsync()
         {
-            if (_batchRenameService == null || SelectedFiles.Count == 0 || Rules.Count == 0)
+            if (SelectedFiles.Count == 0 || Rules.Count == 0)
             {
                 return;
             }
@@ -210,48 +294,58 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
 
             try
             {
-                var rules = Rules.Where(r => r.Enabled).Select(r => new RenameRule
+                if (_batchRenameService != null)
                 {
-                    Type = r.RuleType,
-                    Order = r.Order,
-                    Enabled = r.Enabled,
-                    FindText = r.FindText,
-                    ReplaceText = r.ReplaceText,
-                    UseRegex = r.UseRegex,
-                    TextToAdd = r.TextToAdd,
-                    Position = r.Position,
-                    CaseType = r.CaseType,
-                    CounterStart = r.CounterStart,
-                    CounterStep = r.CounterStep,
-                    CounterPadding = r.CounterPadding
-                }).ToList();
-
-                var previews = await _batchRenameService.PreviewRenameAsync(SelectedFiles, rules);
-
-                PreviewItems.Clear();
-                ConflictCount = 0;
-
-                foreach (var preview in previews)
-                {
-                    var item = new RenamePreviewItemViewModel
+                    var rules = Rules.Where(r => r.Enabled).Select(r => new RenameRule
                     {
-                        OriginalName = preview.OriginalName,
-                        OriginalPath = preview.OriginalPath,
-                        NewName = preview.NewName,
-                        NewPath = preview.NewPath,
-                        HasConflict = preview.HasConflict,
-                        ConflictReason = preview.ConflictReason,
-                        WillChange = preview.WillChange
-                    };
-                    PreviewItems.Add(item);
+                        Type = r.RuleType,
+                        Order = r.Order,
+                        Enabled = r.Enabled,
+                        FindText = r.FindText,
+                        ReplaceText = r.ReplaceText,
+                        UseRegex = r.UseRegex,
+                        TextToAdd = r.TextToAdd,
+                        Position = r.Position,
+                        CaseType = r.CaseType,
+                        CounterStart = r.CounterStart,
+                        CounterStep = r.CounterStep,
+                        CounterPadding = r.CounterPadding,
+                    }).ToList();
 
-                    if (preview.HasConflict)
-                        ConflictCount++;
+                    var previews = await _batchRenameService.PreviewRenameAsync(SelectedFiles, rules);
+
+                    PreviewItems.Clear();
+                    ConflictCount = 0;
+
+                    foreach (var preview in previews)
+                    {
+                        var item = new RenamePreviewItemViewModel
+                        {
+                            OriginalName = preview.OriginalName,
+                            OriginalPath = preview.OriginalPath,
+                            NewName = preview.NewName,
+                            NewPath = preview.NewPath,
+                            HasConflict = preview.HasConflict,
+                            ConflictReason = preview.ConflictReason,
+                            WillChange = preview.WillChange,
+                        };
+                        PreviewItems.Add(item);
+
+                        if (preview.HasConflict)
+                        {
+                            ConflictCount++;
+                        }
+                    }
+                }
+                else
+                {
+                    // Fallback preview generation
+                    await GenerateFallbackPreviewAsync();
                 }
 
                 TotalFiles = PreviewItems.Count;
-                StatusMessage = ConflictCount > 0 
-                    ? $"{ConflictCount} conflicts detected" 
+                StatusMessage = ConflictCount > 0
+                    ? $"{ConflictCount} conflicts detected"
                     : $"{TotalFiles} files ready to rename";
             }
             catch (Exception ex)
@@ -264,14 +358,157 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             }
         }
 
+        private async Task GenerateFallbackPreviewAsync()
+        {
+            await Task.Run(() =>
+            {
+                var enabledRules = Rules.Where(r => r.Enabled).OrderBy(r => r.Order).ToList();
+                var newNames = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                int counter = enabledRules.FirstOrDefault(r => r.RuleType == RenameRuleType.Counter)?.CounterStart ?? 1;
+
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    PreviewItems.Clear();
+                    ConflictCount = 0;
+                });
+
+                foreach (var filePath in SelectedFiles)
+                {
+                    var originalName = System.IO.Path.GetFileName(filePath);
+                    var directory = System.IO.Path.GetDirectoryName(filePath) ?? string.Empty;
+                    var nameWithoutExt = System.IO.Path.GetFileNameWithoutExtension(originalName);
+                    var extension = System.IO.Path.GetExtension(originalName);
+
+                    var newName = nameWithoutExt;
+                    var newExt = extension;
+
+                    // Apply each rule in order
+                    foreach (var rule in enabledRules)
+                    {
+                        switch (rule.RuleType)
+                        {
+                            case RenameRuleType.FindReplace:
+                                if (!string.IsNullOrEmpty(rule.FindText))
+                                {
+                                    if (rule.UseRegex)
+                                    {
+                                        try
+                                        {
+                                            newName = System.Text.RegularExpressions.Regex.Replace(
+                                                newName, rule.FindText, rule.ReplaceText ?? string.Empty);
+                                        }
+                                        catch { }
+                                    }
+                                    else
+                                    {
+                                        newName = newName.Replace(rule.FindText, rule.ReplaceText ?? string.Empty,
+                                            rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                                    }
+                                }
+                                break;
+
+                            case RenameRuleType.AddText:
+                                if (!string.IsNullOrEmpty(rule.TextToAdd))
+                                {
+                                    newName = rule.Position == TextPosition.Prefix
+                                        ? rule.TextToAdd + newName
+                                        : newName + rule.TextToAdd;
+                                }
+                                break;
+
+                            case RenameRuleType.RemoveText:
+                                if (!string.IsNullOrEmpty(rule.FindText))
+                                {
+                                    newName = newName.Replace(rule.FindText, string.Empty);
+                                }
+                                break;
+
+                            case RenameRuleType.Counter:
+                                var counterStr = counter.ToString().PadLeft(rule.CounterPadding, '0');
+                                newName = rule.Position == TextPosition.Prefix
+                                    ? $"{rule.CounterPrefix}{counterStr}{rule.CounterSuffix}{newName}"
+                                    : $"{newName}{rule.CounterPrefix}{counterStr}{rule.CounterSuffix}";
+                                counter += rule.CounterStep;
+                                break;
+
+                            case RenameRuleType.ChangeCase:
+                                newName = rule.CaseType switch
+                                {
+                                    CaseType.UpperCase => newName.ToUpperInvariant(),
+                                    CaseType.LowerCase => newName.ToLowerInvariant(),
+                                    CaseType.TitleCase => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(newName.ToLowerInvariant()),
+                                    _ => newName,
+                                };
+                                break;
+
+                            case RenameRuleType.ChangeExtension:
+                                if (!string.IsNullOrEmpty(rule.NewExtension))
+                                {
+                                    newExt = rule.NewExtension.StartsWith(".") ? rule.NewExtension : "." + rule.NewExtension;
+                                }
+                                break;
+
+                            case RenameRuleType.DateTime:
+                                var fileInfo = new System.IO.FileInfo(filePath);
+                                var dateStr = fileInfo.LastWriteTime.ToString(rule.DateFormat);
+                                newName = rule.Position == TextPosition.Prefix
+                                    ? $"{dateStr}_{newName}"
+                                    : $"{newName}_{dateStr}";
+                                break;
+                        }
+                    }
+
+                    var finalNewName = newName + newExt;
+                    var newPath = System.IO.Path.Combine(directory, finalNewName);
+                    var hasConflict = newNames.Contains(finalNewName) ||
+                                     (finalNewName != originalName && System.IO.File.Exists(newPath));
+                    var conflictReason = hasConflict ? "Name already exists" : string.Empty;
+
+                    newNames.Add(finalNewName);
+
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        PreviewItems.Add(new RenamePreviewItemViewModel
+                        {
+                            OriginalName = originalName,
+                            OriginalPath = filePath,
+                            NewName = finalNewName,
+                            NewPath = newPath,
+                            HasConflict = hasConflict,
+                            ConflictReason = conflictReason,
+                            WillChange = finalNewName != originalName,
+                        });
+
+                        if (hasConflict)
+                        {
+                            ConflictCount++;
+                        }
+                    });
+                }
+            });
+        }
+
         [RelayCommand]
         private async Task ApplyRenameAsync()
         {
-            if (_batchRenameService == null || SelectedFiles.Count == 0 || Rules.Count == 0)
+            if (SelectedFiles.Count == 0 || Rules.Count == 0)
             {
                 return;
             }
 
+            if (ConflictCount > 0)
+            {
+                StatusMessage = "Cannot rename: conflicts exist";
+                return;
+            }
+
+            if (_batchRenameService == null)
+            {
+                await ApplyRenameFallbackAsync();
+                return;
+            }
+
+            // Service-based implementation continues below
             if (ConflictCount > 0)
             {
                 StatusMessage = "Cannot rename: conflicts exist";
@@ -296,7 +533,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                     CaseType = r.CaseType,
                     CounterStart = r.CounterStart,
                     CounterStep = r.CounterStep,
-                    CounterPadding = r.CounterPadding
+                    CounterPadding = r.CounterPadding,
                 }).ToList();
 
                 var result = await _batchRenameService.ExecuteRenameAsync(SelectedFiles, rules);
@@ -324,9 +561,70 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             }
         }
 
+        private async Task ApplyRenameFallbackAsync()
+        {
+            IsLoading = true;
+            StatusMessage = "Renaming files...";
+            int renamed = 0;
+            int failed = 0;
+            var undoLog = new System.Collections.Generic.List<(string oldPath, string newPath)>();
+
+            try
+            {
+                foreach (var preview in PreviewItems.Where(p => p.WillChange && !p.HasConflict))
+                {
+                    try
+                    {
+                        if (System.IO.File.Exists(preview.OriginalPath))
+                        {
+                            System.IO.File.Move(preview.OriginalPath, preview.NewPath);
+                            undoLog.Add((preview.NewPath, preview.OriginalPath));
+                            renamed++;
+                        }
+                    }
+                    catch
+                    {
+                        failed++;
+                    }
+                }
+
+                if (renamed > 0)
+                {
+                    // Store undo log for potential undo
+                    _undoLog = undoLog;
+                    CanUndo = true;
+                    LastTransactionId = Guid.NewGuid().ToString();
+                }
+
+                StatusMessage = failed == 0
+                    ? $"Successfully renamed {renamed} files"
+                    : $"Renamed {renamed}, failed {failed}";
+
+                SelectedFiles.Clear();
+                PreviewItems.Clear();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private System.Collections.Generic.List<(string oldPath, string newPath)>? _undoLog;
+
         [RelayCommand]
         private async Task UndoLastBatchAsync()
         {
+            // First try fallback undo
+            if (_undoLog != null && _undoLog.Count > 0)
+            {
+                await UndoFallbackAsync();
+                return;
+            }
+
             if (_batchRenameService == null || string.IsNullOrEmpty(LastTransactionId))
             {
                 return;
@@ -337,7 +635,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
 
             try
             {
-                var result = await _batchRenameService.UndoRenameAsync(LastTransactionId);
+                var result = await _batchRenameService!.UndoRenameAsync(LastTransactionId!);
 
                 if (result.Success)
                 {
@@ -360,6 +658,54 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             }
         }
 
+        private async Task UndoFallbackAsync()
+        {
+            IsLoading = true;
+            StatusMessage = "Undoing rename...";
+            int restored = 0;
+            int failed = 0;
+
+            try
+            {
+                if (_undoLog != null)
+                {
+                    foreach (var (oldPath, newPath) in _undoLog)
+                    {
+                        try
+                        {
+                            if (System.IO.File.Exists(oldPath))
+                            {
+                                System.IO.File.Move(oldPath, newPath);
+                                restored++;
+                            }
+                        }
+                        catch
+                        {
+                            failed++;
+                        }
+                    }
+                }
+
+                StatusMessage = failed == 0
+                    ? $"Successfully restored {restored} files"
+                    : $"Restored {restored}, failed {failed}";
+
+                _undoLog = null;
+                LastTransactionId = null;
+                CanUndo = false;
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Undo error: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+
+            await Task.CompletedTask;
+        }
+
         [RelayCommand]
         private void AddFiles(System.Collections.IList files)
         {
@@ -370,6 +716,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                     SelectedFiles.Add(file);
                 }
             }
+
             TotalFiles = SelectedFiles.Count;
             _ = RefreshPreviewAsync();
         }
@@ -454,7 +801,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             RenameRuleType.DateTime => "Date/Time",
             RenameRuleType.MetadataExtract => "Metadata",
             RenameRuleType.RegularExpression => "Regex",
-            _ => "Unknown"
+            _ => "Unknown",
         };
     }
 
@@ -485,6 +832,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         private bool _willChange;
 
         public string StatusIcon => HasConflict ? "AlertCircle" : (WillChange ? "Check" : "Minus");
+
         public string StatusColor => HasConflict ? "#FF6B6B" : (WillChange ? "#4ECDC4" : "#888888");
     }
 

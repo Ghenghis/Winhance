@@ -89,14 +89,14 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 Name = "Documents",
                 FileCount = 124,
                 TotalSize = 234000000,
-                DestinationFolder = "D:\\Organized\\Documents"
+                DestinationFolder = "D:\\Organized\\Documents",
             });
             Categories.Add(new OrganizationCategoryViewModel
             {
                 Name = "Images",
                 FileCount = 312,
                 TotalSize = 2300000000,
-                DestinationFolder = "D:\\Organized\\Images"
+                DestinationFolder = "D:\\Organized\\Images",
             });
 
             RecoveryOpportunities.Add(new RecoveryOpportunityViewModel
@@ -105,15 +105,56 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 Size = 337000000000,
                 ItemCount = 428,
                 RecommendedAction = RecoveryAction.Relocate,
-                Description = "Relocate to D: drive"
+                Description = "Relocate to D: drive",
             });
+        }
+
+        [RelayCommand]
+        private void BrowseSource()
+        {
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Select Source Folder",
+                InitialDirectory = string.IsNullOrEmpty(SourcePath)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : SourcePath,
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                SourcePath = dialog.FolderName;
+            }
+        }
+
+        [RelayCommand]
+        private void BrowseDestination()
+        {
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Select Destination Folder",
+                InitialDirectory = string.IsNullOrEmpty(DestinationPath)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : DestinationPath,
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                DestinationPath = dialog.FolderName;
+            }
         }
 
         [RelayCommand]
         public async Task AnalyzeAsync()
         {
-            if (_organizerService == null || string.IsNullOrEmpty(SourcePath))
+            if (string.IsNullOrEmpty(SourcePath))
             {
+                StatusMessage = "Please select a source folder";
+                return;
+            }
+
+            if (!System.IO.Directory.Exists(SourcePath))
+            {
+                StatusMessage = "Source folder does not exist";
                 return;
             }
 
@@ -122,24 +163,31 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
 
             try
             {
-                var plan = await _organizerService.AnalyzeAsync(SourcePath, SelectedStrategy);
-
-                Categories.Clear();
-                foreach (var category in plan.Categories)
+                if (_organizerService != null)
                 {
-                    Categories.Add(new OrganizationCategoryViewModel
-                    {
-                        Name = category.Name,
-                        FileCount = category.FileCount,
-                        TotalSize = category.TotalSize,
-                        DestinationFolder = category.DestinationFolder,
-                        IsSelected = true
-                    });
-                }
+                    var plan = await _organizerService.AnalyzeAsync(SourcePath, SelectedStrategy);
 
-                TotalFiles = plan.TotalFiles;
-                TotalSize = plan.TotalSize;
-                UnclassifiedFiles = plan.UnclassifiedFiles;
+                    Categories.Clear();
+                    foreach (var category in plan.Categories)
+                    {
+                        Categories.Add(new OrganizationCategoryViewModel
+                        {
+                            Name = category.Name,
+                            FileCount = category.FileCount,
+                            TotalSize = category.TotalSize,
+                            DestinationFolder = category.DestinationFolder,
+                            IsSelected = true,
+                        });
+                    }
+
+                    TotalFiles = plan.TotalFiles;
+                    TotalSize = plan.TotalSize;
+                    UnclassifiedFiles = plan.UnclassifiedFiles;
+                }
+                else
+                {
+                    await AnalyzeFallbackAsync();
+                }
 
                 StatusMessage = $"Found {TotalFiles} files in {Categories.Count} categories";
             }
@@ -153,16 +201,116 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             }
         }
 
+        private async Task AnalyzeFallbackAsync()
+        {
+            await Task.Run(() =>
+            {
+                var categoryData = new System.Collections.Generic.Dictionary<string, (int count, long size, System.Collections.Generic.List<string> files)>();
+                int totalFiles = 0;
+                long totalSize = 0;
+                int unclassified = 0;
+
+                var files = System.IO.Directory.GetFiles(SourcePath, "*.*", System.IO.SearchOption.TopDirectoryOnly);
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        var fileInfo = new System.IO.FileInfo(file);
+                        var extension = fileInfo.Extension.ToLowerInvariant();
+                        var categoryName = GetCategoryForExtension(extension);
+
+                        totalFiles++;
+                        totalSize += fileInfo.Length;
+
+                        if (!categoryData.ContainsKey(categoryName))
+                        {
+                            categoryData[categoryName] = (0, 0, new System.Collections.Generic.List<string>());
+                        }
+
+                        var data = categoryData[categoryName];
+                        data.count++;
+                        data.size += fileInfo.Length;
+                        data.files.Add(file);
+                        categoryData[categoryName] = data;
+
+                        if (categoryName == "Other")
+                        {
+                            unclassified++;
+                        }
+                    }
+                    catch { }
+                }
+
+                var destBase = MoveToSameFolder ? SourcePath : DestinationPath;
+                if (string.IsNullOrEmpty(destBase))
+                {
+                    destBase = SourcePath;
+                }
+
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    Categories.Clear();
+                    foreach (var kvp in categoryData.OrderByDescending(k => k.Value.size))
+                    {
+                        Categories.Add(new OrganizationCategoryViewModel
+                        {
+                            Name = kvp.Key,
+                            FileCount = kvp.Value.count,
+                            TotalSize = kvp.Value.size,
+                            DestinationFolder = System.IO.Path.Combine(destBase, kvp.Key),
+                            IsSelected = true,
+                            Files = kvp.Value.files,
+                        });
+                    }
+
+                    TotalFiles = totalFiles;
+                    TotalSize = totalSize;
+                    UnclassifiedFiles = unclassified;
+                });
+            });
+        }
+
+        private static string GetCategoryForExtension(string extension)
+        {
+            return extension switch
+            {
+                ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" or ".tiff" => "Images",
+                ".mp4" or ".mkv" or ".avi" or ".mov" or ".wmv" or ".flv" or ".webm" => "Videos",
+                ".mp3" or ".wav" or ".flac" or ".aac" or ".ogg" or ".wma" or ".m4a" => "Music",
+                ".pdf" or ".doc" or ".docx" or ".txt" or ".rtf" or ".odt" => "Documents",
+                ".xls" or ".xlsx" or ".csv" or ".ods" => "Spreadsheets",
+                ".ppt" or ".pptx" or ".odp" => "Presentations",
+                ".zip" or ".rar" or ".7z" or ".tar" or ".gz" => "Archives",
+                ".exe" or ".msi" or ".appx" => "Programs",
+                ".dll" or ".sys" or ".drv" => "System",
+                ".py" or ".js" or ".ts" or ".cs" or ".java" or ".cpp" or ".c" or ".h" or ".rs" => "Code",
+                ".html" or ".htm" or ".css" or ".scss" or ".less" => "Web",
+                ".json" or ".xml" or ".yaml" or ".yml" or ".toml" => "Data",
+                ".sql" or ".db" or ".sqlite" => "Database",
+                ".psd" or ".ai" or ".sketch" or ".fig" or ".xd" => "Design",
+                ".ttf" or ".otf" or ".woff" or ".woff2" => "Fonts",
+                _ => "Other",
+            };
+        }
+
         [RelayCommand]
         private async Task ApplyOrganizationAsync()
         {
-            if (_organizerService == null || Categories.Count == 0)
+            if (Categories.Count == 0)
             {
+                StatusMessage = "No categories to organize";
                 return;
             }
 
             IsLoading = true;
             StatusMessage = "Organizing files...";
+
+            if (_organizerService == null)
+            {
+                await ApplyOrganizationFallbackAsync();
+                return;
+            }
 
             try
             {
@@ -176,8 +324,8 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                         Name = c.Name,
                         DestinationFolder = c.DestinationFolder,
                         FileCount = c.FileCount,
-                        TotalSize = c.TotalSize
-                    }).ToList()
+                        TotalSize = c.TotalSize,
+                    }).ToList(),
                 };
 
                 var result = await _organizerService.ExecuteAsync(plan);
@@ -203,9 +351,87 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             }
         }
 
+        private System.Collections.Generic.List<(string source, string dest)>? _undoLog;
+
+        private async Task ApplyOrganizationFallbackAsync()
+        {
+            int organized = 0;
+            int failed = 0;
+            var undoLog = new System.Collections.Generic.List<(string source, string dest)>();
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    foreach (var category in Categories.Where(c => c.IsSelected))
+                    {
+                        if (!System.IO.Directory.Exists(category.DestinationFolder))
+                        {
+                            System.IO.Directory.CreateDirectory(category.DestinationFolder);
+                        }
+
+                        foreach (var file in category.Files)
+                        {
+                            try
+                            {
+                                var fileName = System.IO.Path.GetFileName(file);
+                                var destPath = System.IO.Path.Combine(category.DestinationFolder, fileName);
+
+                                // Handle name conflicts
+                                if (System.IO.File.Exists(destPath))
+                                {
+                                    var nameWithoutExt = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                                    var ext = System.IO.Path.GetExtension(fileName);
+                                    int counter = 1;
+                                    while (System.IO.File.Exists(destPath))
+                                    {
+                                        destPath = System.IO.Path.Combine(category.DestinationFolder, $"{nameWithoutExt}_{counter++}{ext}");
+                                    }
+                                }
+
+                                System.IO.File.Move(file, destPath);
+                                undoLog.Add((destPath, file));
+                                organized++;
+                            }
+                            catch
+                            {
+                                failed++;
+                            }
+                        }
+                    }
+                });
+
+                if (organized > 0)
+                {
+                    _undoLog = undoLog;
+                    CanUndo = true;
+                    LastTransactionId = Guid.NewGuid().ToString();
+                }
+
+                StatusMessage = failed == 0
+                    ? $"Successfully organized {organized} files"
+                    : $"Organized {organized}, failed {failed}";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         [RelayCommand]
         private async Task UndoOrganizationAsync()
         {
+            // Try fallback undo first
+            if (_undoLog != null && _undoLog.Count > 0)
+            {
+                await UndoOrganizationFallbackAsync();
+                return;
+            }
+
             if (_organizerService == null || string.IsNullOrEmpty(LastTransactionId))
             {
                 return;
@@ -232,6 +458,55 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task UndoOrganizationFallbackAsync()
+        {
+            IsLoading = true;
+            StatusMessage = "Undoing organization...";
+            int restored = 0;
+            int failed = 0;
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    if (_undoLog != null)
+                    {
+                        foreach (var (currentPath, originalPath) in _undoLog)
+                        {
+                            try
+                            {
+                                if (System.IO.File.Exists(currentPath))
+                                {
+                                    System.IO.File.Move(currentPath, originalPath);
+                                    restored++;
+                                }
+                            }
+                            catch
+                            {
+                                failed++;
+                            }
+                        }
+                    }
+                });
+
+                StatusMessage = failed == 0
+                    ? $"Successfully restored {restored} files"
+                    : $"Restored {restored}, failed {failed}";
+
+                _undoLog = null;
+                LastTransactionId = null;
+                CanUndo = false;
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Undo error: {ex.Message}";
             }
             finally
             {
@@ -266,7 +541,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                         RecommendedAction = opportunity.RecommendedAction,
                         Description = opportunity.Description,
                         IsSafeToClean = opportunity.IsSafeToClean,
-                        IsSelected = opportunity.IsSafeToClean
+                        IsSelected = opportunity.IsSafeToClean,
                     });
                 }
 
@@ -344,7 +619,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             try
             {
                 var duplicates = await _organizerService.FindDuplicatesAsync(
-                    SourcePath, 
+                    SourcePath,
                     DuplicateSearchMethod.Hash);
 
                 DuplicateGroups.Clear();
@@ -357,7 +632,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                         Hash = group.Key,
                         FileSize = group.TotalSize,
                         DuplicateCount = group.FileCount - 1,
-                        WastedSpace = group.WastedSize
+                        WastedSpace = group.WastedSize,
                     };
 
                     foreach (var file in group.Files)
@@ -368,7 +643,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                             Name = file.Name,
                             DateModified = file.DateModified,
                             IsOriginal = file.IsOriginal,
-                            IsSelected = !file.IsOriginal
+                            IsSelected = !file.IsOriginal,
                         });
                     }
 
@@ -398,6 +673,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 order++;
                 size /= 1024;
             }
+
             return $"{size:0.##} {sizes[order]}";
         }
     }
@@ -425,6 +701,8 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         [ObservableProperty]
         private bool _isExpanded;
 
+        public System.Collections.Generic.List<string> Files { get; set; } = new();
+
         public string SizeDisplay => FormatSize(TotalSize);
 
         private static string FormatSize(long bytes)
@@ -437,6 +715,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 order++;
                 size /= 1024;
             }
+
             return $"{size:0.##} {sizes[order]}";
         }
     }
@@ -471,6 +750,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         private bool _isSelected;
 
         public string SizeDisplay => FormatSize(Size);
+
         public string ActionDisplay => RecommendedAction.ToString();
 
         private static string FormatSize(long bytes)
@@ -483,6 +763,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 order++;
                 size /= 1024;
             }
+
             return $"{size:0.##} {sizes[order]}";
         }
     }
@@ -507,6 +788,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         public ObservableCollection<DuplicateFileViewModel> Files { get; } = new();
 
         public string SizeDisplay => FormatSize(FileSize);
+
         public string WastedDisplay => FormatSize(WastedSpace);
 
         private static string FormatSize(long bytes)
@@ -519,6 +801,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 order++;
                 size /= 1024;
             }
+
             return $"{size:0.##} {sizes[order]}";
         }
     }

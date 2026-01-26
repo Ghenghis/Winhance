@@ -7,6 +7,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Winhance.Core.Features.FileManager.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Winhance.WPF.Features.FileManager.ViewModels
 {
@@ -20,6 +21,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         private readonly IBatchRenameService? _batchRenameService;
         private readonly IOrganizerService? _organizerService;
         private readonly INexusIndexerService? _nexusIndexer;
+        private readonly IServiceProvider? _serviceProvider;
 
         [ObservableProperty]
         private bool _isBrowserTabSelected = true;
@@ -55,8 +57,17 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         private ObservableCollection<NexusFileEntry> _searchResults = new();
 
         public DualPaneBrowserViewModel? BrowserViewModel { get; private set; }
+
         public BatchRenameViewModel? BatchRenameViewModel { get; private set; }
+
         public OrganizerViewModel? OrganizerViewModel { get; private set; }
+
+        public SpaceRecoveryViewModel? SpaceRecoveryViewModel { get; private set; }
+
+        public TabContainerViewModel? TabContainerViewModel { get; private set; }
+
+        public SearchResultsViewModel? SearchResultsViewModel { get; private set; }
+
         public bool IsNexusAvailable => _nexusIndexer?.IsAvailable ?? false;
 
         public FileManagerViewModel()
@@ -69,23 +80,40 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             IFileManagerService fileManagerService,
             IBatchRenameService batchRenameService,
             IOrganizerService organizerService,
-            INexusIndexerService nexusIndexer)
+            INexusIndexerService nexusIndexer,
+            IServiceProvider serviceProvider)
         {
             _fileManagerService = fileManagerService;
             _batchRenameService = batchRenameService;
             _organizerService = organizerService;
             _nexusIndexer = nexusIndexer;
-            
+            _serviceProvider = serviceProvider;
+
             InitializeViewModels();
         }
 
         private void InitializeViewModels()
         {
-            BrowserViewModel = new DualPaneBrowserViewModel(_fileManagerService);
+            BrowserViewModel = new DualPaneBrowserViewModel(_fileManagerService, _serviceProvider);
             BatchRenameViewModel = new BatchRenameViewModel(_batchRenameService);
             OrganizerViewModel = new OrganizerViewModel(_organizerService);
-            
+            SpaceRecoveryViewModel = new SpaceRecoveryViewModel(_organizerService);
+            TabContainerViewModel = _serviceProvider?.GetRequiredService<TabContainerViewModel>() ?? new TabContainerViewModel();
+            SearchResultsViewModel = _serviceProvider?.GetRequiredService<SearchResultsViewModel>() ?? new SearchResultsViewModel();
+
+            // Wire up tab navigation to browser
+            TabContainerViewModel.TabNavigationRequested += OnTabNavigationRequested;
+
             CurrentView = BrowserViewModel;
+        }
+
+        private void OnTabNavigationRequested(object? sender, string path)
+        {
+            if (BrowserViewModel != null)
+            {
+                BrowserViewModel.LeftPanePath = path;
+                _ = BrowserViewModel.RefreshAsync();
+            }
         }
 
         [RelayCommand]
@@ -125,6 +153,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             IsBatchRenameTabSelected = false;
             IsOrganizerTabSelected = false;
             IsSpaceRecoveryTabSelected = true;
+            CurrentView = SpaceRecoveryViewModel;
         }
 
         [RelayCommand]
@@ -163,7 +192,26 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
         [RelayCommand]
         private void ShowHelp()
         {
-            // TODO: Show help dialog
+            var helpText = "Winhance-FS File Manager Help\n\n" +
+                          "Keyboard Shortcuts:\n" +
+                          "F2 - Rename\n" +
+                          "F3 - Quick View\n" +
+                          "F4 - Edit\n" +
+                          "F5 - Copy\n" +
+                          "F6 - Move\n" +
+                          "F7 - New Folder\n" +
+                          "Del - Delete\n" +
+                          "Ctrl+A - Select All\n" +
+                          "Ctrl+F - Search\n" +
+                          "Ctrl+T - New Tab\n" +
+                          "Ctrl+W - Close Tab\n" +
+                          "Tab - Switch Panel";
+
+            System.Windows.MessageBox.Show(
+                helpText,
+                "Help",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
         }
 
         /// <summary>
@@ -185,8 +233,8 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             {
                 var count = await _nexusIndexer.IndexAllDrivesAsync();
                 IndexedFileCount = count;
-                StatusMessage = count >= 0 
-                    ? $"Indexed {count:N0} files" 
+                StatusMessage = count >= 0
+                    ? $"Indexed {count:N0} files"
                     : $"Indexing failed: {_nexusIndexer.GetLastError()}";
             }
             catch (Exception ex)
@@ -221,6 +269,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
                 {
                     SearchResults.Add(result);
                 }
+
                 StatusMessage = $"Found {SearchResults.Count} results";
             }
             catch (Exception ex)
@@ -240,7 +289,7 @@ namespace Winhance.WPF.Features.FileManager.ViewModels
             {
                 BrowserViewModel.FilterText = value;
             }
-            
+
             // Trigger Nexus search if available and text is substantial
             if (_nexusIndexer?.IsAvailable == true && value.Length >= 2)
             {
