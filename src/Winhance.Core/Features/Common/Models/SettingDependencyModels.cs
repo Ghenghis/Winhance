@@ -2,7 +2,6 @@ namespace Winhance.Core.Features.Common.Models;
 
 public record SettingDependency
 {
-
     public SettingDependencyType DependencyType { get; init; }
 
     public required string DependentSettingId { get; init; }
@@ -12,7 +11,6 @@ public record SettingDependency
     public string? RequiredModule { get; init; }
 
     public string? RequiredValue { get; init; }
-
 }
 
 public enum SettingDependencyType
@@ -20,5 +18,5 @@ public enum SettingDependencyType
     RequiresEnabled,
     RequiresDisabled,
     RequiresSpecificValue,
-    RequiresValueBeforeAnyChange
+    RequiresValueBeforeAnyChange,
 }

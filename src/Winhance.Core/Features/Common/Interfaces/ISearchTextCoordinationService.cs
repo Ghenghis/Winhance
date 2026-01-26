@@ -12,6 +12,7 @@ namespace Winhance.Core.Features.Common.Interfaces
     public class SearchTextChangedEventArgs : EventArgs
     {
         public string SearchText { get; }
+
         public string PreviousSearchText { get; }
 
         public SearchTextChangedEventArgs(string searchText, string previousSearchText)

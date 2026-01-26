@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
-using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
 
 namespace Winhance.Core.Features.Common.Services
@@ -22,8 +22,7 @@ namespace Winhance.Core.Features.Common.Services
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "Winhance",
                 "Logs",
-                $"Winhance_Log_{DateTime.Now:yyyyMMdd_HHmmss}.log"
-            );
+                $"Winhance_Log_{DateTime.Now:yyyyMMdd_HHmmss}.log");
         }
 
         public void Initialize(IWindowsVersionService versionService)
@@ -81,7 +80,7 @@ namespace Winhance.Core.Features.Common.Services
                 // Create or overwrite log file
                 _logWriter = new StreamWriter(_logPath, false, Encoding.UTF8)
                 {
-                    AutoFlush = true
+                    AutoFlush = true,
                 };
 
                 // Write initial log header
@@ -99,6 +98,7 @@ namespace Winhance.Core.Features.Common.Services
                 {
                     LogInformation($"OS Version: {Environment.OSVersion}");
                 }
+
                 LogInformation("===========================");
             }
             catch (Exception ex)
@@ -162,7 +162,6 @@ namespace Winhance.Core.Features.Common.Services
 
                     // Write to file if log writer is available
                     _logWriter?.WriteLine(logEntry);
-
                 }
                 catch (Exception ex)
                 {

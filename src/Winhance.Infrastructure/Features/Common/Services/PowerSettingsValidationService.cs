@@ -20,7 +20,7 @@ public class PowerSettingsValidationService(
 
         var bulkPowerValues = await powerCfgQueryService.GetAllPowerSettingsACDCAsync("SCHEME_CURRENT");
 
-        if (!bulkPowerValues.Any())
+        if (bulkPowerValues.Count == 0)
         {
             logService.Log(LogLevel.Warning, "Could not get bulk power settings, skipping validation");
             return settingsList;
@@ -80,7 +80,8 @@ public class PowerSettingsValidationService(
                 {
                     if (await powerCfgQueryService.IsSettingHardwareControlledAsync(powerCfgSetting))
                     {
-                        logService.Log(LogLevel.Info,
+                        logService.Log(
+                            LogLevel.Info,
                             $"Filtering out hardware-controlled setting: {setting.Id} ({powerCfgSetting.SettingGUIDAlias})");
                         shouldFilterOutDueToHardwareControl = true;
                         break;
@@ -132,21 +133,22 @@ public class PowerSettingsValidationService(
         var lines = result.Output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         bool inAvailableSection = false;
 
-        var hibernationKeywords = new[] {
+        var hibernationKeywords = new[]
+        {
             "hibernate", "hibernation", "ruhezustand", "hibernación",
-            "hibernação", "ibernazione", "slaapstand"
+            "hibernação", "ibernazione", "slaapstand",
         };
 
         foreach (var line in lines)
         {
             var trimmedLine = line.Trim().ToLowerInvariant();
 
-            if (trimmedLine.Contains("available on this system") && !trimmedLine.Contains("not available"))
+            if (trimmedLine.Contains("available on this system", StringComparison.Ordinal) && !trimmedLine.Contains("not available", StringComparison.Ordinal))
             {
                 inAvailableSection = true;
                 continue;
             }
-            else if (trimmedLine.Contains("not available on this system"))
+            else if (trimmedLine.Contains("not available on this system", StringComparison.Ordinal))
             {
                 inAvailableSection = false;
                 continue;

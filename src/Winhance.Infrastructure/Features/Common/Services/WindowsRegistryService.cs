@@ -47,7 +47,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
 
             // Check for path traversal patterns
-            if (keyPath.Contains(".."))
+            if (keyPath.Contains("..", StringComparison.Ordinal))
             {
                 throw new ArgumentException("Registry path traversal not allowed", parameterName);
             }
@@ -68,7 +68,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private static void ValidateValueName(string? valueName)
         {
             if (valueName == null)
+            {
                 return;
+            }
 
             var invalidChars = new[] { '\0', '\r', '\n' };
             if (valueName.IndexOfAny(invalidChars) >= 0)
@@ -84,7 +86,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 ValidateRegistryPath(keyPath, nameof(keyPath));
 
                 if (KeyExists(keyPath))
+                {
                     return true;
+                }
 
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var createdKey = rootKey.CreateSubKey(subKeyPath, true);
@@ -111,8 +115,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             string keyPath,
             string valueName,
             object value,
-            RegistryValueKind valueKind
-        )
+            RegistryValueKind valueKind)
         {
             try
             {
@@ -122,7 +125,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var targetKey = rootKey.CreateSubKey(subKeyPath, true);
                 if (targetKey == null)
+                {
                     return false;
+                }
 
                 targetKey.SetValue(valueName, value, valueKind);
                 return true;
@@ -179,7 +184,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 ValidateRegistryPath(keyPath, nameof(keyPath));
 
                 if (!KeyExists(keyPath))
+                {
                     return true;
+                }
 
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 rootKey.DeleteSubKeyTree(subKeyPath, false);
@@ -212,7 +219,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var key = rootKey.OpenSubKey(subKeyPath, true);
                 if (key == null)
+                {
                     return false;
+                }
 
                 key.DeleteValue(valueName, false);
                 return true;
@@ -266,7 +275,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var (rootKey, subKeyPath) = ParseKeyPath(keyPath);
                 using var key = rootKey.OpenSubKey(subKeyPath, false);
                 if (key == null)
+                {
                     return false;
+                }
 
                 return key.GetValueNames().Contains(valueName, StringComparer.OrdinalIgnoreCase);
             }
@@ -282,10 +293,14 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 if (setting?.ValueName == null)
-                    return KeyExists(setting?.KeyPath ?? "");
+                {
+                    return KeyExists(setting?.KeyPath ?? string.Empty);
+                }
 
                 if (!KeyExists(setting.KeyPath))
+                {
                     return false;
+                }
 
                 return ValueExists(setting.KeyPath, setting.ValueName);
             }
@@ -301,7 +316,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 if (setting == null)
+                {
                     return false;
+                }
 
                 // For settings that check the (Default) value with ValueName = null,
                 // we need to check if both EnabledValue and DisabledValue are null.
@@ -331,13 +348,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     var currentByte = GetBinaryByte(setting.KeyPath, setting.ValueName, setting.BinaryByteIndex.Value);
                     if (currentByte == null)
+                    {
                         return false;
+                    }
 
                     var enabledByte = setting.EnabledValue switch
                     {
                         byte b => b,
                         int i => (byte)i,
-                        _ => (byte)0
+                        _ => (byte)0,
                     };
 
                     return currentByte.Value == enabledByte;
@@ -347,11 +366,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 // Check if current value matches EnabledValue (only if EnabledValue is not null)
                 if (setting.EnabledValue != null && CompareValues(currentValue, setting.EnabledValue))
+                {
                     return true;
+                }
 
                 // Check if current value matches DisabledValue (only if DisabledValue is not null)
                 if (setting.DisabledValue != null && CompareValues(currentValue, setting.DisabledValue))
+                {
                     return false;
+                }
 
                 // Value doesn't match either EnabledValue or DisabledValue
                 return false;
@@ -404,6 +427,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     return currentBytes[byteIndex];
                 }
+
                 return null;
             }
             catch (Exception ex)
@@ -435,9 +459,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 var modifiedBytes = (byte[])currentBytes.Clone();
                 if (setBit)
+                {
                     modifiedBytes[byteIndex] |= bitMask;
+                }
                 else
+                {
                     modifiedBytes[byteIndex] &= (byte)~bitMask;
+                }
 
                 return SetValue(keyPath, valueName, modifiedBytes, RegistryValueKind.Binary);
             }
@@ -454,7 +482,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 var currentByte = GetBinaryByte(keyPath, valueName, byteIndex);
                 if (!currentByte.HasValue)
+                {
                     return false;
+                }
 
                 return (currentByte.Value & bitMask) == bitMask;
             }
@@ -468,7 +498,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public bool ApplySetting(RegistrySetting setting, bool isEnabled, object? specificValue = null)
         {
             if (setting == null)
+            {
                 return false;
+            }
 
             try
             {
@@ -483,7 +515,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (setting.BitMask.HasValue && setting.BinaryByteIndex.HasValue)
                 {
                     if (!CreateKey(setting.KeyPath))
+                    {
                         return false;
+                    }
 
                     var result = ModifyBinaryBit(setting.KeyPath, setting.ValueName, setting.BinaryByteIndex.Value, setting.BitMask.Value, isEnabled);
                     logService.Log(LogLevel.Info, $"[WindowsRegistryService] Modified bit mask 0x{setting.BitMask.Value:X2} at byte index {setting.BinaryByteIndex.Value} to {isEnabled} - Success: {result}");
@@ -500,18 +534,20 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         {
                             byte b => b,
                             int i => (byte)i,
-                            _ => (byte)0
+                            _ => (byte)0,
                         },
                         _ => setting.DisabledValue switch
                         {
                             byte b => b,
                             int i => (byte)i,
-                            _ => (byte)0
-                        }
+                            _ => (byte)0,
+                        },
                     };
 
                     if (!CreateKey(setting.KeyPath))
+                    {
                         return false;
+                    }
 
                     var result = ModifyBinaryByte(setting.KeyPath, setting.ValueName, setting.BinaryByteIndex.Value, byteValue);
                     logService.Log(LogLevel.Info, $"[WindowsRegistryService] Modified byte at index {setting.BinaryByteIndex.Value} to {byteValue:X2} - Success: {result}");
@@ -533,7 +569,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 }
 
                 if (!CreateKey(setting.KeyPath))
+                {
                     return false;
+                }
 
                 var setResult = SetValue(setting.KeyPath, setting.ValueName, valueToSet, setting.ValueType);
 
@@ -551,7 +589,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             var parts = keyPath.Split('\\', 2);
             if (parts.Length < 2)
+            {
                 throw new ArgumentException($"Invalid registry key path: {keyPath}");
+            }
 
             var rootKey = parts[0].ToUpperInvariant() switch
             {
@@ -570,11 +610,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             var results = new Dictionary<string, object?>();
             var queriesByHive = queries.GroupBy(q => GetHiveFromPath(q.keyPath));
-            
+
             foreach (var hiveGroup in queriesByHive)
             {
                 var rootKey = hiveGroup.Key;
-                
+
                 foreach (var (keyPath, valueName) in hiveGroup)
                 {
                     try
@@ -604,7 +644,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
             }
-            
+
             return results;
         }
 
@@ -630,8 +670,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 int i when desired is int d => i == d,
                 string s when desired is string ds => s.Equals(
                     ds,
-                    StringComparison.OrdinalIgnoreCase
-                ),
+                    StringComparison.OrdinalIgnoreCase),
                 byte[] ba when desired is byte[] dba => ba.SequenceEqual(dba),
                 _ => current.Equals(desired),
             };

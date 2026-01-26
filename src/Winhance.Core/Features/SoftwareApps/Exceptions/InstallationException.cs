@@ -16,7 +16,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// <summary>
         /// Initializes a new instance of the <see cref="InstallationException"/> class.
         /// </summary>
-        public InstallationException() : base()
+        public InstallationException()
+            : base()
         {
             ErrorType = InstallationErrorType.UnknownError;
         }
@@ -25,7 +26,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// Initializes a new instance of the <see cref="InstallationException"/> class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public InstallationException(string message) : base(message)
+        public InstallationException(string message)
+            : base(message)
         {
             ErrorType = InstallationErrorType.UnknownError;
         }
@@ -36,7 +38,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public InstallationException(string message, Exception innerException) : base(message, innerException)
+        public InstallationException(string message, Exception innerException)
+            : base(message, innerException)
         {
             ErrorType = InstallationErrorType.UnknownError;
         }

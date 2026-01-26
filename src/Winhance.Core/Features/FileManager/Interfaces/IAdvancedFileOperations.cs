@@ -18,18 +18,21 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Copy files with detailed progress and resume capability.
         /// </summary>
-        Task<BulkOperationResult> BulkCopyAsync(IEnumerable<string> sources, string destination, 
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task<BulkOperationResult> BulkCopyAsync(IEnumerable<string> sources, string destination,
             BulkCopyOptions options, IProgress<BulkProgress>? progress = null, CancellationToken ct = default);
 
         /// <summary>
         /// Move files with collision handling and undo support.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<BulkOperationResult> BulkMoveAsync(IEnumerable<string> sources, string destination,
             CollisionHandling collision, IProgress<BulkProgress>? progress = null, CancellationToken ct = default);
 
         /// <summary>
         /// Delete files with recycle bin option and secure wipe.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<BulkOperationResult> BulkDeleteAsync(IEnumerable<string> paths, DeleteOptions options,
             IProgress<BulkProgress>? progress = null, CancellationToken ct = default);
 
@@ -40,12 +43,15 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Rename files using patterns (date, counter, regex, etc).
         /// </summary>
-        Task<IEnumerable<SmartRenameResult>> SmartRenameAsync(IEnumerable<string> files, 
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task<IEnumerable<SmartRenameResult>> SmartRenameAsync(
+            IEnumerable<string> files,
             SmartRenamePattern pattern, CancellationToken ct = default);
 
         /// <summary>
         /// Preview rename without applying changes.
         /// </summary>
+        /// <returns></returns>
         IEnumerable<SmartRenamePreviewItem> PreviewSmartRename(IEnumerable<string> files, SmartRenamePattern pattern);
 
         // ====================================================================
@@ -55,12 +61,14 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Set file attributes in batch (hidden, readonly, system, etc).
         /// </summary>
-        Task<int> SetAttributesAsync(IEnumerable<string> paths, FileAttributeChanges changes, 
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task<int> SetAttributesAsync(IEnumerable<string> paths, FileAttributeChanges changes,
             bool recursive = false, CancellationToken ct = default);
 
         /// <summary>
         /// Set file timestamps (created, modified, accessed).
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<int> SetTimestampsAsync(IEnumerable<string> paths, TimestampChanges changes,
             bool recursive = false, CancellationToken ct = default);
 
@@ -76,6 +84,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Copy file contents to clipboard (for small files).
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> CopyFileContentsToClipboardAsync(string path, int maxSizeKb = 100);
 
         /// <summary>
@@ -95,21 +104,25 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Create symbolic link (file or directory).
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> CreateSymbolicLinkAsync(string linkPath, string targetPath, bool isDirectory = false);
 
         /// <summary>
         /// Create hard link.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> CreateHardLinkAsync(string linkPath, string targetPath);
 
         /// <summary>
         /// Create junction point.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> CreateJunctionAsync(string linkPath, string targetPath);
 
         /// <summary>
         /// Get link target if path is a link.
         /// </summary>
+        /// <returns></returns>
         string? GetLinkTarget(string path);
 
         // ====================================================================
@@ -119,12 +132,14 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Split large file into parts.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<IEnumerable<string>> SplitFileAsync(string path, long partSizeBytes,
             IProgress<BulkProgress>? progress = null, CancellationToken ct = default);
 
         /// <summary>
         /// Join split file parts.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<string> JoinFilesAsync(IEnumerable<string> parts, string outputPath,
             IProgress<BulkProgress>? progress = null, CancellationToken ct = default);
 
@@ -135,26 +150,33 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Take ownership of file/folder.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> TakeOwnershipAsync(string path, bool recursive = false);
 
         /// <summary>
         /// Grant full control to current user.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> GrantFullControlAsync(string path, bool recursive = false);
     }
 
     // ====================================================================
     // SUPPORTING TYPES
     // ====================================================================
-
     public class BulkCopyOptions
     {
         public CollisionHandling Collision { get; set; } = CollisionHandling.Ask;
+
         public bool PreserveTimestamps { get; set; } = true;
+
         public bool PreserveAttributes { get; set; } = true;
+
         public bool VerifyAfterCopy { get; set; } = false;
+
         public bool ResumeOnError { get; set; } = true;
+
         public int RetryCount { get; set; } = 3;
+
         public int BufferSizeMb { get; set; } = 4;
     }
 
@@ -166,59 +188,87 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         OverwriteIfNewer,
         OverwriteIfDifferent,
         Rename,
-        RenameWithNumber
+        RenameWithNumber,
     }
 
     public class DeleteOptions
     {
         public bool UseRecycleBin { get; set; } = true;
+
         public bool SecureWipe { get; set; } = false;
+
         public int SecureWipePasses { get; set; } = 3;
+
         public bool DeleteReadOnly { get; set; } = false;
+
         public bool DeleteSystemFiles { get; set; } = false;
     }
 
     public class BulkOperationResult
     {
         public int SuccessCount { get; set; }
+
         public int FailedCount { get; set; }
+
         public int SkippedCount { get; set; }
+
         public long TotalBytesProcessed { get; set; }
+
         public TimeSpan Duration { get; set; }
+
         public List<OperationError> Errors { get; set; } = new();
+
         public bool CanUndo { get; set; }
     }
 
     public class OperationError
     {
         public string Path { get; set; } = string.Empty;
+
         public string Message { get; set; } = string.Empty;
+
         public Exception? Exception { get; set; }
     }
 
     public class BulkProgress
     {
         public int CurrentFile { get; set; }
+
         public int TotalFiles { get; set; }
+
         public string CurrentFileName { get; set; } = string.Empty;
+
         public long BytesProcessed { get; set; }
+
         public long TotalBytes { get; set; }
+
         public double SpeedBytesPerSec { get; set; }
+
         public TimeSpan EstimatedRemaining { get; set; }
+
         public string Phase { get; set; } = string.Empty;
     }
 
     public class SmartRenamePattern
     {
         public string Pattern { get; set; } = string.Empty;
+
         public int CounterStart { get; set; } = 1;
+
         public int CounterPadding { get; set; } = 3;
+
         public string DateFormat { get; set; } = "yyyy-MM-dd";
+
         public bool UseExifDate { get; set; } = false;
+
         public string RegexFind { get; set; } = string.Empty;
+
         public string RegexReplace { get; set; } = string.Empty;
+
         public CaseTransform CaseTransform { get; set; } = CaseTransform.None;
+
         public bool TrimSpaces { get; set; } = true;
+
         public string InvalidCharReplacement { get; set; } = "_";
     }
 
@@ -228,39 +278,52 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         LowerCase,
         UpperCase,
         TitleCase,
-        SentenceCase
+        SentenceCase,
     }
 
     public class SmartRenameResult
     {
         public string OriginalPath { get; set; } = string.Empty;
+
         public string NewPath { get; set; } = string.Empty;
+
         public bool Success { get; set; }
+
         public string? Error { get; set; }
     }
 
     public class SmartRenamePreviewItem
     {
         public string OriginalName { get; set; } = string.Empty;
+
         public string NewName { get; set; } = string.Empty;
+
         public bool HasConflict { get; set; }
+
         public string? ConflictReason { get; set; }
     }
 
     public class FileAttributeChanges
     {
         public bool? Hidden { get; set; }
+
         public bool? ReadOnly { get; set; }
+
         public bool? System { get; set; }
+
         public bool? Archive { get; set; }
     }
 
     public class TimestampChanges
     {
         public DateTime? CreatedTime { get; set; }
+
         public DateTime? ModifiedTime { get; set; }
+
         public DateTime? AccessedTime { get; set; }
+
         public bool UseSourceFile { get; set; }
+
         public string? SourceFilePath { get; set; }
     }
 
@@ -272,7 +335,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         Escaped,      // C:\\Folder\\File.txt
         FileName,     // File.txt
         Directory,    // C:\Folder
-        Relative      // .\File.txt
+        Relative,      // .\File.txt,
     }
 
     public enum TerminalType
@@ -281,6 +344,6 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         PowerShell,
         WindowsTerminal,
         GitBash,
-        WSL
+        WSL,
     }
 }

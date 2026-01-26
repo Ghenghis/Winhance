@@ -8,7 +8,7 @@ public class HardwareCompatibilityFilter : IHardwareCompatibilityFilter
 {
     private readonly IHardwareDetectionService _hardwareDetectionService;
     private readonly ILogService _logService;
-    
+
     private bool? _hasBattery;
     private bool? _hasLid;
     private bool? _supportsBrightness;
@@ -77,6 +77,7 @@ public class HardwareCompatibilityFilter : IHardwareCompatibilityFilter
                 _hasBattery = false;
             }
         }
+
         return _hasBattery.Value;
     }
 
@@ -94,6 +95,7 @@ public class HardwareCompatibilityFilter : IHardwareCompatibilityFilter
                 _hasLid = false;
             }
         }
+
         return _hasLid.Value;
     }
 
@@ -111,6 +113,7 @@ public class HardwareCompatibilityFilter : IHardwareCompatibilityFilter
                 _supportsBrightness = false;
             }
         }
+
         return _supportsBrightness.Value;
     }
 }

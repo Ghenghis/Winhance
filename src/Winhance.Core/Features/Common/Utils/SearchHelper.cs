@@ -7,7 +7,10 @@ namespace Winhance.Core.Features.Common.Utils
     {
         public static bool MatchesSearchTerm(string searchTerm, params string[] searchableFields)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm)) return true;
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return true;
+            }
 
             var searchTerms = searchTerm.ToLowerInvariant()
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);

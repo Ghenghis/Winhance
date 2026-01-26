@@ -10,7 +10,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// <summary>
         /// Initializes a new instance of the <see cref="RemovalException"/> class.
         /// </summary>
-        public RemovalException() : base()
+        public RemovalException()
+            : base()
         {
         }
 
@@ -18,7 +19,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// Initializes a new instance of the <see cref="RemovalException"/> class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public RemovalException(string message) : base(message)
+        public RemovalException(string message)
+            : base(message)
         {
         }
 
@@ -28,7 +30,8 @@ namespace Winhance.Core.Features.SoftwareApps.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public RemovalException(string message, Exception innerException) : base(message, innerException)
+        public RemovalException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 

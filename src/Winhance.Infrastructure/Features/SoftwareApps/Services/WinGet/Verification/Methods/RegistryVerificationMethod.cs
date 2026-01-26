@@ -18,6 +18,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
     {
         private const string UninstallKeyPath =
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
         private const string UninstallKeyPathWow6432Node =
             @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -25,13 +26,14 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         /// Initializes a new instance of the <see cref="RegistryVerificationMethod"/> class.
         /// </summary>
         public RegistryVerificationMethod()
-            : base("Registry", priority: 10) { }
+            : base("Registry", priority: 10)
+        {
+        }
 
         /// <inheritdoc />
         protected override async Task<VerificationResult> VerifyPresenceAsync(
             string packageId,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             return await Task.Run(
                 () =>
@@ -42,9 +44,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     using (
                         var baseKey = RegistryKey.OpenBaseKey(
                             RegistryHive.LocalMachine,
-                            RegistryView.Registry64
-                        )
-                    )
+                            RegistryView.Registry64))
                     using (var uninstallKey = baseKey.OpenSubKey(UninstallKeyPath, writable: false))
                     {
                         var result = CheckRegistryKey(uninstallKey, packageId, null);
@@ -58,21 +58,16 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     using (
                         var baseKey = RegistryKey.OpenBaseKey(
                             RegistryHive.LocalMachine,
-                            RegistryView.Registry32
-                        )
-                    )
+                            RegistryView.Registry32))
                     using (
                         var uninstallKey = baseKey.OpenSubKey(
                             UninstallKeyPathWow6432Node,
-                            writable: false
-                        )
-                    )
+                            writable: false))
                     {
                         return CheckRegistryKey(uninstallKey, packageId, null);
                     }
                 },
-                cancellationToken
-            );
+                cancellationToken);
         }
 
         /// <summary>
@@ -85,8 +80,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         private static VerificationResult CheckRegistryKey(
             RegistryKey? uninstallKey,
             string packageId,
-            string? version
-        )
+            string? version)
         {
             if (uninstallKey == null)
             {
@@ -104,7 +98,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     }
 
                     // Check if the display name matches the package ID (case insensitive)
-                    if (displayName.IndexOf(packageId, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (displayName.IndexOf(packageId) >= 0)
                     {
                         // If a version is specified, check if it matches
                         if (version != null)
@@ -114,9 +108,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                                 !string.Equals(
                                     displayVersion,
                                     version,
-                                    StringComparison.OrdinalIgnoreCase
-                                )
-                            )
+                                    StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -138,15 +130,13 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         protected override async Task<VerificationResult> VerifyVersionAsync(
             string packageId,
             string version,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(version))
             {
                 throw new ArgumentException(
                     "Version cannot be null or whitespace.",
-                    nameof(version)
-                );
+                    nameof(version));
             }
 
             return await VerifyPresenceAsync(packageId, cancellationToken).ConfigureAwait(false);

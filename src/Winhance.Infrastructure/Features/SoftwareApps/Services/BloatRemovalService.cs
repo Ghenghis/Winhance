@@ -64,8 +64,10 @@ public class BloatRemovalService(
             var supportedApps = specialAppTypes.Where(app =>
                 app.Equals("OneNote", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            if (!supportedApps.Any())
+            if (supportedApps.Count == 0)
+            {
                 return true;
+            }
 
             var scriptPath = await CreateSpecialAppRemovalScript(supportedApps);
             var success = await ExecuteRemovalScriptAsync(scriptPath, progress, cancellationToken);
@@ -106,7 +108,7 @@ public class BloatRemovalService(
         {
             logService.LogInformation($"Executing removal script: {scriptPath}");
 
-            await powerShellService.ExecuteScriptFileWithProgressAsync(scriptPath, "", progress, cancellationToken);
+            await powerShellService.ExecuteScriptFileWithProgressAsync(scriptPath, string.Empty, progress, cancellationToken);
             return true;
         }
         catch (OperationCanceledException)
@@ -131,7 +133,7 @@ public class BloatRemovalService(
                 Content = await File.ReadAllTextAsync(scriptPath),
                 TargetScheduledTaskName = "WinhanceBloatRemoval",
                 RunOnStartup = false,
-                ActualScriptPath = scriptPath
+                ActualScriptPath = scriptPath,
             };
 
             return await scheduledTaskService.RegisterScheduledTaskAsync(script);
@@ -167,12 +169,19 @@ public class BloatRemovalService(
         foreach (var app in apps.Where(a => a.RemovalScript == null))
         {
             var name = GetAppName(app);
-            if (string.IsNullOrEmpty(name)) continue;
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
 
             if (!string.IsNullOrEmpty(app.CapabilityName))
+            {
                 capabilities.Add(name);
+            }
             else if (!string.IsNullOrEmpty(app.OptionalFeatureName))
+            {
                 optionalFeatures.Add(name);
+            }
             else
             {
                 packages.Add(name);
@@ -183,11 +192,13 @@ public class BloatRemovalService(
                 }
 
                 if (IsOneNote(app))
+                {
                     specialApps.Add("OneNote");
+                }
             }
         }
 
-        bool hasRegularApps = packages.Any() || capabilities.Any() || optionalFeatures.Any() || specialApps.Any();
+        bool hasRegularApps = packages.Count != 0 || capabilities.Count != 0 || optionalFeatures.Count != 0 || specialApps.Count != 0;
 
         if (!hasRegularApps)
         {
@@ -204,7 +215,10 @@ public class BloatRemovalService(
         {
             var scriptDir = Path.GetDirectoryName(scriptPath);
             if (!string.IsNullOrEmpty(scriptDir))
+            {
                 Directory.CreateDirectory(scriptDir);
+            }
+
             scriptContent = GenerateScriptContent(packages, capabilities, optionalFeatures, specialApps);
         }
 
@@ -219,7 +233,7 @@ public class BloatRemovalService(
         {
             "windows-app-edge" => "EdgeRemoval.ps1",
             "windows-app-onedrive" => "OneDriveRemoval.ps1",
-            _ => throw new NotSupportedException($"No dedicated script defined for {appId}")
+            _ => throw new NotSupportedException($"No dedicated script defined for {appId}"),
         };
     }
 
@@ -239,7 +253,10 @@ public class BloatRemovalService(
 
         var dedicatedScriptDir = Path.GetDirectoryName(scriptPath);
         if (!string.IsNullOrEmpty(dedicatedScriptDir))
+        {
             Directory.CreateDirectory(dedicatedScriptDir);
+        }
+
         await File.WriteAllTextAsync(scriptPath, scriptContent);
         logService.LogInformation($"Dedicated removal script created at: {scriptPath}");
 
@@ -250,11 +267,11 @@ public class BloatRemovalService(
 
         var script = new RemovalScript
         {
-            Name = scriptName.Replace(".ps1", ""),
+            Name = scriptName.Replace(".ps1", string.Empty),
             Content = scriptContent,
-            TargetScheduledTaskName = scriptName.Replace(".ps1", ""),
+            TargetScheduledTaskName = scriptName.Replace(".ps1", string.Empty),
             RunOnStartup = runOnStartup,
-            ActualScriptPath = scriptPath
+            ActualScriptPath = scriptPath,
         };
 
         await scheduledTaskService.RegisterScheduledTaskAsync(script);
@@ -320,8 +337,11 @@ public class BloatRemovalService(
         {
             var name = GetAppName(item);
             if (!string.IsNullOrEmpty(name))
+            {
                 names.Add(name);
+            }
         }
+
         return names;
     }
 
@@ -338,7 +358,9 @@ public class BloatRemovalService(
         var cleanedSpecialApps = existingSpecialApps.Where(specialApp =>
         {
             if (itemsToRemove.Any(item => specialApp.Equals(item, StringComparison.OrdinalIgnoreCase)))
+            {
                 return false;
+            }
 
             return !itemsToRemove.Any(item => IsOneNotePackage(item, specialApp));
         }).ToList();
@@ -351,7 +373,10 @@ public class BloatRemovalService(
         var pattern = $@"\${arrayName}\s*=\s*@\(\s*(.*?)\s*\)";
         var match = Regex.Match(content, pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-        if (!match.Success) return new List<string>();
+        if (!match.Success)
+        {
+            return new List<string>();
+        }
 
         var arrayContent = match.Groups[1].Value;
         var items = arrayContent
@@ -366,10 +391,14 @@ public class BloatRemovalService(
     private string GetAppName(ItemDefinition app)
     {
         if (!string.IsNullOrEmpty(app.CapabilityName))
+        {
             return app.CapabilityName;
+        }
 
         if (!string.IsNullOrEmpty(app.OptionalFeatureName))
+        {
             return app.OptionalFeatureName;
+        }
 
         return app.AppxPackageName!;
     }
@@ -386,7 +415,6 @@ public class BloatRemovalService(
             specialApps ?? new List<string>(),
             includeXboxFix);
     }
-
 
     private bool IsOneNote(ItemDefinition app)
     {

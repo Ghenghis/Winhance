@@ -15,91 +15,84 @@ namespace Winhance.Core.Features.FileManager.Interop
         // ====================================================================
         // INITIALIZATION
         // ====================================================================
-
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool nexus_init();
+        public static extern bool Nexus_init();
 
         // ====================================================================
         // INDEXING
         // ====================================================================
-
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long nexus_index_all();
+        public static extern long Nexus_index_all();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern long nexus_index_directory([MarshalAs(UnmanagedType.LPStr)] string path);
+        public static extern long Nexus_index_directory([MarshalAs(UnmanagedType.LPStr)] string path);
 
         // ====================================================================
         // SEARCH
         // ====================================================================
-
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern long nexus_search([MarshalAs(UnmanagedType.LPStr)] string query, uint maxResults);
+        public static extern long Nexus_search([MarshalAs(UnmanagedType.LPStr)] string query, uint maxResults);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexus_get_search_result(uint index);
+        public static extern IntPtr Nexus_get_search_result(uint index);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexus_clear_search_results();
+        public static extern void Nexus_clear_search_results();
 
         // ====================================================================
         // PROGRESS TRACKING
         // ====================================================================
-
         public delegate void ProgressCallback(ulong current, ulong total, IntPtr phase);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexus_set_progress_callback(ProgressCallback callback);
+        public static extern void Nexus_set_progress_callback(ProgressCallback callback);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexus_clear_progress_callback();
+        public static extern void Nexus_clear_progress_callback();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong nexus_get_progress_current();
+        public static extern ulong Nexus_get_progress_current();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong nexus_get_progress_total();
+        public static extern ulong Nexus_get_progress_total();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool nexus_is_indexing();
+        public static extern bool Nexus_is_indexing();
 
         // ====================================================================
         // CONTENT HASHING (for duplicate detection)
         // ====================================================================
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern ulong Nexus_hash_file_quick([MarshalAs(UnmanagedType.LPStr)] string path);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong nexus_hash_file_quick([MarshalAs(UnmanagedType.LPStr)] string path);
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern IntPtr nexus_hash_file_full([MarshalAs(UnmanagedType.LPStr)] string path);
+        public static extern IntPtr Nexus_hash_file_full([MarshalAs(UnmanagedType.LPStr)] string path);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern long nexus_find_duplicates(ulong minSize);
+        public static extern long Nexus_find_duplicates(ulong minSize);
 
         // ====================================================================
         // STATISTICS
         // ====================================================================
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern FfiIndexStats Nexus_get_stats();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern FfiIndexStats nexus_get_stats();
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong nexus_get_file_count();
+        public static extern ulong Nexus_get_file_count();
 
         // ====================================================================
         // MEMORY MANAGEMENT
         // ====================================================================
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void Nexus_free_string(IntPtr str);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexus_free_string(IntPtr str);
+        public static extern IntPtr Nexus_get_last_error();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr nexus_get_last_error();
-
-        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void nexus_free_result(IntPtr result);
+        public static extern void Nexus_free_result(IntPtr result);
     }
 
     /// <summary>
@@ -115,6 +108,7 @@ namespace Winhance.Core.Features.FileManager.Interop
         public bool IsDir;
 
         public string GetPath() => Marshal.PtrToStringAnsi(Path) ?? string.Empty;
+
         public string GetName() => Marshal.PtrToStringAnsi(Name) ?? string.Empty;
     }
 

@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Runtime.3_1",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/"
+                            WebsiteUrl = "https://dotnet.microsoft.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Runtime.5",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/"
+                            WebsiteUrl = "https://dotnet.microsoft.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Runtime.6",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/"
+                            WebsiteUrl = "https://dotnet.microsoft.com/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Runtime.7",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/"
+                            WebsiteUrl = "https://dotnet.microsoft.com/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Runtime.8",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/"
+                            WebsiteUrl = "https://dotnet.microsoft.com/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DotNet.Framework.DeveloperPack_4",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://dotnet.microsoft.com/download/dotnet-framework"
+                            WebsiteUrl = "https://dotnet.microsoft.com/download/dotnet-framework",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.DirectX",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=35"
+                            WebsiteUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=35",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Oracle.JavaRuntimeEnvironment",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://www.oracle.com/java/technologies/downloads/"
+                            WebsiteUrl = "https://www.oracle.com/java/technologies/downloads/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2005.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2005.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -123,7 +123,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2008.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -133,7 +133,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2008.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -143,7 +143,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2010.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -153,7 +153,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2010.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -163,7 +163,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2012.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -173,7 +173,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2012.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -183,7 +183,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2013.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -193,7 +193,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2013.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -203,7 +203,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2015+.x86",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -213,7 +213,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2015+.x64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
                         },
                         new ItemDefinition
                         {
@@ -223,9 +223,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Runtimes & Dependencies",
                             WinGetPackageId = "Microsoft.VCRedist.2015+.arm64",
                             Category = "Runtimes & Dependencies",
-                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist"
-                        }
-                    }
+                            WebsiteUrl = "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+                        },
+                    },
                 };
             }
         }

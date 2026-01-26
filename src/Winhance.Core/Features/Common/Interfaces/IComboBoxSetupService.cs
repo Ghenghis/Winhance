@@ -7,15 +7,20 @@ namespace Winhance.Core.Features.Common.Interfaces
     public interface IComboBoxSetupService
     {
         ComboBoxSetupResult SetupComboBoxOptions(SettingDefinition setting, object? currentValue);
+
         Task<ComboBoxSetupResult> SetupComboBoxOptionsAsync(SettingDefinition setting, object? currentValue);
+
         int ResolveIndexFromRawValues(SettingDefinition setting, Dictionary<string, object?> rawValues);
     }
 
     public class ComboBoxSetupResult
     {
         public ObservableCollection<ComboBoxOption> Options { get; set; } = new();
+
         public object? SelectedValue { get; set; }
+
         public bool Success { get; set; }
+
         public string? ErrorMessage { get; set; }
     }
 
@@ -37,8 +42,11 @@ namespace Winhance.Core.Features.Common.Interfaces
         }
 
         public object Value { get; set; } = new();
+
         public string? Description { get; set; }
+
         public object? Tag { get; set; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public override string ToString()

@@ -1,6 +1,5 @@
 namespace Winhance.Core.Features.Common.Enums
 {
-
     public enum PowerShellStreamType
     {
         Output,
@@ -9,6 +8,6 @@ namespace Winhance.Core.Features.Common.Enums
         Verbose,
         Debug,
         Information,
-        Progress
+        Progress,
     }
 }

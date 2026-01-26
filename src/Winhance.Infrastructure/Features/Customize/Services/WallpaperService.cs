@@ -16,9 +16,9 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         private readonly ILogService _logService;
 
         // P/Invoke constants
-        private const int SPI_SETDESKWALLPAPER = 0x0014;
-        private const int SPIF_UPDATEINIFILE = 0x01;
-        private const int SPIF_SENDCHANGE = 0x02;
+        private const int SPISETDESKWALLPAPER = 0x0014;
+        private const int SPIFUPDATEINIFILE = 0x01;
+        private const int SPIFSENDCHANGE = 0x02;
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
@@ -50,8 +50,8 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         {
             try
             {
-                bool success = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaperPath,
-                                                  SPIF_UPDATEINIFILE | SPIF_SENDCHANGE) != 0;
+                bool success = SystemParametersInfo(SPISETDESKWALLPAPER, 0, wallpaperPath,
+                                                  SPIFUPDATEINIFILE | SPIFSENDCHANGE) != 0;
 
                 if (success)
                 {

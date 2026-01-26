@@ -50,7 +50,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             // Initialize HttpClient with a timeout
             _httpClient = new HttpClient();
-            _httpClient.Timeout = TimeSpan.FromSeconds(5); // Short timeout for connectivity checks
+            _httpClient.Timeout = TimeSpan.FromSeconds(5); // Short timeout for connectivity checks,
         }
 
         /// <summary>
@@ -66,12 +66,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (
                     !forceCheck
                     && _cachedInternetStatus.HasValue
-                    && (DateTime.Now - _lastInternetCheckTime) < _internetStatusCacheDuration
-                )
+                    && (DateTime.Now - _lastInternetCheckTime) < _internetStatusCacheDuration)
                 {
                     _logService.LogInformation(
-                        $"Using cached internet connectivity status: {_cachedInternetStatus.Value}"
-                    );
+                        $"Using cached internet connectivity status: {_cachedInternetStatus.Value}");
                     return _cachedInternetStatus.Value;
                 }
 
@@ -80,8 +78,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (!isNetworkAvailable)
                 {
                     _logService.LogInformation(
-                        "Network is not available according to NetworkInterface.GetIsNetworkAvailable()"
-                    );
+                        "Network is not available according to NetworkInterface.GetIsNetworkAvailable()");
                     _cachedInternetStatus = false;
                     _lastInternetCheckTime = DateTime.Now;
                     return false;
@@ -98,10 +95,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             ni.OperationalStatus == OperationalStatus.Up
                             && (
                                 ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211
-                                || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet
-                            )
-                            && ni.GetIPProperties().GatewayAddresses.Count > 0
-                        )
+                                || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                            && ni.GetIPProperties().GatewayAddresses.Count > 0)
                         {
                             hasInternetAccess = true;
                             break;
@@ -111,8 +106,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     if (!hasInternetAccess)
                     {
                         _logService.LogInformation(
-                            "No active network interfaces with gateway addresses found"
-                        );
+                            "No active network interfaces with gateway addresses found");
                         _cachedInternetStatus = false;
                         _lastInternetCheckTime = DateTime.Now;
                         return false;
@@ -121,7 +115,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 catch (Exception ex)
                 {
                     _logService.LogWarning($"Error checking network interfaces: {ex.Message}");
-                    // Continue to the next check even if this one fails
+
+                    // Continue to the next check even if this one fails,
                 }
 
                 // Third check: Try to connect to reliable domains
@@ -145,7 +140,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     catch (Exception ex)
                     {
                         _logService.LogInformation($"Failed to connect to {url}: {ex.Message}");
-                        // Try the next URL
+
+                        // Try the next URL,
                     }
                 }
 
@@ -171,8 +167,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task<bool> IsInternetConnectedAsync(
             bool forceCheck = false,
             CancellationToken cancellationToken = default,
-            bool userInitiatedCancellation = false
-        )
+            bool userInitiatedCancellation = false)
         {
             try
             {
@@ -187,12 +182,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (
                     !forceCheck
                     && _cachedInternetStatus.HasValue
-                    && (DateTime.Now - _lastInternetCheckTime) < _internetStatusCacheDuration
-                )
+                    && (DateTime.Now - _lastInternetCheckTime) < _internetStatusCacheDuration)
                 {
                     _logService.LogInformation(
-                        $"Using cached internet connectivity status: {_cachedInternetStatus.Value}"
-                    );
+                        $"Using cached internet connectivity status: {_cachedInternetStatus.Value}");
                     return _cachedInternetStatus.Value;
                 }
 
@@ -201,8 +194,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (!isNetworkAvailable)
                 {
                     _logService.LogInformation(
-                        "Network is not available according to NetworkInterface.GetIsNetworkAvailable()"
-                    );
+                        "Network is not available according to NetworkInterface.GetIsNetworkAvailable()");
                     _cachedInternetStatus = false;
                     _lastInternetCheckTime = DateTime.Now;
 
@@ -230,10 +222,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             ni.OperationalStatus == OperationalStatus.Up
                             && (
                                 ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211
-                                || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet
-                            )
-                            && ni.GetIPProperties().GatewayAddresses.Count > 0
-                        )
+                                || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                            && ni.GetIPProperties().GatewayAddresses.Count > 0)
                         {
                             hasInternetAccess = true;
                             break;
@@ -243,8 +233,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     if (!hasInternetAccess)
                     {
                         _logService.LogInformation(
-                            "No active network interfaces with gateway addresses found"
-                        );
+                            "No active network interfaces with gateway addresses found");
                         _cachedInternetStatus = false;
                         _lastInternetCheckTime = DateTime.Now;
 
@@ -262,12 +251,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     // Raise the event if monitoring is active
                     OnConnectivityChanged(new ConnectivityChangedEventArgs(false, userInitiatedCancellation));
 
-                    throw; // Re-throw to be handled by the caller
+                    throw; // Re-throw to be handled by the caller,
                 }
                 catch (Exception ex)
                 {
                     _logService.LogWarning($"Error checking network interfaces: {ex.Message}");
-                    // Continue to the next check even if this one fails
+
+                    // Continue to the next check even if this one fails,
                 }
 
                 // Third check: Try to connect to reliable domains
@@ -307,12 +297,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         // Raise the event if monitoring is active
                         OnConnectivityChanged(new ConnectivityChangedEventArgs(false, userInitiatedCancellation));
 
-                        throw; // Re-throw to be handled by the caller
+                        throw; // Re-throw to be handled by the caller,
                     }
                     catch (Exception ex)
                     {
                         _logService.LogInformation($"Failed to connect to {url}: {ex.Message}");
-                        // Try the next URL
+
+                        // Try the next URL,
                     }
                 }
 
@@ -334,7 +325,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 // Raise the event if monitoring is active
                 OnConnectivityChanged(new ConnectivityChangedEventArgs(false, true));
 
-                throw; // Re-throw to be handled by the caller
+                throw; // Re-throw to be handled by the caller,
             }
             catch (Exception ex)
             {
@@ -355,7 +346,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task StartInstallationMonitoringAsync(CancellationToken cancellationToken = default)
         {
             // Use optimized intervals for fast performance during installation
-            await StartMonitoringAsync(15, cancellationToken); // 15 second intervals for fast performance
+            await StartMonitoringAsync(15, cancellationToken); // 15 second intervals for fast performance,
         }
 
         /// <summary>
@@ -378,7 +369,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             _logService.LogInformation($"Starting internet connectivity monitoring with {intervalSeconds} second interval");
 
-            _monitoringTask = Task.Run(async () =>
+            _monitoringTask = Task.Run(
+                async () =>
             {
                 try
                 {

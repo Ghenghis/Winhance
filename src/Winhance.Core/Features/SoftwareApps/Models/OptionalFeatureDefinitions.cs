@@ -22,7 +22,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Microsoft-Windows-Subsystem-Linux",
                         Category = "Development",
                         RequiresReboot = true,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Microsoft-Hyper-V-Hypervisor",
                         Category = "Virtualization",
                         RequiresReboot = true,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -44,7 +44,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Microsoft-Hyper-V-All",
                         Category = "Virtualization",
                         RequiresReboot = true,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -55,7 +55,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Microsoft-Hyper-V-Tools-All",
                         Category = "Virtualization",
                         RequiresReboot = false,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -66,7 +66,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "NetFx3",
                         Category = "Development",
                         RequiresReboot = true,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -77,7 +77,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Containers-DisposableClientVM",
                         Category = "Security",
                         RequiresReboot = true,
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -88,9 +88,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         OptionalFeatureName = "Recall",
                         Category = "System",
                         RequiresReboot = false,
-                        CanBeReinstalled = true
-                    }
-                }
+                        CanBeReinstalled = true,
+                    },
+                },
             };
         }
     }

@@ -22,8 +22,10 @@ namespace Winhance.Core.Features.Common.Services
         public async Task<bool> HandleSettingEnabledAsync(string settingId, IEnumerable<ISettingItem> allSettings, ISettingApplicationService settingApplicationService, ISystemSettingsDiscoveryService discoveryService)
         {
             var setting = FindSetting(settingId, allSettings);
-            if (setting?.Dependencies == null || !setting.Dependencies.Any())
+            if (setting?.Dependencies == null || setting.Dependencies.Count == 0)
+            {
                 return true;
+            }
 
             bool allSucceeded = true;
             foreach (var dependency in setting.Dependencies)
@@ -75,7 +77,9 @@ namespace Winhance.Core.Features.Common.Services
             {
                 var currentState = await GetSettingStateAsync(dependentSetting.Id, discoveryService);
                 if (!currentState.Success || !currentState.IsEnabled)
+                {
                     continue;
+                }
 
                 var dependency = dependentSetting.Dependencies.First(d =>
                     d.RequiredSettingId == settingId &&
@@ -99,10 +103,14 @@ namespace Winhance.Core.Features.Common.Services
         {
             var setting = _globalSettingsRegistry.GetSetting(settingId);
             if (setting == null)
+            {
                 return new SettingStateResult { Success = false, ErrorMessage = $"Setting '{settingId}' not found" };
+            }
 
             if (setting is not SettingDefinition settingDefinition)
+            {
                 return new SettingStateResult { Success = false, ErrorMessage = $"Setting '{settingId}' is not a SettingDefinition" };
+            }
 
             var results = await discoveryService.GetSettingStatesAsync(new[] { settingDefinition });
             return results.TryGetValue(settingId, out var result) ? result : new SettingStateResult { Success = false };
@@ -112,7 +120,9 @@ namespace Winhance.Core.Features.Common.Services
         {
             var currentState = await GetSettingStateAsync(dependency.RequiredSettingId, discoveryService);
             if (!currentState.Success)
+            {
                 return false;
+            }
 
             return dependency.DependencyType switch
             {
@@ -145,9 +155,10 @@ namespace Winhance.Core.Features.Common.Services
                     await settingApplicationService.ApplySettingAsync(dependency.RequiredSettingId, enableValue);
                 }
             }
-            catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+            catch (ArgumentException ex) when (ex.Message.Contains("not found", StringComparison.Ordinal))
             {
-                _logService.Log(LogLevel.Warning,
+                _logService.Log(
+                    LogLevel.Warning,
                     $"Cannot apply dependency '{dependency.RequiredSettingId}' - likely filtered due to OS/hardware compatibility. Skipping.");
             }
         }

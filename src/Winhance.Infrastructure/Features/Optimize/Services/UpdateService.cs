@@ -29,6 +29,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 await ApplyUpdatesPolicyModeAsync(setting, index);
                 return true;
             }
+
             return false;
         }
 
@@ -62,7 +63,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
         public async Task ApplyUpdatesPolicyModeAsync(SettingDefinition setting, object value)
         {
             if (value is not int selectionIndex)
+            {
                 throw new ArgumentException("Expected integer selection index");
+            }
 
             logService.Log(LogLevel.Info, $"[UpdateService] Applying updates-policy-mode with index: {selectionIndex}");
 
@@ -174,7 +177,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             {
                 ("wuauserv", "auto"),
                 ("UsoSvc", "auto"),
-                ("WaaSMedicSvc", "demand")
+                ("WaaSMedicSvc", "demand"),
             };
 
             foreach (var (service, startType) in services)
@@ -232,7 +235,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                                 Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop | Out-Null
                                 Write-Output ""Disabled: $($task.TaskPath)$($task.TaskName)""
                             }} catch {{
-                                Write-Output ""Skipped: $($task.TaskPath)$($task.TaskName) - $($_.Exception.Message)""
+                                Write-Output ""Skipped: $($task.TaskPath)$($task.TaskName) - $($_.Exception.Message)"",
                             }}
                         }}
                     ";
@@ -269,7 +272,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                                 Enable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop | Out-Null
                                 Write-Output ""Enabled: $($task.TaskPath)$($task.TaskName)""
                             }} catch {{
-                                Write-Output ""Skipped: $($task.TaskPath)$($task.TaskName) - $($_.Exception.Message)""
+                                Write-Output ""Skipped: $($task.TaskPath)$($task.TaskName) - $($_.Exception.Message)"",
                             }}
                         }}
                     ";
@@ -299,7 +302,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                     var backupPath = $@"C:\Windows\System32\{Path.GetFileNameWithoutExtension(dll)}_BAK.dll";
 
                     if (!File.Exists(dllPath) || File.Exists(backupPath))
+                    {
                         continue;
+                    }
 
                     await commandService.ExecuteCommandAsync($"takeown /f \"{dllPath}\"");
                     await commandService.ExecuteCommandAsync($"icacls \"{dllPath}\" /grant *S-1-1-0:F");
@@ -364,11 +369,15 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
         private void ApplyRegistrySettingsForIndex(SettingDefinition setting, int index)
         {
             if (!setting.CustomProperties.TryGetValue(CustomPropertyKeys.ValueMappings, out var mappingsObj))
+            {
                 return;
+            }
 
             var mappings = (Dictionary<int, Dictionary<string, object?>>)mappingsObj;
             if (!mappings.TryGetValue(index, out var valueMapping))
+            {
                 return;
+            }
 
             foreach (var registrySetting in setting.RegistrySettings)
             {
@@ -396,17 +405,23 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
         public async Task<int> GetCurrentUpdatePolicyIndexAsync()
         {
             if (AreCriticalDllsRenamed())
+            {
                 return 3;
+            }
 
             if (IsUpdatesPaused())
+            {
                 return 2;
+            }
 
             var deferFeature = registryService.GetValue(
                 @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings",
                 "DeferFeatureUpdates");
 
             if (deferFeature is int defer && defer == 1)
+            {
                 return 1;
+            }
 
             return 0;
         }
@@ -420,7 +435,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 var backupPath = $@"C:\Windows\System32\{Path.GetFileNameWithoutExtension(dll)}_BAK.dll";
 
                 if (File.Exists(backupPath))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -437,7 +454,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 "PauseUpdatesExpiryTime");
 
             if (pauseStart != null || pauseExpiry != null)
+            {
                 return true;
+            }
 
             var pausedQuality = registryService.GetValue(
                 @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings",
@@ -448,7 +467,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 "PausedFeatureDate");
 
             if (pausedQuality != null || pausedFeature != null)
+            {
                 return true;
+            }
 
             return false;
         }

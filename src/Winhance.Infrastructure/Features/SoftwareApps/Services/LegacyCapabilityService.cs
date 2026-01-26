@@ -21,7 +21,7 @@ public class LegacyCapabilityService(
                 try {{
                     Write-Host 'Enabling Windows Capability: {displayName}. This may take a while, please wait...' -ForegroundColor Yellow
 
-                    Write-Host 'Searching for capability...' -ForegroundColor Gray
+                    Write-Host 'Searching for capability...' -ForegroundColor Gray,
                     $capabilities = Get-WindowsCapability -Online | Where-Object {{ $_.Name -like '{capabilityName}*' }}
 
                     if ($capabilities.Count -eq 0) {{
@@ -31,7 +31,7 @@ public class LegacyCapabilityService(
                             ForEach-Object {{ Write-Host ""  - $($_.Name)"" -ForegroundColor Cyan }}
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     $capability = $capabilities | Select-Object -First 1
@@ -42,7 +42,7 @@ public class LegacyCapabilityService(
                         Write-Host 'Capability is already enabled.' -ForegroundColor Green
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host 'Attempting to install capability...' -ForegroundColor Gray
@@ -58,11 +58,11 @@ public class LegacyCapabilityService(
                     Write-Host ('Type: ' + $_.Exception.GetType().Name) -ForegroundColor Yellow
 
                     if ($_.Exception.InnerException) {{
-                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan
+                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan,
                     }}
 
                     if ($_.Exception.HResult) {{
-                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan
+                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan,
                     }}
 
                     Write-Host '' -ForegroundColor Gray
@@ -103,7 +103,7 @@ public class LegacyCapabilityService(
                 try {{
                     Write-Host 'Winhance - Disabling Windows Capability: {displayName}. This may take a few minutes...' -ForegroundColor Yellow
 
-                    Write-Host 'Searching for capability...' -ForegroundColor Gray
+                    Write-Host 'Searching for capability...' -ForegroundColor Gray,
                     $capabilities = Get-WindowsCapability -Online | Where-Object {{ $_.Name -like '{capabilityName}*' }}
 
                     if ($capabilities.Count -eq 0) {{
@@ -113,7 +113,7 @@ public class LegacyCapabilityService(
                             ForEach-Object {{ Write-Host ""  - $($_.Name)"" -ForegroundColor Cyan }}
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     $capability = $capabilities | Select-Object -First 1
@@ -124,7 +124,7 @@ public class LegacyCapabilityService(
                         Write-Host 'Capability is already disabled.' -ForegroundColor Green
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host 'Attempting to remove capability...' -ForegroundColor Gray
@@ -140,11 +140,11 @@ public class LegacyCapabilityService(
                     Write-Host ('Type: ' + $_.Exception.GetType().Name) -ForegroundColor Yellow
 
                     if ($_.Exception.InnerException) {{
-                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan
+                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan,
                     }}
 
                     if ($_.Exception.HResult) {{
-                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan
+                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan,
                     }}
 
                     Write-Host '' -ForegroundColor Gray
@@ -174,6 +174,4 @@ public class LegacyCapabilityService(
             return false;
         }
     }
-
-
 }

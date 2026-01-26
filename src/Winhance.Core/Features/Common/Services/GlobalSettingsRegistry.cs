@@ -23,8 +23,7 @@ namespace Winhance.Core.Features.Common.Services
             {
                 _logService.Log(
                     LogLevel.Warning,
-                    "Cannot register settings for null or empty module name"
-                );
+                    "Cannot register settings for null or empty module name");
                 return;
             }
 
@@ -33,8 +32,7 @@ namespace Winhance.Core.Features.Common.Services
 
             _logService.Log(
                 LogLevel.Debug,
-                $"Registered {settingsList.Count} settings for module '{moduleName}'"
-            );
+                $"Registered {settingsList.Count} settings for module '{moduleName}'");
         }
 
         public ISettingItem? GetSetting(string settingId, string? moduleName = null)
@@ -43,8 +41,7 @@ namespace Winhance.Core.Features.Common.Services
             {
                 _logService.Log(
                     LogLevel.Warning,
-                    "Cannot get setting for null or empty setting ID"
-                );
+                    "Cannot get setting for null or empty setting ID");
                 return null;
             }
 
@@ -58,15 +55,14 @@ namespace Winhance.Core.Features.Common.Services
                     {
                         _logService.Log(
                             LogLevel.Debug,
-                            $"Found setting '{settingId}' in module '{moduleName}'"
-                        );
+                            $"Found setting '{settingId}' in module '{moduleName}'");
                         return setting;
                     }
                 }
+
                 _logService.Log(
                     LogLevel.Debug,
-                    $"Setting '{settingId}' not found in module '{moduleName}'"
-                );
+                    $"Setting '{settingId}' not found in module '{moduleName}'");
                 return null;
             }
 
@@ -78,8 +74,7 @@ namespace Winhance.Core.Features.Common.Services
                 {
                     _logService.Log(
                         LogLevel.Debug,
-                        $"Found setting '{settingId}' in module '{kvp.Key}'"
-                    );
+                        $"Found setting '{settingId}' in module '{kvp.Key}'");
                     return setting;
                 }
             }
@@ -94,8 +89,7 @@ namespace Winhance.Core.Features.Common.Services
             {
                 _logService.Log(
                     LogLevel.Warning,
-                    "Cannot get settings for null or empty module name"
-                );
+                    "Cannot get settings for null or empty module name");
                 return Enumerable.Empty<ISettingItem>();
             }
 
@@ -115,7 +109,7 @@ namespace Winhance.Core.Features.Common.Services
         /// <summary>
         /// Unregisters all settings from a module.
         /// </summary>
-        /// <param name="moduleName">The name of the module</param>
+        /// <param name="moduleName">The name of the module.</param>
         public void UnregisterModule(string moduleName)
         {
             if (string.IsNullOrEmpty(moduleName))
@@ -128,8 +122,7 @@ namespace Winhance.Core.Features.Common.Services
             {
                 _logService.Log(
                     LogLevel.Info,
-                    $"Unregistered {removedSettings.Count} settings from module '{moduleName}'"
-                );
+                    $"Unregistered {removedSettings.Count} settings from module '{moduleName}'");
             }
             else
             {
@@ -143,8 +136,7 @@ namespace Winhance.Core.Features.Common.Services
             {
                 _logService.Log(
                     LogLevel.Warning,
-                    "Cannot register setting for null or empty module name"
-                );
+                    "Cannot register setting for null or empty module name");
                 return;
             }
 
@@ -165,24 +157,21 @@ namespace Winhance.Core.Features.Common.Services
                         existingSettings.Add(setting);
                         _logService.Log(
                             LogLevel.Debug,
-                            $"Added setting '{setting.Id}' to existing module '{moduleName}'"
-                        );
+                            $"Added setting '{setting.Id}' to existing module '{moduleName}'");
                     }
                     else
                     {
                         _logService.Log(
                             LogLevel.Debug,
-                            $"Setting '{setting.Id}' already exists in module '{moduleName}', skipping registration"
-                        );
+                            $"Setting '{setting.Id}' already exists in module '{moduleName}', skipping registration");
                     }
+
                     return existingSettings;
-                }
-            );
+                });
 
             _logService.Log(
                 LogLevel.Debug,
-                $"Registered setting '{setting.Id}' for module '{moduleName}'"
-            );
+                $"Registered setting '{setting.Id}' for module '{moduleName}'");
         }
 
         public void Clear()

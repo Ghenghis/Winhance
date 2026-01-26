@@ -28,18 +28,22 @@ public class AppUninstallService(
         {
             UninstallMethod.WinGet => await UninstallViaWinGetAsync(item, cancellationToken),
             UninstallMethod.Registry => await UninstallViaRegistryAsync(item, cancellationToken),
-            _ => OperationResult<bool>.Failed($"No uninstall method available for {item.Name}")
+            _ => OperationResult<bool>.Failed($"No uninstall method available for {item.Name}"),
         };
     }
 
     public async Task<UninstallMethod> DetermineUninstallMethodAsync(ItemDefinition item)
     {
         if (!string.IsNullOrEmpty(item.WinGetPackageId))
+        {
             return UninstallMethod.WinGet;
+        }
 
         var (found, _) = await GetUninstallStringAsync(item.Name);
         if (found)
+        {
             return UninstallMethod.Registry;
+        }
 
         return UninstallMethod.None;
     }
@@ -85,8 +89,8 @@ public class AppUninstallService(
 
             var (fileName, arguments) = ParseUninstallString(uninstallString);
 
-            var escapedFileName = fileName.Replace("'", "''");
-            var escapedArguments = arguments.Replace("'", "''");
+            var escapedFileName = fileName.Replace("'", "''", StringComparison.Ordinal);
+            var escapedArguments = arguments.Replace("'", "''", StringComparison.Ordinal);
 
             var script = $@"
 $process = Start-Process -FilePath '{escapedFileName}' -ArgumentList '{escapedArguments}' -PassThru -Wait
@@ -118,7 +122,7 @@ exit $process.ExitCode
             {
                 (Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
                 (Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
-                (Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")
+                (Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
             };
 
             foreach (var (hive, path) in registryPaths)
@@ -126,17 +130,26 @@ exit $process.ExitCode
                 try
                 {
                     using var key = hive.OpenSubKey(path);
-                    if (key == null) continue;
+                    if (key == null)
+                    {
+                        continue;
+                    }
 
                     foreach (var subKeyName in key.GetSubKeyNames())
                     {
                         try
                         {
                             using var subKey = key.OpenSubKey(subKeyName);
-                            if (subKey == null) continue;
+                            if (subKey == null)
+                            {
+                                continue;
+                            }
 
                             var regDisplayName = subKey.GetValue("DisplayName")?.ToString();
-                            if (string.IsNullOrEmpty(regDisplayName)) continue;
+                            if (string.IsNullOrEmpty(regDisplayName))
+                            {
+                                continue;
+                            }
 
                             if (IsFuzzyMatch(displayName, regDisplayName))
                             {
@@ -148,10 +161,14 @@ exit $process.ExitCode
                                 }
                             }
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                        }
                     }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
             }
 
             return (false, string.Empty);
@@ -164,10 +181,14 @@ exit $process.ExitCode
         var normalized2 = NormalizeString(registryName);
 
         if (normalized1 == normalized2)
+        {
             return true;
+        }
 
         if (normalized2.Contains(normalized1) || normalized1.Contains(normalized2))
+        {
             return true;
+        }
 
         var words1 = normalized1.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var words2 = normalized2.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -179,22 +200,26 @@ exit $process.ExitCode
     private string NormalizeString(string input)
     {
         if (string.IsNullOrEmpty(input))
+        {
             return string.Empty;
+        }
 
-        var normalized = Regex.Replace(input, @"[^\w\s]", "").ToLowerInvariant().Trim();
+        var normalized = Regex.Replace(input, @"[^\w\s]", string.Empty).ToLowerInvariant().Trim();
         return Regex.Replace(normalized, @"\s+", " ");
     }
 
     private (string FileName, string Arguments) ParseUninstallString(string uninstallString)
     {
         if (string.IsNullOrWhiteSpace(uninstallString))
+        {
             return (string.Empty, string.Empty);
+        }
 
         uninstallString = uninstallString.Trim();
 
-        if (uninstallString.StartsWith("\""))
+        if (uninstallString.StartsWith("\"", StringComparison.Ordinal))
         {
-            var endQuoteIndex = uninstallString.IndexOf("\"", 1);
+            var endQuoteIndex = uninstallString.IndexOf("\"", 1, StringComparison.Ordinal);
             if (endQuoteIndex > 0)
             {
                 var fileName = uninstallString.Substring(1, endQuoteIndex - 1);
@@ -227,24 +252,26 @@ exit $process.ExitCode
     {
         var lower = fileName.ToLowerInvariant();
 
-        if (lower.Contains("msiexec"))
+        if (lower.Contains("msiexec", StringComparison.Ordinal))
         {
-            existingArgs = Regex.Replace(
-                existingArgs,
-                @"/I(\{[A-F0-9-]+\})",
+            existingArgs = Regex.Replace(existingArgs,
+                @"/I(\{[A-F0-9-]+\}, StringComparison.Ordinal)",
                 "/X$1",
-                RegexOptions.IgnoreCase
-            );
+                RegexOptions.IgnoreCase);
 
-            if (!existingArgs.Contains("/quiet") && !existingArgs.Contains("/qn"))
+            if (!existingArgs.Contains("/quiet", StringComparison.Ordinal) && !existingArgs.Contains("/qn", StringComparison.Ordinal))
+            {
                 return $"{existingArgs} /quiet /norestart".Trim();
+            }
 
             return existingArgs;
         }
-        else if (lower.Contains("unins") || lower.Contains("setup"))
+        else if (lower.Contains("unins", StringComparison.Ordinal) || lower.Contains("setup", StringComparison.Ordinal))
         {
-            if (!existingArgs.Contains("/SILENT") && !existingArgs.Contains("/VERYSILENT"))
+            if (!existingArgs.Contains("/SILENT", StringComparison.Ordinal) && !existingArgs.Contains("/VERYSILENT", StringComparison.Ordinal))
+            {
                 return $"{existingArgs} /VERYSILENT /NORESTART".Trim();
+            }
         }
 
         return existingArgs;

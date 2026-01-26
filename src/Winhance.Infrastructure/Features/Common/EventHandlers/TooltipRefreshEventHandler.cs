@@ -40,13 +40,13 @@ namespace Winhance.Infrastructure.Features.Common.EventHandlers
             try
             {
                 var settingItem = _settingsRegistry.GetSetting(settingAppliedEvent.SettingId);
-                
+
                 if (settingItem == null)
                 {
                     await Task.Delay(100);
                     settingItem = _settingsRegistry.GetSetting(settingAppliedEvent.SettingId);
                 }
-                
+
                 if (settingItem is SettingDefinition settingDefinition)
                 {
                     var tooltipData = await _tooltipDataService.RefreshTooltipDataAsync(settingAppliedEvent.SettingId, settingDefinition);
@@ -67,7 +67,10 @@ namespace Winhance.Infrastructure.Features.Common.EventHandlers
             try
             {
                 var settingsList = featureComposedEvent.Settings.ToList();
-                if (settingsList.Count == 0) return;
+                if (settingsList.Count == 0)
+                {
+                    return;
+                }
 
                 var tooltipDataCollection = await _tooltipDataService.GetTooltipDataAsync(settingsList);
 
@@ -77,7 +80,7 @@ namespace Winhance.Infrastructure.Features.Common.EventHandlers
                 }
 
                 _eventBus.Publish(new TooltipsBulkLoadedEvent(tooltipDataCollection));
-                
+
                 _logService.Log(LogLevel.Info, $"Processed tooltip data for {tooltipDataCollection.Count}/{settingsList.Count} settings in {featureComposedEvent.ModuleId}");
             }
             catch (Exception ex)

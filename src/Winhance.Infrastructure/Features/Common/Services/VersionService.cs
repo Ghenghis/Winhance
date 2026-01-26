@@ -52,7 +52,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 }
 
                 // If the version doesn't start with 'v', add it
-                if (!version.StartsWith("v"))
+                if (!version.StartsWith("v", StringComparison.Ordinal))
                 {
                     version = $"v{version}";
                 }
@@ -124,7 +124,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = tempPath,
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 });
 
                 _logService.Log(LogLevel.Info, "Installer launched successfully");
@@ -145,7 +145,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             return new VersionInfo
             {
                 Version = versionTag,
-                ReleaseDate = now
+                ReleaseDate = now,
             };
         }
     }

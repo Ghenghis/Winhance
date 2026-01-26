@@ -17,19 +17,19 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-        private const uint SPI_SETUIEFFECTS = 0x103F;
-        private const uint SPI_SETMENUANIMATION = 0x1003;
-        private const uint SPI_SETCOMBOBOXANIMATION = 0x1005;
-        private const uint SPI_SETLISTBOXSMOOTHSCROLLING = 0x1007;
-        private const uint SPI_SETDESKWALLPAPER = 0x0014;
+        private const uint SPISETUIEFFECTS = 0x103F;
+        private const uint SPISETMENUANIMATION = 0x1003;
+        private const uint SPISETCOMBOBOXANIMATION = 0x1005;
+        private const uint SPISETLISTBOXSMOOTHSCROLLING = 0x1007;
+        private const uint SPISETDESKWALLPAPER = 0x0014;
 
-        private const int HWND_BROADCAST = 0xFFFF;
-        private const uint WM_SETTINGCHANGE = 0x001A;
+        private const int HWNDBROADCAST = 0xFFFF;
+        private const uint WMSETTINGCHANGE = 0x001A;
 
-        private const uint SPIF_UPDATEINIFILE = 0x01;
-        private const uint SPIF_SENDCHANGE = 0x02;
+        private const uint SPIFUPDATEINIFILE = 0x01;
+        private const uint SPIFSENDCHANGE = 0x02;
 
         public WindowsUIManagementService(ILogService logService)
         {
@@ -88,7 +88,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             try
             {
-                SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, IntPtr.Zero, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+                SystemParametersInfo(SPISETDESKWALLPAPER, 0, IntPtr.Zero, SPIFUPDATEINIFILE | SPIFSENDCHANGE);
             }
             catch (Exception ex)
             {
@@ -106,7 +106,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 const uint WM_THEMECHANGE = 0x031A;
 
                 [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-                static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam,
+                static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam,
                     uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
                 const uint SMTO_ABORTIFHUNG = 0x0002;

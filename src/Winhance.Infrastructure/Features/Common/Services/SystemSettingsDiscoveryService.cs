@@ -1,8 +1,8 @@
+using Winhance.Core.Features.Common.Constants;
 using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
 using Winhance.Core.Features.Optimize.Models;
-using Winhance.Core.Features.Common.Constants;
 using Winhance.Infrastructure.Features.Optimize.Services;
 
 namespace Winhance.Infrastructure.Features.Common.Services
@@ -18,7 +18,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task<Dictionary<string, Dictionary<string, object?>>> GetRawSettingsValuesAsync(IEnumerable<SettingDefinition> settings)
         {
             var results = new Dictionary<string, Dictionary<string, object?>>();
-            if (settings == null) return results;
+            if (settings == null)
+            {
+                return results;
+            }
 
             var settingsList = settings.ToList();
             var powerCfgSettings = settingsList.Where(s => s.PowerCfgSettings?.Count > 0 && s.Id != "power-plan-selection").ToList();
@@ -49,11 +52,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 results[setting.Id] = rawValues;
             }
-            else if (powerCfgSettings.Count > 1 || powerPlanSettings.Any())
+            else if (powerCfgSettings.Count > 1 || powerPlanSettings.Count != 0)
             {
                 var allPowerSettingsACDC = await powerCfgQueryService.GetAllPowerSettingsACDCAsync("SCHEME_CURRENT");
 
-                if (powerPlanSettings.Any())
+                if (powerPlanSettings.Count != 0)
                 {
                     availablePlans = await powerCfgQueryService.GetAvailablePowerPlansAsync();
                 }
@@ -86,14 +89,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
 
             Dictionary<string, object?> batchedRegistryValues = new();
-            if (registrySettings.Any())
+            if (registrySettings.Count != 0)
             {
                 var registryQueries = registrySettings
                     .SelectMany(s => s.RegistrySettings.Select(rs => (
                         setting: s,
                         keyPath: rs.KeyPath,
-                        valueName: rs.ValueName
-                    )))
+                        valueName: rs.ValueName)))
                     .ToList();
 
                 var queries = registryQueries.Select(q => (q.keyPath, q.valueName)).Distinct();
@@ -153,7 +155,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                                 {
                                     finalValue = value;
                                     foundValue = true;
-                                    if (value != null) break;
+                                    if (value != null)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -205,7 +210,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                     foreach (var (settingId, values) in discoveredValues)
                     {
-                        if (values.Any())
+                        if (values.Count != 0)
                         {
                             results[settingId] = values;
                         }
@@ -226,7 +231,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         {
             var settingsList = settings.ToList();
             logService.Log(LogLevel.Info, $"[SystemSettingsDiscoveryService] Getting interpreted states for {settingsList.Count} settings");
-            
+
             var allRawValues = await GetRawSettingsValuesAsync(settingsList);
             var results = new Dictionary<string, SettingStateResult>();
 
@@ -234,8 +239,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 try
                 {
-                    var settingRawValues = allRawValues.TryGetValue(setting.Id, out var values) 
-                        ? values 
+                    var settingRawValues = allRawValues.TryGetValue(setting.Id, out var values)
+                        ? values
                         : new Dictionary<string, object?>();
 
                     bool isEnabled = DetermineIfSettingIsEnabled(setting, settingRawValues);
@@ -274,7 +279,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         IsEnabled = isEnabled,
                         CurrentValue = currentValue,
                         RawValues = settingRawValues,
-                        IsRegistryValueNotSet = isRegistryNotSet
+                        IsRegistryValueNotSet = isRegistryNotSet,
                     };
                 }
                 catch (Exception ex)
@@ -291,23 +296,29 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private bool DetermineIfSettingIsEnabled(SettingDefinition setting, Dictionary<string, object?> rawValues)
         {
             if (rawValues == null || rawValues.Count == 0)
+            {
                 return false;
+            }
 
             if (setting.RegistrySettings?.Count > 0)
             {
                 foreach (var registrySetting in setting.RegistrySettings)
                 {
                     if (registryService.IsSettingApplied(registrySetting))
+                    {
                         return true;
+                    }
                 }
+
                 return false;
             }
             else if (setting.PowerCfgSettings?.Count > 0)
             {
                 if (rawValues.TryGetValue("PowerCfgValue", out var value))
                 {
-                    return value != null && !value.Equals(0);
+                    return value != null && !Equals(value, 0);
                 }
+
                 return false;
             }
             else if (setting.CommandSettings?.Count > 0)
@@ -316,6 +327,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     return value is bool boolValue && boolValue;
                 }
+
                 return false;
             }
 
@@ -397,8 +409,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         private static bool ValuesAreEqual(object? value1, object? value2)
         {
-            if (value1 == null && value2 == null) return true;
-            if (value1 == null || value2 == null) return false;
+            if (value1 == null && value2 == null)
+            {
+                return true;
+            }
+
+            if (value1 == null || value2 == null)
+            {
+                return false;
+            }
 
             if (value1 is byte[] bytes1 && value2 is byte[] bytes2)
             {
@@ -420,7 +439,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 return i1 == b2Int;
             }
 
-            return value1.Equals(value2);
+            return Equals(value1, value2);
         }
     }
 }

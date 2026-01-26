@@ -40,7 +40,7 @@ public class StoreDownloadService : IStoreDownloadService
         _logService = logService;
         _httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromMinutes(10)
+            Timeout = TimeSpan.FromMinutes(10),
         };
     }
 
@@ -135,7 +135,7 @@ public class StoreDownloadService : IStoreDownloadService
             // Check for cancellation after API call
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!downloadLinks.Any())
+            if (downloadLinks.Count == 0)
             {
                 _logService?.LogError($"No download links found for {productId}");
                 return null;
@@ -148,7 +148,7 @@ public class StoreDownloadService : IStoreDownloadService
             var mainPackages = FilterPackageLinks(downloadLinks, currentArch, isDependency: false);
             var allDependencies = FilterPackageLinks(downloadLinks, currentArch, isDependency: true);
 
-            if (!mainPackages.Any())
+            if (mainPackages.Count == 0)
             {
                 _logService?.LogError($"No suitable packages found for architecture {currentArch}");
                 return null;
@@ -206,7 +206,7 @@ public class StoreDownloadService : IStoreDownloadService
                 currentRound++;
                 var missingDependencies = ParseMissingDependencies(errorMessage);
 
-                if (!missingDependencies.Any())
+                if (missingDependencies.Count == 0)
                 {
                     _logService?.LogError($"Installation failed: {errorMessage}");
                     return null;
@@ -259,7 +259,7 @@ public class StoreDownloadService : IStoreDownloadService
                         return false;
                     }).ToList();
 
-                    if (!matchingDeps.Any())
+                    if (matchingDeps.Count == 0)
                     {
                         _logService?.LogWarning($"Could not find matching dependency for: {depName}");
                         _logService?.LogInformation($"Available dependencies:");
@@ -267,10 +267,12 @@ public class StoreDownloadService : IStoreDownloadService
                         {
                             _logService?.LogInformation($"  - {dep.FileName}");
                         }
+
                         if (allDependencies.Count > 10)
                         {
                             _logService?.LogInformation($"  ... and {allDependencies.Count - 10} more");
                         }
+
                         continue;
                     }
 
@@ -293,7 +295,7 @@ public class StoreDownloadService : IStoreDownloadService
                     }
                 }
 
-                if (!newDependencies.Any())
+                if (newDependencies.Count == 0)
                 {
                     _logService?.LogError($"Could not download required dependencies");
                     return null;
@@ -335,8 +337,8 @@ public class StoreDownloadService : IStoreDownloadService
         {
             { "type", "url" },
             { "url", productUrl },
-            { "ring", "RP" },  // Retail Production
-            { "lang", "en-US" }
+            { "ring", "RP" },  // Retail Production,
+            { "lang", "en-US" },
         });
 
         _logService?.LogInformation($"Requesting download links from store.rg-adguard.net API for {productId}");
@@ -363,7 +365,7 @@ public class StoreDownloadService : IStoreDownloadService
                 links.Add(new PackageLink
                 {
                     Url = url,
-                    FileName = filename
+                    FileName = filename,
                 });
             }
         }
@@ -378,35 +380,38 @@ public class StoreDownloadService : IStoreDownloadService
             var filename = link.FileName.ToLowerInvariant();
 
             // Identify common framework dependencies
-            bool isFrameworkDependency = filename.Contains("microsoft.ui.xaml") ||
-                                        filename.Contains("microsoft.vclibs") ||
-                                        filename.Contains("microsoft.net.native") ||
-                                        filename.Contains("microsoft.services.store.engagement");
+            bool isFrameworkDependency = filename.Contains("microsoft.ui.xaml", StringComparison.Ordinal) ||
+                                        filename.Contains("microsoft.vclibs", StringComparison.Ordinal) ||
+                                        filename.Contains("microsoft.net.native", StringComparison.Ordinal) ||
+                                        filename.Contains("microsoft.services.store.engagement", StringComparison.Ordinal);
 
             // If looking for dependencies, only return framework packages
             if (isDependency && !isFrameworkDependency)
+            {
                 return false;
+            }
 
             // If looking for main packages, exclude framework packages
             if (!isDependency && isFrameworkDependency)
+            {
                 return false;
+            }
 
             // Include if it matches current architecture or is neutral
-            var matchesArch = filename.Contains($"_{currentArch.ToLowerInvariant()}_") ||
-                             filename.Contains("_neutral_");
+            var matchesArch = filename.Contains($"_{currentArch.ToLowerInvariant()}_", StringComparison.Ordinal) ||
+                             filename.Contains("_neutral_", StringComparison.Ordinal);
 
             // Include common package extensions
-            var isPackageType = filename.EndsWith(".appx") ||
-                               filename.EndsWith(".appxbundle") ||
-                               filename.EndsWith(".msix") ||
-                               filename.EndsWith(".msixbundle");
+            var isPackageType = filename.EndsWith(".appx", StringComparison.Ordinal) ||
+                               filename.EndsWith(".appxbundle", StringComparison.Ordinal) ||
+                               filename.EndsWith(".msix", StringComparison.Ordinal) ||
+                               filename.EndsWith(".msixbundle", StringComparison.Ordinal);
 
             return matchesArch && isPackageType;
         }).ToList();
 
         return filtered;
     }
-
 
     private async Task<string> DownloadFileAsync(
         string url,
@@ -455,7 +460,7 @@ public class StoreDownloadService : IStoreDownloadService
                             StatusText = statusText,
                             TerminalOutput = terminalOutput,
                             IsActive = true,
-                            IsIndeterminate = false
+                            IsIndeterminate = false,
                         });
                     }
                 }
@@ -481,7 +486,7 @@ public class StoreDownloadService : IStoreDownloadService
             _logService?.LogInformation($"Installing package: {packagePath}");
 
             // Use PowerShell to install the package
-            var escapedPath = packagePath.Replace("'", "''");
+            var escapedPath = packagePath.Replace("'", "''", StringComparison.Ordinal);
             var script = $"Add-AppxPackage -Path '{escapedPath}' -ErrorAction Stop";
 
             await _powerShellService.ExecuteScriptAsync(script);
@@ -512,8 +517,8 @@ public class StoreDownloadService : IStoreDownloadService
             _logService?.LogInformation($"Installing package with {dependencyPaths.Count} dependencies: {packagePath}");
 
             // Build dependency path array for PowerShell
-            var depPathsEscaped = string.Join(", ", dependencyPaths.Select(p => $"'{p.Replace("'", "''")}'"));
-            var mainPathEscaped = packagePath.Replace("'", "''");
+            var depPathsEscaped = string.Join(", ", dependencyPaths.Select(p => $"'{p.Replace("'", "''", StringComparison.Ordinal)}'"));
+            var mainPathEscaped = packagePath.Replace("'", "''", StringComparison.Ordinal);
 
             var script = $@"
 $dependencies = @({depPathsEscaped})
@@ -534,21 +539,29 @@ Add-AppxPackage -Path '{mainPathEscaped}' -DependencyPath $dependencies -ErrorAc
     private bool IsNonRecoverableError(string errorMessage)
     {
         if (string.IsNullOrEmpty(errorMessage))
+        {
             return false;
+        }
 
         var lowerError = errorMessage.ToLowerInvariant();
 
         // Check for End-of-Life packages
-        if (lowerError.Contains("end of life") || lowerError.Contains("0x80073cfd"))
+        if (lowerError.Contains("end of life", StringComparison.Ordinal) || lowerError.Contains("0x80073cfd", StringComparison.Ordinal))
+        {
             return true;
+        }
 
         // Check for incompatible architecture
-        if (lowerError.Contains("not supported on this architecture"))
+        if (lowerError.Contains("not supported on this architecture", StringComparison.Ordinal))
+        {
             return true;
+        }
 
         // Check for package conflicts (already installed newer version)
-        if (lowerError.Contains("a higher version") && lowerError.Contains("already installed"))
+        if (lowerError.Contains("a higher version", StringComparison.Ordinal) && lowerError.Contains("already installed", StringComparison.Ordinal))
+        {
             return true;
+        }
 
         return false;
     }
@@ -556,18 +569,26 @@ Add-AppxPackage -Path '{mainPathEscaped}' -DependencyPath $dependencies -ErrorAc
     private string GetFriendlyErrorMessage(string errorMessage)
     {
         if (string.IsNullOrEmpty(errorMessage))
+        {
             return "Installation failed due to an unknown error";
+        }
 
         var lowerError = errorMessage.ToLowerInvariant();
 
-        if (lowerError.Contains("end of life") || lowerError.Contains("0x80073cfd"))
+        if (lowerError.Contains("end of life", StringComparison.Ordinal) || lowerError.Contains("0x80073cfd", StringComparison.Ordinal))
+        {
             return "This app has been deprecated by Microsoft and can no longer be installed";
+        }
 
-        if (lowerError.Contains("not supported on this architecture"))
+        if (lowerError.Contains("not supported on this architecture", StringComparison.Ordinal))
+        {
             return "This app is not compatible with your system architecture";
+        }
 
-        if (lowerError.Contains("a higher version") && lowerError.Contains("already installed"))
+        if (lowerError.Contains("a higher version", StringComparison.Ordinal) && lowerError.Contains("already installed", StringComparison.Ordinal))
+        {
             return "A newer version of this app is already installed";
+        }
 
         return "Installation failed";
     }
@@ -577,7 +598,9 @@ Add-AppxPackage -Path '{mainPathEscaped}' -DependencyPath $dependencies -ErrorAc
         var dependencies = new List<string>();
 
         if (string.IsNullOrEmpty(errorMessage))
+        {
             return dependencies;
+        }
 
         // Pattern 1: "Provide the framework "Microsoft.UI.Xaml.2.3" published by"
         var frameworkPattern = @"Provide the framework ""([^""]+)""";
@@ -614,13 +637,15 @@ Add-AppxPackage -Path '{mainPathEscaped}' -DependencyPath $dependencies -ErrorAc
     private static bool IsPackageFile(string filename)
     {
         if (string.IsNullOrEmpty(filename))
+        {
             return false;
+        }
 
         var lower = filename.ToLowerInvariant();
-        return lower.EndsWith(".appx") ||
-               lower.EndsWith(".appxbundle") ||
-               lower.EndsWith(".msix") ||
-               lower.EndsWith(".msixbundle");
+        return lower.EndsWith(".appx", StringComparison.Ordinal) ||
+               lower.EndsWith(".appxbundle", StringComparison.Ordinal) ||
+               lower.EndsWith(".msix", StringComparison.Ordinal) ||
+               lower.EndsWith(".msixbundle", StringComparison.Ordinal);
     }
 
     private static string GetCurrentArchitecture()
@@ -632,13 +657,14 @@ Add-AppxPackage -Path '{mainPathEscaped}' -DependencyPath $dependencies -ErrorAc
             Architecture.X86 => "x86",
             Architecture.Arm64 => "arm64",
             Architecture.Arm => "arm",
-            _ => "x64" // Default to x64
+            _ => "x64", // Default to x64
         };
     }
 
     private class PackageLink
     {
-        public string Url { get; set; }
-        public string FileName { get; set; }
+        public string? Url { get; set; }
+
+        public string? FileName { get; set; }
     }
 }

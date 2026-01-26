@@ -6,6 +6,6 @@ namespace Winhance.Core.Features.Common.Enums
         Warning,
         Error,
         Success,
-        Debug
+        Debug,
     }
 }

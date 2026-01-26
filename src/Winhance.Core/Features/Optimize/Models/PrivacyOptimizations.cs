@@ -882,6 +882,7 @@ public static class PrivacyAndSecurityOptimizations
                         },
                     },
                 },
+
                 // Settings App Notifications
                 new SettingDefinition
                 {
@@ -1130,6 +1131,7 @@ public static class PrivacyAndSecurityOptimizations
                         },
                     },
                 },
+
                 // Improve Inking and Typing (combined setting)
                 new SettingDefinition
                 {
@@ -1555,6 +1557,7 @@ public static class PrivacyAndSecurityOptimizations
                         },
                     },
                 },
+
                 // App Diagnostic Access
                 new SettingDefinition
                 {

@@ -7,5 +7,5 @@ public enum DialogType
     Warning,
     Error,
     Question,
-    Success
+    Success,
 }

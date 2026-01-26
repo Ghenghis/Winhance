@@ -22,7 +22,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private CancellationTokenSource? _cancellationSource;
 
         /// <summary>
-        /// Gets whether a task is currently running.
+        /// Gets a value indicating whether gets whether a task is currently running.
         /// </summary>
         public bool IsTaskRunning => _isTaskRunning;
 
@@ -37,7 +37,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public string CurrentStatusText => _currentStatusText;
 
         /// <summary>
-        /// Gets whether the current task is in indeterminate mode.
+        /// Gets a value indicating whether gets whether the current task is in indeterminate mode.
         /// </summary>
         public bool IsIndeterminate => _isIndeterminate;
 
@@ -105,8 +105,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     Progress = 0,
                     StatusText = taskName,
                     IsIndeterminate = isIndeterminate,
-                }
-            );
+                });
 
             return _cancellationSource;
         }
@@ -127,8 +126,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(progressPercentage),
-                    "Progress must be between 0 and 100."
-                );
+                    "Progress must be between 0 and 100.");
             }
 
             _currentProgress = progressPercentage;
@@ -137,8 +135,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _currentStatusText = statusText;
                 _logService.Log(
                     LogLevel.Info,
-                    $"Task progress ({progressPercentage}%): {statusText}"
-                ); // Corrected Log call
+                    $"Task progress ({progressPercentage}%): {statusText}"); // Corrected Log call
                 AddLogMessage($"Task progress ({progressPercentage}%): {statusText}");
             }
             else
@@ -146,13 +143,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _logService.Log(LogLevel.Info, $"Task progress: {progressPercentage}%"); // Corrected Log call
                 AddLogMessage($"Task progress: {progressPercentage}%");
             }
+
             OnProgressChanged(
                 new TaskProgressDetail
                 {
                     Progress = progressPercentage,
                     StatusText = _currentStatusText,
-                }
-            );
+                });
         }
 
         /// <summary>
@@ -172,8 +169,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(detail.Progress),
-                        "Progress must be between 0 and 100."
-                    );
+                        "Progress must be between 0 and 100.");
                 }
 
                 _currentProgress = (int)detail.Progress.Value;
@@ -190,6 +186,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _logService.Log(detail.LogLevel, detail.DetailedMessage); // Corrected Log call
                 AddLogMessage(detail.DetailedMessage);
             }
+
             OnProgressChanged(detail);
         }
 
@@ -217,8 +214,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     Progress = 100,
                     StatusText = _currentStatusText,
                     DetailedMessage = "Task completed",
-                }
-            );
+                });
 
             // Dispose cancellation token source
             _cancellationSource?.Dispose();
@@ -232,7 +228,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public void AddLogMessage(string message)
         {
             if (string.IsNullOrEmpty(message))
+            {
                 return;
+            }
 
             _logMessages.Add(message);
             LogMessageAdded?.Invoke(this, message);
@@ -325,8 +323,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             ProgressUpdated?.Invoke(this, detail);
             ProgressChanged?.Invoke(
                 this,
-                TaskProgressEventArgs.FromTaskProgressDetail(detail, _isTaskRunning)
-            );
+                TaskProgressEventArgs.FromTaskProgressDetail(detail, _isTaskRunning));
         }
     }
 }

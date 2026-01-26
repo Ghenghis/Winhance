@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "Google.GoogleDrive",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://www.google.com/drive/"
+                            WebsiteUrl = "https://www.google.com/drive/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "Dropbox.Dropbox",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://www.dropbox.com/"
+                            WebsiteUrl = "https://www.dropbox.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "IPVanish.SugarSync",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://www.sugarsync.com/"
+                            WebsiteUrl = "https://www.sugarsync.com/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "Nextcloud.NextcloudDesktop",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://nextcloud.com/"
+                            WebsiteUrl = "https://nextcloud.com/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "Proton.ProtonDrive",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://proton.me/drive"
+                            WebsiteUrl = "https://proton.me/drive",
                         },
                         new ItemDefinition
                         {
@@ -73,9 +73,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Online Storage & Backup",
                             WinGetPackageId = "Hekasoft.Backup-Restore",
                             Category = "Online Storage & Backup",
-                            WebsiteUrl = "https://hekasoft.com/hekasoft-backup-restore/"
+                            WebsiteUrl = "https://hekasoft.com/hekasoft-backup-restore/",
                         },
-                    }
+                    },
                 };
             }
         }

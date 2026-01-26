@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "VideoLAN.VLC",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.videolan.org/vlc/"
+                            WebsiteUrl = "https://www.videolan.org/vlc/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "Apple.iTunes",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.apple.com/itunes/"
+                            WebsiteUrl = "https://www.apple.com/itunes/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "AIMP.AIMP",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.aimp.ru/"
+                            WebsiteUrl = "https://www.aimp.ru/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "PeterPawlowski.foobar2000",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.foobar2000.org/"
+                            WebsiteUrl = "https://www.foobar2000.org/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "9P4CLT2RJ1RS",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.getmusicbee.com/"
+                            WebsiteUrl = "https://www.getmusicbee.com/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "Audacity.Audacity",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.audacityteam.org/"
+                            WebsiteUrl = "https://www.audacityteam.org/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "GOMLab.GOMPlayer",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.gomlab.com/"
+                            WebsiteUrl = "https://www.gomlab.com/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "Spotify.Spotify",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.spotify.com/"
+                            WebsiteUrl = "https://www.spotify.com/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "VentisMedia.MediaMonkey.5",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.mediamonkey.com/"
+                            WebsiteUrl = "https://www.mediamonkey.com/",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "HandBrake.HandBrake",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://handbrake.fr/"
+                            WebsiteUrl = "https://handbrake.fr/",
                         },
                         new ItemDefinition
                         {
@@ -123,7 +123,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "OBSProject.OBSStudio",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://obsproject.com/"
+                            WebsiteUrl = "https://obsproject.com/",
                         },
                         new ItemDefinition
                         {
@@ -133,7 +133,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "Streamlabs.StreamlabsOBS",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://streamlabs.com/"
+                            WebsiteUrl = "https://streamlabs.com/",
                         },
                         new ItemDefinition
                         {
@@ -143,7 +143,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "MPC-BE.MPC-BE",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://sourceforge.net/projects/mpcbe/"
+                            WebsiteUrl = "https://sourceforge.net/projects/mpcbe/",
                         },
                         new ItemDefinition
                         {
@@ -153,7 +153,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "CodecGuide.K-LiteCodecPack.Mega",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://codecguide.com/"
+                            WebsiteUrl = "https://codecguide.com/",
                         },
                         new ItemDefinition
                         {
@@ -163,7 +163,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "ByteDance.CapCut",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.capcut.com/"
+                            WebsiteUrl = "https://www.capcut.com/",
                         },
                         new ItemDefinition
                         {
@@ -173,7 +173,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "Daum.PotPlayer",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://potplayer.daum.net/"
+                            WebsiteUrl = "https://potplayer.daum.net/",
                         },
                         new ItemDefinition
                         {
@@ -183,7 +183,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "KDE.Kdenlive",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://kdenlive.org/"
+                            WebsiteUrl = "https://kdenlive.org/",
                         },
                         new ItemDefinition
                         {
@@ -193,7 +193,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "MediaArea.MediaInfo.GUI",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://mediaarea.net/en/MediaInfo"
+                            WebsiteUrl = "https://mediaarea.net/en/MediaInfo",
                         },
                         new ItemDefinition
                         {
@@ -203,7 +203,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "9P1XD8ZQJ7JD",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.freac.org/"
+                            WebsiteUrl = "https://www.freac.org/",
                         },
                         new ItemDefinition
                         {
@@ -213,7 +213,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "SMPlayer.SMPlayer",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://www.smplayer.info/"
+                            WebsiteUrl = "https://www.smplayer.info/",
                         },
                         new ItemDefinition
                         {
@@ -223,9 +223,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Multimedia (Audio & Video)",
                             WinGetPackageId = "irzyxa.Volume2Portable",
                             Category = "Multimedia (Audio & Video)",
-                            WebsiteUrl = "https://github.com/irzyxa/Volume2"
-                        }
-                    }
+                            WebsiteUrl = "https://github.com/irzyxa/Volume2",
+                        },
+                    },
                 };
             }
         }

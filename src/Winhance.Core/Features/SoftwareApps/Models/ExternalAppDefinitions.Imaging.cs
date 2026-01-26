@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "IrfanSkiljan.IrfanView",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.irfanview.com/"
+                            WebsiteUrl = "https://www.irfanview.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "KDE.Krita",
                             Category = "Imaging",
-                            WebsiteUrl = "https://krita.org/"
+                            WebsiteUrl = "https://krita.org/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "BlenderFoundation.Blender",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.blender.org/"
+                            WebsiteUrl = "https://www.blender.org/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "dotPDN.PaintDotNet",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.getpaint.net/"
+                            WebsiteUrl = "https://www.getpaint.net/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "GIMP.GIMP.3",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.gimp.org/"
+                            WebsiteUrl = "https://www.gimp.org/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "XnSoft.XnViewMP",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.xnview.com/en/xnviewmp/"
+                            WebsiteUrl = "https://www.xnview.com/en/xnviewmp/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "XnSoft.XnView.Classic",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.xnview.com/en/xnview/"
+                            WebsiteUrl = "https://www.xnview.com/en/xnview/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "Inkscape.Inkscape",
                             Category = "Imaging",
-                            WebsiteUrl = "https://inkscape.org/"
+                            WebsiteUrl = "https://inkscape.org/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "Greenshot.Greenshot",
                             Category = "Imaging",
-                            WebsiteUrl = "https://getgreenshot.org/"
+                            WebsiteUrl = "https://getgreenshot.org/",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "ShareX.ShareX",
                             Category = "Imaging",
-                            WebsiteUrl = "https://getsharex.com/"
+                            WebsiteUrl = "https://getsharex.com/",
                         },
                         new ItemDefinition
                         {
@@ -123,7 +123,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "Flameshot.Flameshot",
                             Category = "Imaging",
-                            WebsiteUrl = "https://flameshot.org/"
+                            WebsiteUrl = "https://flameshot.org/",
                         },
                         new ItemDefinition
                         {
@@ -133,7 +133,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "FastStone.Viewer",
                             Category = "Imaging",
-                            WebsiteUrl = "https://www.faststone.org/"
+                            WebsiteUrl = "https://www.faststone.org/",
                         },
                         new ItemDefinition
                         {
@@ -143,9 +143,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Imaging",
                             WinGetPackageId = "DuongDieuPhap.ImageGlass",
                             Category = "Imaging",
-                            WebsiteUrl = "https://imageglass.org/"
-                        }
-                    }
+                            WebsiteUrl = "https://imageglass.org/",
+                        },
+                    },
                 };
             }
         }

@@ -44,13 +44,13 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
             var fullPath = Path.GetFullPath(path);
 
             // Escape single quotes for PowerShell string interpolation
-            return fullPath.Replace("'", "''");
+            return fullPath.Replace("'", "''", StringComparison.Ordinal);
         }
 
         private static readonly string[] AdkDownloadSources = new[]
         {
             "https://go.microsoft.com/fwlink/?linkid=2289980",
-            "https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe"
+            "https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe",
         };
 
         private const string UnattendedWinstallXmlUrl = "https://raw.githubusercontent.com/memstechtips/UnattendedWinstall/main/autounattend.xml";
@@ -193,7 +193,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_DeletingImageFile"),
-                    TerminalOutput = $"Deleting {fileName} ({fileSizeGB:F2} GB)..."
+                    TerminalOutput = $"Deleting {fileName} ({fileSizeGB:F2} GB)...",
                 });
 
                 _logService.LogInformation($"Deleting {fileName} from {sourcesPath}");
@@ -214,7 +214,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                             progress?.Report(new TaskProgressDetail
                             {
                                 StatusText = _localization.GetString("Progress_ImageFileDeleted"),
-                                TerminalOutput = $"{fileName} deleted successfully"
+                                TerminalOutput = $"{fileName} deleted successfully",
                             });
 
                             break;
@@ -235,7 +235,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_ImageFileDeletionFailed"),
-                        TerminalOutput = $"Could not delete {fileName} after 5 attempts. File may be in use."
+                        TerminalOutput = $"Could not delete {fileName} after 5 attempts. File may be in use.",
                     });
                 }
 
@@ -247,7 +247,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_ImageFileDeletionFailed"),
-                    TerminalOutput = ex.Message
+                    TerminalOutput = ex.Message,
                 });
                 return false;
             }
@@ -262,7 +262,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Services
                 {
                     Format = format,
                     FilePath = imagePath,
-                    FileSizeBytes = fileInfo.Length
+                    FileSizeBytes = fileInfo.Length,
                 };
 
                 var safeImagePath = ValidateAndEscapePath(imagePath, nameof(imagePath));
@@ -277,14 +277,14 @@ try {{
     Write-Host ""ImageCount:$imageCount""
 
     foreach ($img in $images) {{
-        Write-Host ""Edition:$($img.ImageName)""
+        Write-Host ""Edition:$($img.ImageName)"",
     }}
 
-    exit 0
+    exit 0,
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -302,14 +302,14 @@ catch {{
                 var outputText = output.ToString();
                 foreach (var line in outputText.Split('\n'))
                 {
-                    if (line.StartsWith("ImageCount:"))
+                    if (line.StartsWith("ImageCount:", StringComparison.Ordinal))
                     {
                         if (int.TryParse(line.Substring(11).Trim(), out int count))
                         {
                             info.ImageCount = count;
                         }
                     }
-                    else if (line.StartsWith("Edition:"))
+                    else if (line.StartsWith("Edition:", StringComparison.Ordinal))
                     {
                         info.EditionNames.Add(line.Substring(8).Trim());
                     }
@@ -327,7 +327,7 @@ catch {{
                     Format = format,
                     FilePath = imagePath,
                     FileSizeBytes = fileInfo.Length,
-                    ImageCount = 1
+                    ImageCount = 1,
                 };
             }
         }
@@ -403,7 +403,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_ConvertingFormat", currentInfo.Format.ToString(), targetFormat.ToString()),
-                    TerminalOutput = "This may take 10-20 minutes"
+                    TerminalOutput = "This may take 10-20 minutes",
                 });
 
                 _logService.LogInformation($"Starting conversion: {currentInfo.Format} → {targetFormat}");
@@ -420,7 +420,7 @@ catch {{
                         StatusText = _localization.GetString("Progress_ConvertingEdition", i.ToString(), imageCount.ToString()),
                         TerminalOutput = currentInfo.EditionNames.Count >= i
                             ? currentInfo.EditionNames[i - 1]
-                            : $"Index {i}"
+                            : $"Index {i}",
                     });
 
                     var safeSourceFile = ValidateAndEscapePath(sourceFile, nameof(sourceFile));
@@ -445,20 +445,20 @@ try {{
         dism /Export-Image /SourceImageFile:""$sourceFile"" /SourceIndex:$index /DestinationImageFile:""$targetFile"" /Compress:$compressionType /CheckIntegrity
     }} else {{
         Write-Host ""Appending to existing image file...""
-        dism /Export-Image /SourceImageFile:""$sourceFile"" /SourceIndex:$index /DestinationImageFile:""$targetFile"" /Compress:$compressionType /CheckIntegrity
+        dism /Export-Image /SourceImageFile:""$sourceFile"" /SourceIndex:$index /DestinationImageFile:""$targetFile"" /Compress:$compressionType /CheckIntegrity,
     }}
 
     if ($LASTEXITCODE -ne 0) {{
-        throw ""DISM failed with exit code: $LASTEXITCODE""
+        throw ""DISM failed with exit code: $LASTEXITCODE"",
     }}
 
     Write-Host ""Successfully exported index $index""
-    exit 0
+    exit 0,
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
     Write-Host ""Full error: $($_)"" -ForegroundColor Red
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -476,7 +476,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_RemovingOldFile"),
-                    TerminalOutput = $"Deleting {Path.GetFileName(sourceFile)}"
+                    TerminalOutput = $"Deleting {Path.GetFileName(sourceFile)}",
                 });
 
                 var deleted = false;
@@ -520,7 +520,7 @@ catch {{
                         StatusText = _localization.GetString("Progress_ConversionCompleted"),
                         TerminalOutput = $"Conversion succeeded! New size: {targetFileInfo.Length / (1024.0 * 1024 * 1024):F2} GB\n\n" +
                                        $"However, the source file is still in use and could not be deleted automatically.\n\n" +
-                                       $"Please manually delete:\n{sourceFile}"
+                                       $"Please manually delete:\n{sourceFile}",
                     });
 
                     return true;
@@ -534,7 +534,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_ConversionCompleted"),
-                    TerminalOutput = $"New size: {targetFileInfo.Length / (1024.0 * 1024 * 1024):F2} GB\n{savedSpace}"
+                    TerminalOutput = $"New size: {targetFileInfo.Length / (1024.0 * 1024 * 1024):F2} GB\n{savedSpace}",
                 });
 
                 _logService.LogInformation($"Conversion successful: {currentInfo.Format} → {targetFormat}");
@@ -585,7 +585,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_ConversionFailed"),
-                    TerminalOutput = ex.Message
+                    TerminalOutput = ex.Message,
                 });
                 return false;
             }
@@ -617,7 +617,7 @@ catch {{
             progress?.Report(new TaskProgressDetail
             {
                 StatusText = _localization.GetString("Progress_PreparingInstallAdk"),
-                TerminalOutput = "Checking installation methods"
+                TerminalOutput = "Checking installation methods",
             });
 
             if (await InstallAdkDeploymentToolsAsync(progress, cancellationToken))
@@ -649,7 +649,7 @@ catch {{
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_DownloadingAdkInstaller"),
-                        TerminalOutput = $"Source: {sourceUrl}"
+                        TerminalOutput = $"Source: {sourceUrl}",
                     });
 
                     _httpClient.Timeout = TimeSpan.FromMinutes(30);
@@ -687,7 +687,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_InstallingAdkTools"),
-                    TerminalOutput = "This may take several minutes"
+                    TerminalOutput = "This may take several minutes",
                 });
 
                 var logPath = Path.Combine(Path.GetTempPath(), "adk_install.log");
@@ -715,15 +715,15 @@ try {{
         Write-Host 'ADK Deployment Tools installed successfully!'
         exit 0
     }} else {{
-        throw ""Installation failed with exit code: $($process.ExitCode)""
+        throw ""Installation failed with exit code: $($process.ExitCode)"",
     }}
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
     if (Test-Path $logPath) {{
-        Get-Content $logPath | Select-Object -Last 20
+        Get-Content $logPath | Select-Object -Last 20,
     }}
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -769,7 +769,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CheckingWinget"),
-                    TerminalOutput = "Verifying winget availability"
+                    TerminalOutput = "Verifying winget availability",
                 });
 
                 var wingetInstalled = await _winGetService.IsWinGetInstalledAsync(cancellationToken);
@@ -779,7 +779,7 @@ catch {{
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_InstallingWinget"),
-                        TerminalOutput = "winget is required for this installation method"
+                        TerminalOutput = "winget is required for this installation method",
                     });
 
                     var wingetInstallSuccess = await _winGetService.InstallWinGetAsync(cancellationToken);
@@ -793,7 +793,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_InstallingAdkViaWinget"),
-                    TerminalOutput = "This may take several minutes"
+                    TerminalOutput = "This may take several minutes",
                 });
 
                 var logPath = Path.Combine(Path.GetTempPath(), "adk_winget_install.log");
@@ -813,16 +813,16 @@ try {{
         Write-Host 'ADK installed successfully via winget!'
         exit 0
     }} else {{
-        throw ""winget install failed with exit code: $LASTEXITCODE""
+        throw ""winget install failed with exit code: $LASTEXITCODE"",
     }}
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
     if (Test-Path $logPath) {{
         Write-Host 'Installation log:'
-        Get-Content $logPath | Select-Object -Last 20
+        Get-Content $logPath | Select-Object -Last 20,
     }}
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -854,6 +854,7 @@ catch {{
                     _logService.LogError($"Cannot determine drive root for path: {path}");
                     return false;
                 }
+
                 var drive = new DriveInfo(pathRoot);
                 var availableBytes = drive.AvailableFreeSpace;
 
@@ -862,22 +863,19 @@ catch {{
 
                 _logService.LogInformation(
                     $"Disk space check for {operationName}: " +
-                    $"Required: {requiredGB:F2} GB, Available: {availableGB:F2} GB on {drive.Name}"
-                );
+                    $"Required: {requiredGB:F2} GB, Available: {availableGB:F2} GB on {drive.Name}");
 
                 if (availableBytes < requiredBytes)
                 {
                     _logService.LogError(
                         $"Insufficient disk space for {operationName}. " +
-                        $"Required: {requiredGB:F2} GB, Available: {availableGB:F2} GB"
-                    );
+                        $"Required: {requiredGB:F2} GB, Available: {availableGB:F2} GB");
 
                     throw new InsufficientDiskSpaceException(
                         drive.Name,
                         requiredGB,
                         availableGB,
-                        operationName
-                    );
+                        operationName);
                 }
 
                 return true;
@@ -954,7 +952,7 @@ catch {{
 
                     try
                     {
-                        var script = $@"
+                        var script = $@",
                             Get-ChildItem -Path '{workingDirectory}' -Recurse -Force | ForEach-Object {{ $_.Attributes = 'Normal' }}
                             Remove-Item -Path '{workingDirectory}' -Recurse -Force -ErrorAction Stop
                         ";
@@ -968,8 +966,8 @@ catch {{
                                 RedirectStandardOutput = true,
                                 RedirectStandardError = true,
                                 UseShellExecute = false,
-                                CreateNoWindow = true
-                            }
+                                CreateNoWindow = true,
+                            },
                         };
 
                         removeProcess.Start();
@@ -982,8 +980,7 @@ catch {{
                             throw new InvalidOperationException(
                                 $"Could not delete the existing working directory '{workingDirectory}'. " +
                                 "It may be open in Windows Explorer or being used by another process. " +
-                                "Please close delete it manually and try again."
-                            );
+                                "Please close delete it manually and try again.");
                         }
 
                         _logService.LogInformation("Working directory cleared successfully");
@@ -1008,7 +1005,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_MountingIso"),
-                    TerminalOutput = $"ISO: {isoPath}"
+                    TerminalOutput = $"ISO: {isoPath}",
                 });
 
                 _logService.LogInformation($"Mounting ISO: {isoPath}");
@@ -1022,8 +1019,8 @@ catch {{
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
+                        CreateNoWindow = true,
+                    },
                 };
 
                 mountProcess.Start();
@@ -1043,7 +1040,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CopyingIsoContents"),
-                    TerminalOutput = $"Source: {mountedPath}"
+                    TerminalOutput = $"Source: {mountedPath}",
                 });
 
                 await Task.Run(() => CopyDirectory(mountedPath, workingDirectory, progress, cancellationToken), cancellationToken);
@@ -1051,7 +1048,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_DismountingIso"),
-                    TerminalOutput = "Cleaning up..."
+                    TerminalOutput = "Cleaning up...",
                 });
 
                 _logService.LogInformation("Dismounting ISO");
@@ -1065,8 +1062,8 @@ catch {{
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
+                        CreateNoWindow = true,
+                    },
                 };
 
                 dismountProcess.Start();
@@ -1092,7 +1089,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_IsoExtractionCompleted"),
-                    TerminalOutput = $"Extracted to: {workingDirectory}"
+                    TerminalOutput = $"Extracted to: {workingDirectory}",
                 });
 
                 _logService.LogInformation($"ISO extracted successfully to: {workingDirectory}");
@@ -1116,8 +1113,8 @@ catch {{
                                 RedirectStandardOutput = true,
                                 RedirectStandardError = true,
                                 UseShellExecute = false,
-                                CreateNoWindow = true
-                            }
+                                CreateNoWindow = true,
+                            },
                         };
                         dismountProcess.Start();
                         await dismountProcess.WaitForExitAsync();
@@ -1153,8 +1150,8 @@ catch {{
                                 RedirectStandardOutput = true,
                                 RedirectStandardError = true,
                                 UseShellExecute = false,
-                                CreateNoWindow = true
-                            }
+                                CreateNoWindow = true,
+                            },
                         };
                         dismountProcess.Start();
                         await dismountProcess.WaitForExitAsync();
@@ -1168,7 +1165,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_IsoExtractionFailed"),
-                    TerminalOutput = ex.Message
+                    TerminalOutput = ex.Message,
                 });
                 return false;
             }
@@ -1191,7 +1188,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CopyingFile", file.Name),
-                    TerminalOutput = file.Name
+                    TerminalOutput = file.Name,
                 });
                 file.CopyTo(targetFilePath, overwrite: true);
             }
@@ -1246,20 +1243,23 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_DownloadingXml"),
-                    TerminalOutput = UnattendedWinstallXmlUrl
+                    TerminalOutput = UnattendedWinstallXmlUrl,
                 });
 
                 var xmlContent = await _httpClient.GetStringAsync(UnattendedWinstallXmlUrl, cancellationToken);
 
                 var destDir = Path.GetDirectoryName(destinationPath);
                 if (!string.IsNullOrEmpty(destDir))
+                {
                     Directory.CreateDirectory(destDir);
+                }
+
                 await File.WriteAllTextAsync(destinationPath, xmlContent, cancellationToken);
 
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_XmlDownloaded"),
-                    TerminalOutput = $"Saved to: {destinationPath}"
+                    TerminalOutput = $"Saved to: {destinationPath}",
                 });
 
                 _logService.LogInformation($"Downloaded UnattendedWinstall XML to: {destinationPath}");
@@ -1287,7 +1287,7 @@ catch {{
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_ExportingDrivers"),
-                        TerminalOutput = "This may take several minutes"
+                        TerminalOutput = "This may take several minutes",
                     });
 
                     var tempDriverPath = Path.Combine(Path.GetTempPath(), $"WinhanceDrivers_{Guid.NewGuid()}");
@@ -1307,11 +1307,11 @@ try {{
     $driverCount = ($result | Measure-Object).Count
     Write-Host ""Successfully exported $driverCount driver packages""
 
-    exit 0
+    exit 0,
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -1322,8 +1322,15 @@ catch {{
                     }
                     catch (Exception ex)
                     {
-                        try { Directory.Delete(tempDriverPath, recursive: true); } 
-                        catch (Exception cleanupEx) { _logService?.Log(Winhance.Core.Features.Common.Enums.LogLevel.Debug, $"Failed to cleanup temp driver path: {cleanupEx.Message}"); }
+                        try
+                        {
+                            Directory.Delete(tempDriverPath, recursive: true);
+                        }
+                        catch (Exception cleanupEx)
+                        {
+                            _logService?.Log(Winhance.Core.Features.Common.Enums.LogLevel.Debug, $"Failed to cleanup temp driver path: {cleanupEx.Message}");
+                        }
+
                         _logService.LogError($"Failed to export system drivers: {ex.Message}", ex);
                         return false;
                     }
@@ -1333,7 +1340,7 @@ catch {{
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_ValidatingDrivers"),
-                        TerminalOutput = driverSourcePath
+                        TerminalOutput = driverSourcePath,
                     });
 
                     if (!Directory.Exists(driverSourcePath))
@@ -1348,7 +1355,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CategorizingDrivers"),
-                    TerminalOutput = "Separating storage and post-install drivers"
+                    TerminalOutput = "Separating storage and post-install drivers",
                 });
 
                 var winpeDriverPath = Path.Combine(workingDirectory, "sources", "$WinpeDriver$");
@@ -1356,13 +1363,13 @@ catch {{
 
                 _logService.LogInformation($"Searching for drivers in: {sourceDirectory}");
 
-                int copiedCount = await Task.Run(() => DriverCategorizer.CategorizeAndCopyDrivers(
+                int copiedCount = await Task.Run(
+                    () => DriverCategorizer.CategorizeAndCopyDrivers(
                     sourceDirectory,
                     winpeDriverPath,
                     oemDriverPath,
                     _logService,
-                    workingDirectory
-                ), cancellationToken);
+                    workingDirectory), cancellationToken);
 
                 if (string.IsNullOrEmpty(driverSourcePath))
                 {
@@ -1385,7 +1392,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CreatingDriverScript"),
-                    TerminalOutput = "Setting up SetupComplete.cmd"
+                    TerminalOutput = "Setting up SetupComplete.cmd",
                 });
 
                 CreateSetupCompleteScript(workingDirectory);
@@ -1399,7 +1406,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_DriverAdditionFailed"),
-                    TerminalOutput = ex.Message
+                    TerminalOutput = ex.Message,
                 });
                 return false;
             }
@@ -1472,7 +1479,7 @@ exit
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CreatingBootableIso"),
-                    TerminalOutput = $"Output: {outputPath}"
+                    TerminalOutput = $"Output: {outputPath}",
                 });
 
                 var efisysPath = Path.Combine(workingDirectory, "efi", "microsoft", "boot", "efisys.bin");
@@ -1506,7 +1513,7 @@ try {{
 
     $outputDir = Split-Path $outputPath -Parent
     if (!(Test-Path $outputDir)) {{
-        New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+        New-Item -ItemType Directory -Path $outputDir -Force | Out-Null,
     }}
 
     if (Test-Path $outputPath) {{
@@ -1531,12 +1538,12 @@ try {{
             throw 'ISO file was not created'
         }}
     }} else {{
-        throw ""oscdimg.exe failed with exit code: $($process.ExitCode)""
+        throw ""oscdimg.exe failed with exit code: $($process.ExitCode)"",
     }}
 }}
 catch {{
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
-    exit 1
+    exit 1,
 }}
 ";
 
@@ -1555,7 +1562,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_IsoCreatedSuccess"),
-                    TerminalOutput = $"Location: {outputPath}\nSize: {isoFileInfo.Length / (1024 * 1024):F2} MB"
+                    TerminalOutput = $"Location: {outputPath}\nSize: {isoFileInfo.Length / (1024 * 1024):F2} MB",
                 });
 
                 return true;
@@ -1575,7 +1582,7 @@ catch {{
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_IsoCreationFailed"),
-                    TerminalOutput = ex.Message
+                    TerminalOutput = ex.Message,
                 });
                 return false;
             }

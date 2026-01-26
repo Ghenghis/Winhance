@@ -8,7 +8,7 @@ using Winhance.Core.Features.Common.Interfaces;
 namespace Winhance.Infrastructure.Features.Common.Events
 {
     /// <summary>
-    /// Implementation of the event bus that handles publishing and subscribing to domain events
+    /// Implementation of the event bus that handles publishing and subscribing to domain events.
     /// </summary>
     public class EventBus : IEventBus
     {
@@ -17,19 +17,22 @@ namespace Winhance.Infrastructure.Features.Common.Events
         private readonly object _lock = new();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventBus"/> class
+        /// Initializes a new instance of the <see cref="EventBus"/> class.
         /// </summary>
-        /// <param name="logService">The log service</param>
+        /// <param name="logService">The log service.</param>
         public EventBus(ILogService logService)
         {
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
         /// <inheritdoc />
-        public void Publish<TEvent>(TEvent domainEvent) where TEvent : IDomainEvent
+        public void Publish<TEvent>(TEvent domainEvent)
+            where TEvent : IDomainEvent
         {
             if (domainEvent == null)
+            {
                 throw new ArgumentNullException(nameof(domainEvent));
+            }
 
             var eventType = typeof(TEvent);
 
@@ -37,7 +40,9 @@ namespace Winhance.Infrastructure.Features.Common.Events
             lock (_lock)
             {
                 if (!_subscriptions.TryGetValue(eventType, out subscriptions))
-                    return; // No subscribers
+                {
+                    return; // No subscribers,
+                }
 
                 // Create a copy to avoid modification during enumeration
                 subscriptions = subscriptions.ToList();
@@ -58,10 +63,13 @@ namespace Winhance.Infrastructure.Features.Common.Events
         }
 
         /// <inheritdoc />
-        public ISubscriptionToken Subscribe<TEvent>(Action<TEvent> handler) where TEvent : IDomainEvent
+        public ISubscriptionToken Subscribe<TEvent>(Action<TEvent> handler)
+            where TEvent : IDomainEvent
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             var eventType = typeof(TEvent);
             var subscription = new Subscription(eventType, handler);
@@ -84,7 +92,9 @@ namespace Winhance.Infrastructure.Features.Common.Events
         public void Unsubscribe(ISubscriptionToken token)
         {
             if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
+            }
 
             lock (_lock)
             {
@@ -94,36 +104,38 @@ namespace Winhance.Infrastructure.Features.Common.Events
 
                     // Remove the event type if there are no more subscriptions
                     if (subscriptions.Count == 0)
+                    {
                         _subscriptions.Remove(token.EventType);
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Represents a subscription to an event
+        /// Represents a subscription to an event.
         /// </summary>
         private class Subscription
         {
             /// <summary>
-            /// Gets the unique identifier for this subscription
+            /// Gets the unique identifier for this subscription.
             /// </summary>
             public Guid Id { get; }
 
             /// <summary>
-            /// Gets the type of event this subscription is for
+            /// Gets the type of event this subscription is for.
             /// </summary>
             public Type EventType { get; }
 
             /// <summary>
-            /// Gets the handler for this subscription
+            /// Gets the handler for this subscription.
             /// </summary>
             public Delegate Handler { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Subscription"/> class
+            /// Initializes a new instance of the <see cref="Subscription"/> class.
             /// </summary>
-            /// <param name="eventType">The type of event</param>
-            /// <param name="handler">The handler</param>
+            /// <param name="eventType">The type of event.</param>
+            /// <param name="handler">The handler.</param>
             public Subscription(Type eventType, Delegate handler)
             {
                 Id = Guid.NewGuid();
@@ -133,7 +145,7 @@ namespace Winhance.Infrastructure.Features.Common.Events
         }
 
         /// <summary>
-        /// Implementation of <see cref="ISubscriptionToken"/> that unsubscribes when disposed
+        /// Implementation of <see cref="ISubscriptionToken"/> that unsubscribes when disposed.
         /// </summary>
         private class SubscriptionToken : ISubscriptionToken
         {
@@ -147,11 +159,11 @@ namespace Winhance.Infrastructure.Features.Common.Events
             public Type EventType { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="SubscriptionToken"/> class
+            /// Initializes a new instance of the <see cref="SubscriptionToken"/> class.
             /// </summary>
-            /// <param name="subscriptionId">The subscription ID</param>
-            /// <param name="eventType">The event type</param>
-            /// <param name="unsubscribeAction">The action to unsubscribe</param>
+            /// <param name="subscriptionId">The subscription ID.</param>
+            /// <param name="eventType">The event type.</param>
+            /// <param name="unsubscribeAction">The action to unsubscribe.</param>
             public SubscriptionToken(Guid subscriptionId, Type eventType, Action<ISubscriptionToken> unsubscribeAction)
             {
                 SubscriptionId = subscriptionId;

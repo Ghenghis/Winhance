@@ -11,7 +11,6 @@ using Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Interfaces;
 namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verification.Methods;
 
 public class AppDiscoveryVerificationMethod(IAppStatusDiscoveryService appStatusDiscoveryService, ILogService logService) : VerificationMethodBase("AppDiscovery", priority: 15), IVerificationMethod
-
 {
     protected override async Task<VerificationResult> VerifyPresenceAsync(
         string packageId,
@@ -28,7 +27,7 @@ public class AppDiscoveryVerificationMethod(IAppStatusDiscoveryService appStatus
                 {
                     IsVerified = true,
                     Message = $"Found package: {packageId}",
-                    MethodUsed = "AppDiscovery"
+                    MethodUsed = "AppDiscovery",
                 };
             }
 
@@ -57,7 +56,7 @@ public class AppDiscoveryVerificationMethod(IAppStatusDiscoveryService appStatus
         {
             IsVerified = true,
             Message = $"Package '{packageId}' is installed (version check not implemented)",
-            MethodUsed = "AppDiscovery"
+            MethodUsed = "AppDiscovery",
         };
     }
 }

@@ -36,11 +36,11 @@ public static class EdgeRemovalScript
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]""Administrator"")) {
     Try {
         Start-Process PowerShell.exe -ArgumentList (""-NoProfile -ExecutionPolicy Bypass -File `""{0}`"""" -f $PSCommandPath) -Verb RunAs
-        Exit
+        Exit,
     }
     Catch {
         Write-Host ""Failed to run as Administrator. Please rerun with elevated privileges.""
-        Exit
+        Exit,
     }
 }
 
@@ -50,7 +50,7 @@ $logFile = ""$logFolder\EdgeRemovalLog.txt""
 
 # Create log directory if it doesn't exist
 if (!(Test-Path $logFolder)) {
-    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null,
 }
 
 # Function to write to log file
@@ -63,19 +63,19 @@ function Write-Log {
     if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 512000) {
         Remove-Item $logFile -Force -ErrorAction SilentlyContinue
         $timestamp = Get-Date -Format ""yyyy-MM-dd HH:mm:ss""
-        ""$timestamp - Log rotated - previous log exceeded 500KB"" | Out-File -FilePath $logFile
+        ""$timestamp - Log rotated - previous log exceeded 500KB"" | Out-File -FilePath $logFile,
     }
 
     $timestamp = Get-Date -Format ""yyyy-MM-dd HH:mm:ss""
     ""$timestamp - $Message"" | Out-File -FilePath $logFile -Append
 
     # Also output to console for real-time progress
-    Write-Host $Message
+    Write-Host $Message,
 }
 
 # Helper function to get Legacy Edge packages
 function Get-LegacyEdgePackages {
-    $legacyRegPath = ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Packages""
+    $legacyRegPath = ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Packages"",
     return Get-ChildItem -Path $legacyRegPath -Name -ErrorAction SilentlyContinue | Where-Object { $_ -match ""Microsoft-Windows-Internet-Browser-Package"" -and $_ -match ""~~"" }
 }
 
@@ -87,11 +87,11 @@ function Test-LegacyEdgeInstalled {
         foreach ($package in $packages) {
             $packageInfo = & dism /online /Get-PackageInfo /PackageName:$package 2>$null
             if ($packageInfo -match ""State.*Installed"") {
-                return $true
+                return $true,
             }
         }
     }
-    return $false
+    return $false,
 }
 
 # Function to test if Chromium Edge is installed
@@ -103,7 +103,7 @@ function Test-ChromiumEdgeInstalled {
     foreach ($pf in $programFiles) {
         foreach ($folder in $edgeFolders) {
             if (Test-Path ""$pf\Microsoft\$folder"") {
-                return $true
+                return $true,
             }
         }
     }
@@ -113,7 +113,7 @@ function Test-ChromiumEdgeInstalled {
         $edgeApp = Get-WmiObject -Class Win32_InstalledStoreProgram -Filter ""Name like '%Microsoft.MicrosoftEdge.Stable%'"" -ErrorAction SilentlyContinue
         return $edgeApp -ne $null
     } catch {
-        return $false
+        return $false,
     }
 }
 
@@ -125,7 +125,7 @@ function Stop-EdgeProcesses {
         $processCount = (Get-Process -Name $_ -ErrorAction SilentlyContinue).Count
         if ($processCount -gt 0) {
             Stop-Process -Name $_ -Force -ErrorAction SilentlyContinue
-            Write-Log ""Stopped $processCount instance(s) of $_""
+            Write-Log ""Stopped $processCount instance(s) of $_"",
         }
     }
 }
@@ -140,7 +140,7 @@ function Remove-LegacyEdge {
     # Set registry visibility
     Set-ItemProperty -Path $packagePath -Name ""Visibility"" -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue
     # Remove owners registry entries
-    $ownersPath = ""$packagePath\Owners""
+    $ownersPath = ""$packagePath\Owners"",
     if (Test-Path $ownersPath) { Remove-Item -Path $ownersPath -Recurse -Force -ErrorAction SilentlyContinue }
     Write-Log ""Removing Legacy Edge package via DISM (with 30-second timeout)""
     $dismProcess = Start-Process -FilePath ""dism.exe"" -ArgumentList ""/online"", ""/Remove-Package"", ""/PackageName:$edgeLegacyPackageVersion"" -NoNewWindow -PassThru
@@ -162,15 +162,15 @@ function Remove-LegacyEdge {
             Write-Log ""DISM retry also timed out, continuing with script""
             $retryProcess.Kill()
         } else {
-            Write-Log ""DISM retry failed to start, continuing with script""
+            Write-Log ""DISM retry failed to start, continuing with script"",
         }
     } else {
-        Write-Log ""DISM failed to start, continuing with script""
+        Write-Log ""DISM failed to start, continuing with script"",
     }
     # Remove Legacy UWP Edge package
     Write-Log ""Removing Legacy UWP Edge package""
     Get-AppxPackage Microsoft.MicrosoftEdge | Remove-AppxPackage -ErrorAction SilentlyContinue | Out-Null
-    Write-Log ""Legacy Edge/UWP Edge removal process completed""
+    Write-Log ""Legacy Edge/UWP Edge removal process completed"",
 }
 
 # Function to remove Edge shortcuts
@@ -179,7 +179,7 @@ function Remove-EdgeShortcuts {
 
     # Get ALL user profiles (no exclusions)
     $userProfiles = Get-ChildItem -Path ""C:\Users"" -Directory | Where-Object {
-        (Test-Path -Path ""$($_.FullName)\NTUSER.DAT"")
+        (Test-Path -Path ""$($_.FullName)\NTUSER.DAT""),
     }
 
     # Build all shortcut paths to check
@@ -193,7 +193,7 @@ function Remove-EdgeShortcuts {
             ""$($profile.FullName)\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\Microsoft Edge.lnk"",
             ""$($profile.FullName)\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\Tombstones\Microsoft Edge.lnk"",
             ""$($profile.FullName)\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk""
-        )
+        ),
     }
 
     # Add the single ProgramData path
@@ -208,7 +208,7 @@ function Remove-EdgeShortcuts {
         }
     }
 
-    Write-Log ""Removed $removedCount Edge shortcut(s)""
+    Write-Log ""Removed $removedCount Edge shortcut(s)"",
 }
 
 function Install-EdgeProtocolRedirect {
@@ -219,7 +219,7 @@ function Install-EdgeProtocolRedirect {
         $debugger = (Get-ItemProperty -Path $ifeoCheck -Name ""Debugger"" -ErrorAction SilentlyContinue).Debugger
         if ($debugger -like ""*OpenWebSearch*"") {
             Write-Log ""Edge protocol redirect already installed""
-            return
+            return,
         }
     }
 
@@ -230,7 +230,7 @@ function Install-EdgeProtocolRedirect {
     $stubTargetPath = ""$scriptsDir\ie_to_edge_stub.exe""
     if (!(Test-Path $stubTargetPath)) {
         Write-Log ""Warning: ie_to_edge_stub.exe not found at $stubTargetPath (should have been copied before Edge removal)""
-        return
+        return,
     }
 
     $openWebSearchContent = @""
@@ -295,10 +295,10 @@ set "".=!.:{=%%!"" & endlocal& set ""URL=%.:}=!%"" & exit /b
     $edgePath = ""${env:ProgramFiles(x86)}\Microsoft\Edge\Application\edge.exe""
     if ((Test-Path $msedgePath) -and !(Test-Path $edgePath)) {
         cmd /c mklink /h ""$edgePath"" ""$msedgePath"" 2>&1 | Out-Null
-        Write-Log ""Created edge.exe hardlink at $edgePath""
+        Write-Log ""Created edge.exe hardlink at $edgePath"",
     }
 
-    $buildNumber = [Environment]::OSVersion.Version.Build
+    $buildNumber = [Environment]::OSVersion.Version.Build,
     $conhostFlags = if ($buildNumber -gt 25179) { ""--width 1 --height 1"" } else { ""--headless"" }
     $conhostDebugger = ""$env:SystemRoot\system32\conhost.exe $conhostFlags $scriptsDir\OpenWebSearch.cmd""
 
@@ -330,7 +330,7 @@ set "".=!.:{=%%!"" & endlocal& set ""URL=%.:}=!%"" & exit /b
         Register-ScheduledTask -TaskName 'OpenWebSearchRepair' -Action $taskAction -Trigger $taskTrigger -Settings $taskSettings -RunLevel Highest -Force | Out-Null
         Write-Log ""OpenWebSearchRepair scheduled task created""
     } catch {
-        Write-Log ""Failed to create OpenWebSearchRepair scheduled task: $($_.Exception.Message)""
+        Write-Log ""Failed to create OpenWebSearchRepair scheduled task: $($_.Exception.Message)"",
     }
 }
 
@@ -360,7 +360,7 @@ function Remove-ChromiumEdge {
                 } else {
                     # Uninstalls normal version
                     Write-Log ""Executing standard uninstaller for Edge""
-                    Start-Process cmd.exe ""/c $uninstallString --force-uninstall --silent"" -WindowStyle Hidden -Wait | Out-Null
+                    Start-Process cmd.exe ""/c $uninstallString --force-uninstall --silent"" -WindowStyle Hidden -Wait | Out-Null,
                 }
             }
         }
@@ -368,7 +368,7 @@ function Remove-ChromiumEdge {
     if ($edgeUninstallCount -eq 0) {
         Write-Log ""No Edge uninstall entries found in registry""
     } else {
-        Write-Log ""Executed $edgeUninstallCount Edge uninstaller(s)""
+        Write-Log ""Executed $edgeUninstallCount Edge uninstaller(s)"",
     }
     # Remove UWP Edge Chromium package
     Write-Log ""Removing UWP Edge Chromium package""
@@ -389,13 +389,13 @@ function Remove-ChromiumEdge {
         $searchPattern = ""$folder\Microsoft\EdgeUpdate\*.*.*.*\MicrosoftEdgeUpdate.exe""
         $foundFiles = Get-ChildItem $searchPattern -Recurse -ErrorAction SilentlyContinue
         if ($foundFiles) {
-            $edgeupdate += $foundFiles.FullName
+            $edgeupdate += $foundFiles.FullName,
         }
     }
     if ($edgeupdate.Count -gt 0) {
         Write-Log ""Found $($edgeupdate.Count) EdgeUpdate executable(s)""
     } else {
-        Write-Log ""No EdgeUpdate executables found""
+        Write-Log ""No EdgeUpdate executables found"",
     }
     # Backup ClientState registry if it exists (important, or else webview won't work)
     $backupRegFile = ""$env:TEMP\EdgeUpdate_ClientState_Backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').reg""
@@ -406,10 +406,10 @@ function Remove-ChromiumEdge {
         if (Test-Path $backupRegFile) {
             Write-Log ""Successfully created registry backup at $backupRegFile""
         } else {
-            Write-Log ""Warning: Failed to create registry backup""
+            Write-Log ""Warning: Failed to create registry backup"",
         }
     } else {
-        Write-Log ""No EdgeUpdate ClientState registry found to backup""
+        Write-Log ""No EdgeUpdate ClientState registry found to backup"",
     }
     # Clean registry entries
     Write-Log ""Removing EdgeUpdate registry entries""
@@ -435,13 +435,13 @@ function Remove-ChromiumEdge {
             # Wait for processes to finish
             $waitCount = 0
             do {
-                Start-Sleep 3
+                Start-Sleep 3,
                 $runningProcesses = Get-Process -Name ""setup"", ""MicrosoftEdge*"" -ErrorAction SilentlyContinue | Where-Object { $_.Path -like ""*\Microsoft\Edge*"" }
             } while ($runningProcesses -and $waitCount++ -lt 20)
             # Run uninstall if file still exists
             if (Test-Path $path) {
                 Write-Log ""Running EdgeUpdate uninstaller from $path""
-                Start-Process -FilePath $path -ArgumentList ""/uninstall"" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+                Start-Process -FilePath $path -ArgumentList ""/uninstall"" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue,
             }
         }
     }
@@ -452,9 +452,9 @@ function Remove-ChromiumEdge {
         Remove-Item $backupRegFile -ErrorAction SilentlyContinue
         Write-Log ""Registry restore completed and backup file cleaned up""
     } else {
-        Write-Log ""No registry backup file found to restore""
+        Write-Log ""No registry backup file found to restore"",
     }
-    Write-Log ""EdgeUpdate removal process completed""
+    Write-Log ""EdgeUpdate removal process completed"",
 }
 
 Write-Host ""Starting Edge removal process. See $logFile for details.""
@@ -468,7 +468,7 @@ $chromiumInstalled = Test-ChromiumEdgeInstalled
 if (-not $legacyInstalled -and -not $chromiumInstalled) {
     Write-Log ""No Edge installations detected. Exiting.""
     Write-Host ""No Edge installations found. Script exiting.""
-    exit 0
+    exit 0,
 }
 
 $removedSomething = $false
@@ -482,7 +482,7 @@ if ($chromiumInstalled) {
         if (Test-Path $loc) {
             $stubPath = $loc
             Write-Log ""Found stub at: $loc""
-            break
+            break,
         }
     }
 
@@ -492,7 +492,7 @@ if ($chromiumInstalled) {
             $stubPath = $stubSearch.FullName
             Write-Log ""Found stub at: $stubPath""
         } else {
-            Write-Log ""ie_to_edge_stub.exe not found in any location""
+            Write-Log ""ie_to_edge_stub.exe not found in any location"",
         }
     }
 
@@ -500,7 +500,7 @@ if ($chromiumInstalled) {
         $scriptsDir = ""C:\ProgramData\Winhance\OpenWebSearch""
         New-Item -ItemType Directory -Path $scriptsDir -Force -ErrorAction SilentlyContinue | Out-Null
         Copy-Item $stubPath ""$scriptsDir\ie_to_edge_stub.exe"" -Force -ErrorAction SilentlyContinue
-        Write-Log ""Copied ie_to_edge_stub.exe to $scriptsDir before Edge removal""
+        Write-Log ""Copied ie_to_edge_stub.exe to $scriptsDir before Edge removal"",
     }
 }
 
@@ -508,14 +508,14 @@ if ($legacyInstalled) {
     Write-Log ""Legacy Edge detected. Proceeding with removal.""
     Stop-EdgeProcesses
     Remove-LegacyEdge
-    $removedSomething = $true
+    $removedSomething = $true,
 }
 
 if ($chromiumInstalled) {
     Write-Log ""Chromium Edge detected. Proceeding with removal.""
     Stop-EdgeProcesses
     Remove-ChromiumEdge
-    $removedSomething = $true
+    $removedSomething = $true,
 }
 
 # Only do cleanup if we removed something
@@ -529,11 +529,11 @@ if ($removedSomething) {
         $edgeFolders | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
         Write-Log ""Cleanup of Microsoft Edge folders completed""
     } else {
-        Write-Log ""No Edge-related folders found to clean up""
+        Write-Log ""No Edge-related folders found to clean up"",
     }
 
     Remove-EdgeShortcuts
-    Install-EdgeProtocolRedirect
+    Install-EdgeProtocolRedirect,
 }
 
 # Always check for and delete Edge scheduled tasks
@@ -545,24 +545,24 @@ try {
             # Skip the EdgeRemoval task
             if ($task.TaskName -eq ""EdgeRemoval"") {
                 Write-Log ""Skipping EdgeRemoval task: $($task.TaskName)""
-                continue
+                continue,
             }
             
             Write-Log ""Found Edge scheduled task: $($task.TaskName) - State: $($task.State)""
             try {
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false -ErrorAction SilentlyContinue
-                Write-Log ""Deleted scheduled task: $($task.TaskName)""
+                Write-Log ""Deleted scheduled task: $($task.TaskName)"",
             }
             catch {
-                Write-Log ""Failed to delete scheduled task: $($task.TaskName) - $($_.Exception.Message)""
+                Write-Log ""Failed to delete scheduled task: $($task.TaskName) - $($_.Exception.Message)"",
             }
         }
     } else {
-        Write-Log ""No Edge scheduled tasks found""
+        Write-Log ""No Edge scheduled tasks found"",
     }
 }
 catch {
-    Write-Log ""Failed to check scheduled tasks: $($_.Exception.Message)""
+    Write-Log ""Failed to check scheduled tasks: $($_.Exception.Message)"",
 }
 
 Write-Log ""Done.""

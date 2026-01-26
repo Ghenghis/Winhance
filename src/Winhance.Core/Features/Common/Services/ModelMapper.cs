@@ -17,7 +17,8 @@ namespace Winhance.Core.Features.Common.Services
         /// <typeparam name="TDestination">The destination type.</typeparam>
         /// <param name="source">The source object.</param>
         /// <returns>The mapped destination object.</returns>
-        TDestination Map<TSource, TDestination>(TSource source) where TDestination : new();
+        TDestination Map<TSource, TDestination>(TSource source)
+            where TDestination : new();
 
         /// <summary>
         /// Maps a collection of source objects to a collection of destination objects.
@@ -26,7 +27,8 @@ namespace Winhance.Core.Features.Common.Services
         /// <typeparam name="TDestination">The destination type.</typeparam>
         /// <param name="source">The collection of source objects.</param>
         /// <returns>The collection of mapped destination objects.</returns>
-        IEnumerable<TDestination> MapCollection<TSource, TDestination>(IEnumerable<TSource> source) where TDestination : new();
+        IEnumerable<TDestination> MapCollection<TSource, TDestination>(IEnumerable<TSource> source)
+            where TDestination : new();
     }
 
     /// <summary>
@@ -35,7 +37,8 @@ namespace Winhance.Core.Features.Common.Services
     public class ModelMapper : IModelMapper
     {
         /// <inheritdoc/>
-        public TDestination Map<TSource, TDestination>(TSource source) where TDestination : new()
+        public TDestination Map<TSource, TDestination>(TSource source)
+            where TDestination : new()
         {
             if (source == null)
             {
@@ -48,7 +51,8 @@ namespace Winhance.Core.Features.Common.Services
         }
 
         /// <inheritdoc/>
-        public IEnumerable<TDestination> MapCollection<TSource, TDestination>(IEnumerable<TSource> source) where TDestination : new()
+        public IEnumerable<TDestination> MapCollection<TSource, TDestination>(IEnumerable<TSource> source)
+            where TDestination : new()
         {
             if (source == null)
             {

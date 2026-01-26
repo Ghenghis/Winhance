@@ -39,6 +39,6 @@ namespace Winhance.Core.Features.UI.Interfaces
         /// <summary>
         /// Error notification.
         /// </summary>
-        Error
+        Error,
     }
 }

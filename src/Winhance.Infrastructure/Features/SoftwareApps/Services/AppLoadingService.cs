@@ -88,16 +88,14 @@ public class AppLoadingService(
             if (_statusCache.TryGetValue(appId, out var cachedStatus))
             {
                 return OperationResult<InstallStatus>.Succeeded(
-                    cachedStatus ? InstallStatus.Success : InstallStatus.NotFound
-                );
+                    cachedStatus ? InstallStatus.Success : InstallStatus.NotFound);
             }
 
             var statusResults = await statusDiscoveryService.GetInstallationStatusByIdAsync([appId]);
             var isInstalled = statusResults.GetValueOrDefault(appId, false);
             _statusCache[appId] = isInstalled;
             return OperationResult<InstallStatus>.Succeeded(
-                isInstalled ? InstallStatus.Success : InstallStatus.NotFound
-            );
+                isInstalled ? InstallStatus.Success : InstallStatus.NotFound);
         }
         catch (Exception ex)
         {
@@ -111,7 +109,7 @@ public class AppLoadingService(
         try
         {
             ValidationHelper.NotNullOrEmpty(appId, nameof(appId));
-            _statusCache[appId] = (status == InstallStatus.Success);
+            _statusCache[appId] = status == InstallStatus.Success;
             return Task.FromResult(OperationResult<bool>.Succeeded(true));
         }
         catch (Exception ex)
@@ -121,7 +119,6 @@ public class AppLoadingService(
         }
     }
 
-
     public async Task<Dictionary<string, bool>> GetBatchInstallStatusAsync(IEnumerable<ItemDefinition> definitions)
     {
         ValidationHelper.NotNull(definitions, nameof(definitions));
@@ -129,7 +126,9 @@ public class AppLoadingService(
         var definitionList = definitions.ToList();
 
         if (definitionList.Count == 0)
+        {
             throw new ArgumentException("Must provide at least one valid definition", nameof(definitions));
+        }
 
         return await statusDiscoveryService.GetInstallationStatusBatchAsync(definitionList);
     }
@@ -147,7 +146,7 @@ public class AppLoadingService(
 
             var appsList = apps.Where(app => app != null).ToList();
 
-            if (!appsList.Any())
+            if (appsList.Count == 0)
             {
                 return OperationResult<bool>.Succeeded(true);
             }

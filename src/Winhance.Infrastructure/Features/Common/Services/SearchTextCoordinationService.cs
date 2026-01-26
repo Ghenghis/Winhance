@@ -1,6 +1,6 @@
 using System;
-using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
 
 namespace Winhance.Infrastructure.Features.Common.Services
 {
@@ -8,7 +8,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
     {
         private readonly ILogService? _logService;
         private string _currentSearchText = string.Empty;
+
         public string CurrentSearchText => _currentSearchText;
+
         public event EventHandler<SearchTextChangedEventArgs>? SearchTextChanged;
 
         public SearchTextCoordinationService(ILogService? logService = null)

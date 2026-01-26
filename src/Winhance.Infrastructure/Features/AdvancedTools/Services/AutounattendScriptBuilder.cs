@@ -21,9 +21,13 @@ public class AutounattendScriptBuilder
     private class PowerSettingData
     {
         public string SubgroupGuid { get; set; } = string.Empty;
+
         public string SettingGuid { get; set; } = string.Empty;
+
         public int AcValue { get; set; }
+
         public int DcValue { get; set; }
+
         public string Description { get; set; } = string.Empty;
     }
 
@@ -52,7 +56,7 @@ public class AutounattendScriptBuilder
 
         AppendScriptsDirectorySetup(sb, "    ");
 
-        if (config.WindowsApps.Items.Any())
+        if (config.WindowsApps.Items.Count != 0)
         {
             await AppendBloatRemovalScriptAsync(sb, config.WindowsApps.Items, "    ");
         }
@@ -64,19 +68,19 @@ public class AutounattendScriptBuilder
         var powerCfgQueryService = _serviceProvider.GetRequiredService<IPowerCfgQueryService>();
         var activePowerPlan = await powerCfgQueryService.GetActivePowerPlanAsync();
         var powerSettings = await ExtractPowerSettingsAsync(activePowerPlan.Guid, allSettings);
-        if (powerPlanSetting != null || powerSettings.Any())
+        if (powerPlanSetting != null || powerSettings.Count != 0)
         {
             AppendPowerSettingsSection(sb, powerPlanSetting, powerSettings, "    ");
         }
 
         // 2c. HKLM registry entries from Optimize
-        if (config.Optimize.Features.Any())
+        if (config.Optimize.Features.Count != 0)
         {
             AppendFeatureGroupRegistryEntries(sb, config.Optimize, allSettings, "Optimize", isHkcu: false, indent: "    ");
         }
 
         // 2d. HKLM registry entries from Customize
-        if (config.Customize.Features.Any())
+        if (config.Customize.Features.Count != 0)
         {
             AppendFeatureGroupRegistryEntries(sb, config.Customize, allSettings, "Customize", isHkcu: false, indent: "    ");
         }
@@ -156,13 +160,13 @@ public class AutounattendScriptBuilder
         sb.AppendLine();
 
         // 3a. HKCU registry entries from Optimize
-        if (config.Optimize.Features.Any())
+        if (config.Optimize.Features.Count != 0)
         {
             AppendFeatureGroupRegistryEntries(sb, config.Optimize, allSettings, "Optimize", isHkcu: true, indent: "        ");
         }
 
         // 3b. HKCU registry entries from Customize
-        if (config.Customize.Features.Any())
+        if (config.Customize.Features.Count != 0)
         {
             AppendFeatureGroupRegistryEntries(sb, config.Customize, allSettings, "Customize", isHkcu: true, indent: "        ");
         }
@@ -220,7 +224,9 @@ public class AutounattendScriptBuilder
         IReadOnlyDictionary<string, IEnumerable<SettingDefinition>> allSettings)
     {
         if (!config.Optimize.Features.TryGetValue(FeatureIds.Power, out var powerSection))
+        {
             return null;
+        }
 
         return powerSection.Items.FirstOrDefault(item =>
             item.Id == "power-plan-selection" && !string.IsNullOrEmpty(item.PowerPlanGuid));
@@ -233,7 +239,9 @@ public class AutounattendScriptBuilder
         var powerSettings = new List<PowerSettingData>();
 
         if (!allSettings.TryGetValue(FeatureIds.Power, out var settingDefinitions))
+        {
             return powerSettings;
+        }
 
         var hardwareService = _serviceProvider.GetRequiredService<IHardwareDetectionService>();
         var powerCfgQueryService = _serviceProvider.GetRequiredService<IPowerCfgQueryService>();
@@ -245,21 +253,31 @@ public class AutounattendScriptBuilder
         foreach (var settingDef in settingDefinitions)
         {
             if (settingDef.Id == "power-plan-selection" || settingDef.PowerCfgSettings?.Any() != true)
+            {
                 continue;
+            }
 
             if (settingDef.RequiresBattery && !hasBattery)
+            {
                 continue;
+            }
 
             if (settingDef.RequiresBrightnessSupport)
+            {
                 continue;
+            }
 
             foreach (var powerCfgSetting in settingDef.PowerCfgSettings)
             {
                 if (!bulkQueryResults.TryGetValue(powerCfgSetting.SettingGuid, out var values))
+                {
                     continue;
+                }
 
                 if (!values.acValue.HasValue || !values.dcValue.HasValue)
+                {
                     continue;
+                }
 
                 powerSettings.Add(new PowerSettingData
                 {
@@ -267,7 +285,7 @@ public class AutounattendScriptBuilder
                     SettingGuid = powerCfgSetting.SettingGuid,
                     AcValue = values.acValue.Value,
                     DcValue = values.dcValue.Value,
-                    Description = settingDef.Description
+                    Description = settingDef.Description,
                 });
             }
         }
@@ -293,7 +311,7 @@ public class AutounattendScriptBuilder
             AppendPowerPlanCreation(sb, powerPlanSetting, indent);
         }
 
-        if (powerSettings.Any())
+        if (powerSettings.Count != 0)
         {
             AppendPowerSettingsApplication(sb, powerSettings, powerPlanSetting?.PowerPlanGuid, indent);
         }
@@ -387,7 +405,7 @@ public class AutounattendScriptBuilder
         {
             var setting = powerSettings[i];
             var escapedDescription = EscapePowerShellString(setting.Description);
-            var comma = i < powerSettings.Count - 1 ? "," : "";
+            var comma = i < powerSettings.Count - 1 ? "," : string.Empty;
             sb.AppendLine($"{indent}    @{{ S=\"{setting.SubgroupGuid}\"; G=\"{setting.SettingGuid}\"; AC={setting.AcValue}; DC={setting.DcValue}; N=\"{escapedDescription}\" }}{comma}");
         }
 
@@ -448,9 +466,15 @@ public class AutounattendScriptBuilder
             foreach (var configItem in configSection.Items)
             {
                 var settingDef = settingDefinitions.FirstOrDefault(s => s.Id == configItem.Id);
-                if (settingDef == null) continue;
+                if (settingDef == null)
+                {
+                    continue;
+                }
 
-                if (settingDef.Id == "power-plan-selection") continue;
+                if (settingDef.Id == "power-plan-selection")
+                {
+                    continue;
+                }
 
                 foreach (var regSetting in settingDef.RegistrySettings)
                 {
@@ -467,10 +491,16 @@ public class AutounattendScriptBuilder
                     hasEntriesForCurrentHive = true;
                 }
 
-                if (hasEntriesForCurrentHive) break;
+                if (hasEntriesForCurrentHive)
+                {
+                    break;
+                }
             }
 
-            if (!hasEntriesForCurrentHive) continue;
+            if (!hasEntriesForCurrentHive)
+            {
+                continue;
+            }
 
             // Get the feature display name for the section header
             var featureDisplayName = GetFeatureDisplayName(featureId);
@@ -493,7 +523,9 @@ public class AutounattendScriptBuilder
 
                 // Skip settings that have PowerCfgSettings but no RegistrySettings (already handled in Power Settings section)
                 if (settingDef.PowerCfgSettings?.Any() == true && settingDef.RegistrySettings?.Any() != true)
+                {
                     continue;
+                }
 
                 // Apply the setting, but only output registry entries that match the current hive
                 if (configItem.InputType == InputType.Toggle)
@@ -522,10 +554,12 @@ public class AutounattendScriptBuilder
                                 : cmdSetting.DisabledCommand;
 
                             if (string.IsNullOrWhiteSpace(commandToExecute))
+                            {
                                 continue;
+                            }
 
                             var taskName = ExtractTaskNameFromCommand(commandToExecute);
-                            var action = commandToExecute.Contains("/Enable") ? "/Enable" : "/Disable";
+                            var action = commandToExecute.Contains("/Enable", StringComparison.Ordinal) ? "/Enable" : "/Disable";
 
                             if (!string.IsNullOrEmpty(taskName))
                             {
@@ -535,7 +569,7 @@ public class AutounattendScriptBuilder
                     }
                 }
 
-                if (commandSettingsToApply.Any())
+                if (commandSettingsToApply.Count != 0)
                 {
                     AppendScheduledTaskBatch(sb, commandSettingsToApply, indent);
                 }
@@ -628,14 +662,16 @@ public class AutounattendScriptBuilder
             // Filter by hive
             bool isHkcuEntry = regSetting.KeyPath.StartsWith("HKEY_CURRENT_USER", StringComparison.OrdinalIgnoreCase);
             if (isHkcuEntry != isHkcu)
+            {
                 continue;
+            }
 
             var regPath = EscapePowerShellString(ConvertRegistryPath(regSetting.KeyPath));
             var escapedValueName = EscapePowerShellString(regSetting.ValueName);
 
             // Check if we have a raw value from the registry to use instead of definitions
             var key = regSetting.ValueName ?? "KeyExists";
-            object customValue = null;
+            object? customValue = null;
             bool hasCustomValue = configItem.CustomStateValues?.TryGetValue(key, out customValue) == true;
 
             // Pattern 1: Key-Based Settings (CLSID folders, etc.)
@@ -649,7 +685,7 @@ public class AutounattendScriptBuilder
                     // Value is null = key should NOT exist in this state
                     sb.AppendLine($"{indent}Remove-RegistryKey -Path '{regPath}' -Description '{escapedDescription}'");
                 }
-                else if (keyValue is string keyStrValue && keyStrValue == "")
+                else if (keyValue is string keyStrValue && keyStrValue == string.Empty)
                 {
                     // Empty string = key SHOULD exist with default value set to empty string
                     sb.AppendLine($"{indent}New-RegistryKey -Path '{regPath}' -Description '{escapedDescription}'");
@@ -660,6 +696,7 @@ public class AutounattendScriptBuilder
                     // Value is non-null = key SHOULD exist in this state
                     sb.AppendLine($"{indent}New-RegistryKey -Path '{regPath}' -Description '{escapedDescription}'");
                 }
+
                 continue;
             }
 
@@ -683,7 +720,7 @@ public class AutounattendScriptBuilder
                     }
                     else if (regSetting.ModifyByteOnly)
                     {
-                        var byteValue = FormatValueForPowerShell(customValue, RegistryValueKind.DWord).Replace("0x", "").PadLeft(2, '0');
+                        var byteValue = FormatValueForPowerShell(customValue, RegistryValueKind.DWord).Replace("0x", string.Empty, StringComparison.Ordinal).PadLeft(2, '0');
                         sb.AppendLine($"{indent}Set-BinaryByte -Path '{regPath}' -Name '{escapedValueName}' -ByteIndex {regSetting.BinaryByteIndex.Value} -ByteValue 0x{byteValue} -Description '{escapedDescription}'");
                     }
                     else
@@ -697,13 +734,14 @@ public class AutounattendScriptBuilder
                     var formattedValue = FormatValueForPowerShell(customValue, regSetting.ValueType);
                     sb.AppendLine($"{indent}Set-RegistryValue -Path '{regPath}' -Name '{escapedValueName}' -Type '{valueType}' -Value {formattedValue} -Description '{escapedDescription}'");
                 }
+
                 continue;
             }
 
             // Fallback for when custom value is not available (should happen rarely if discovery worked)
             var value = isEnabled == true ? regSetting.EnabledValue : regSetting.DisabledValue;
 
-            if (value is string strValue && strValue == "")
+            if (value is string strValue && strValue == string.Empty)
             {
                 sb.AppendLine($"{indent}Set-RegistryValue -Path '{regPath}' -Name '{escapedValueName}' -Type 'String' -Value '' -Description '{escapedDescription}'");
                 continue;
@@ -732,7 +770,7 @@ public class AutounattendScriptBuilder
                     {
                         byte b => $"0x{b:X2}",
                         int i => $"0x{(byte)i:X2}",
-                        _ => "0x00"
+                        _ => "0x00",
                     };
                     sb.AppendLine($"{indent}Set-BinaryByte -Path '{regPath}' -Name '{escapedValueName}' -ByteIndex {regSetting.BinaryByteIndex.Value} -ByteValue {byteValue} -Description '{escapedDescription}'");
                 }
@@ -757,7 +795,10 @@ public class AutounattendScriptBuilder
 
     private void AppendRegContentCommands(StringBuilder sb, SettingDefinition setting, bool? isEnabled, bool isHkcuPass, string indent = "")
     {
-        if (setting.RegContents?.Count == 0) return;
+        if (setting.RegContents?.Count == 0)
+        {
+            return;
+        }
 
         var escapedDescription = EscapePowerShellString(setting.Description);
         var varName = SanitizeVariableName(setting.Id);
@@ -766,15 +807,20 @@ public class AutounattendScriptBuilder
         {
             var content = isEnabled == true ? regContent.EnabledContent : regContent.DisabledContent;
 
-            if (string.IsNullOrEmpty(content)) continue;
+            if (string.IsNullOrEmpty(content))
+            {
+                continue;
+            }
 
             // Determine if this content belongs in the current pass (System vs User)
             // We check for HKEY_CURRENT_USER usage to identify User-specific content
-            bool isHkcuContent = content.IndexOf("HKEY_CURRENT_USER", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                 content.IndexOf("HKCU", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isHkcuContent = content.IndexOf("HKEY_CURRENT_USER") >= 0 ||
+                                 content.IndexOf("HKCU") >= 0;
 
             if (isHkcuContent != isHkcuPass)
+            {
                 continue;
+            }
 
             sb.AppendLine($"{indent}try {{");
             sb.AppendLine($"{indent}    $regContent_{varName} = @'");
@@ -806,7 +852,7 @@ public class AutounattendScriptBuilder
             var (taskName, action, description) = tasks[i];
             var escapedTaskName = EscapePowerShellString(taskName);
             var escapedDescription = EscapePowerShellString(description);
-            var comma = i < tasks.Count - 1 ? "," : "";
+            var comma = i < tasks.Count - 1 ? "," : string.Empty;
 
             sb.AppendLine($"{indent}    @{{ TN=\"{escapedTaskName}\"; Action=\"{action}\"; Desc=\"{escapedDescription}\" }}{comma}");
         }
@@ -835,11 +881,13 @@ public class AutounattendScriptBuilder
     private void AppendSelectionCommandsFiltered(StringBuilder sb, SettingDefinition setting, ConfigurationItem configItem, bool isHkcu, string indent = "")
     {
         if (setting.Id == "power-plan-selection")
+        {
             return;
+        }
 
         Dictionary<string, object> valuesToApply;
 
-        if (configItem.CustomStateValues != null && configItem.CustomStateValues.Any())
+        if (configItem.CustomStateValues != null && configItem.CustomStateValues.Count != 0)
         {
             valuesToApply = configItem.CustomStateValues;
         }
@@ -880,6 +928,7 @@ public class AutounattendScriptBuilder
                         sb.AppendLine($"{indent}powercfg /setacvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {value}");
                     }
                 }
+
                 sb.AppendLine($"{indent}Write-Log 'Applied: {escapedDescription}' 'SUCCESS'");
                 continue;
             }
@@ -892,7 +941,9 @@ public class AutounattendScriptBuilder
             {
                 bool isHkcuEntry = regSetting.KeyPath.StartsWith("HKEY_CURRENT_USER", StringComparison.OrdinalIgnoreCase);
                 if (isHkcuEntry != isHkcu)
+                {
                     continue;
+                }
 
                 var regPath = EscapePowerShellString(ConvertRegistryPath(regSetting.KeyPath));
                 var escapedValueName = EscapePowerShellString(regSetting.ValueName);
@@ -918,7 +969,7 @@ public class AutounattendScriptBuilder
                             {
                                 byte b => $"0x{b:X2}",
                                 int i => $"0x{(byte)i:X2}",
-                                _ => "0x00"
+                                _ => "0x00",
                             };
                             sb.AppendLine($"{indent}Set-BinaryByte -Path '{regPath}' -Name '{escapedValueName}' -ByteIndex {regSetting.BinaryByteIndex.Value} -ByteValue {byteValue} -Description '{escapedDescription}'");
                         }
@@ -992,7 +1043,7 @@ function Write-Log {
     
     # Optional: Also write to console for real-time monitoring
     # Uncomment the next line if you want console output during testing
-    # Write-Host $LogEntry
+    # Write-Host $LogEntry,
 }
 
 # Initialize log file
@@ -1003,7 +1054,7 @@ Write-Log ""Log File: $LogPath"" ""INFO""
 if ($UserCustomizations) {
     Write-Log ""MODE: User Customizations Only (HKCU registry entries)"" ""INFO""
 } else {
-    Write-Log ""MODE: System Customizations (All settings except HKCU entries)"" ""INFO""
+    Write-Log ""MODE: System Customizations (All settings except HKCU entries)"" ""INFO"",
 }
 Write-Log ""================================================================================="" ""INFO""
 ");
@@ -1018,7 +1069,7 @@ function Get-TargetUser {
         if ($user -and $user -ne ""NT AUTHORITY\SYSTEM"") {
             $username = $user.Split('\')[1]
             if ($username -ne ""defaultuser0"") {
-                return $username
+                return $username,
             }
         }
     } catch { }
@@ -1028,12 +1079,12 @@ function Get-TargetUser {
         if ($explorer) {
             $owner = $explorer.GetOwner()
             if ($owner.User -ne ""defaultuser0"") {
-                return $owner.User
+                return $owner.User,
             }
         }
     } catch { }
 
-    return $null
+    return $null,
 }
 
 function Get-UserSID {
@@ -1042,7 +1093,7 @@ function Get-UserSID {
         $user = New-Object System.Security.Principal.NTAccount($Username)
         return $user.Translate([System.Security.Principal.SecurityIdentifier]).Value
     } catch {
-        return $null
+        return $null,
     }
 }
 
@@ -1057,13 +1108,13 @@ function Set-RegistryValue {
 
     try {
         if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
+            New-Item -Path $Path -Force | Out-Null,
         }
         Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
-        Write-Log ""$Description | $Path\$Name = $Value"" ""SUCCESS""
+        Write-Log ""$Description | $Path\$Name = $Value"" ""SUCCESS"",
     }
     catch {
-        Write-Log ""Failed to set $Path\$Name : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to set $Path\$Name : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 
@@ -1079,12 +1130,12 @@ function Remove-RegistryValue {
             $existingValue = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
             if ($existingValue) {
                 Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
-                Write-Log ""$Description | Removed $Path\$Name"" ""SUCCESS""
+                Write-Log ""$Description | Removed $Path\$Name"" ""SUCCESS"",
             }
         }
     }
     catch {
-        Write-Log ""Failed to remove $Path\$Name : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to remove $Path\$Name : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 
@@ -1097,11 +1148,11 @@ function Remove-RegistryKey {
     try {
         if (Test-Path $Path) {
             Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log ""$Description | Removed key $Path"" ""SUCCESS""
+            Write-Log ""$Description | Removed key $Path"" ""SUCCESS"",
         }
     }
     catch {
-        Write-Log ""Failed to remove key $Path : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to remove key $Path : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 
@@ -1114,11 +1165,11 @@ function New-RegistryKey {
     try {
         if (-not (Test-Path $Path)) {
             New-Item -Path $Path -Force | Out-Null
-            Write-Log ""$Description | Created key $Path"" ""SUCCESS""
+            Write-Log ""$Description | Created key $Path"" ""SUCCESS"",
         }
     }
     catch {
-        Write-Log ""Failed to create key $Path : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to create key $Path : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 
@@ -1134,7 +1185,7 @@ function Set-BinaryBit {
 
     try {
         if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
+            New-Item -Path $Path -Force | Out-Null,
         }
 
         $currentValue = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
@@ -1145,21 +1196,21 @@ function Set-BinaryBit {
             if ($bytes.Length -le $ByteIndex) {
                 $newBytes = New-Object byte[] ($ByteIndex + 1)
                 [Array]::Copy($bytes, $newBytes, $bytes.Length)
-                $bytes = $newBytes
+                $bytes = $newBytes,
             }
         }
 
         if ($SetBit) {
             $bytes[$ByteIndex] = $bytes[$ByteIndex] -bor $BitMask
         } else {
-            $bytes[$ByteIndex] = $bytes[$ByteIndex] -band (-bnot $BitMask)
+            $bytes[$ByteIndex] = $bytes[$ByteIndex] -band (-bnot $BitMask),
         }
 
         Set-ItemProperty -Path $Path -Name $Name -Value $bytes -Type Binary -Force
-        Write-Log ""$Description | $Path\$Name bit mask 0x$($BitMask.ToString('X2')) at byte $ByteIndex = $SetBit"" ""SUCCESS""
+        Write-Log ""$Description | $Path\$Name bit mask 0x$($BitMask.ToString('X2')) at byte $ByteIndex = $SetBit"" ""SUCCESS"",
     }
     catch {
-        Write-Log ""Failed to modify binary bit $Path\$Name : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to modify binary bit $Path\$Name : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 
@@ -1174,7 +1225,7 @@ function Set-BinaryByte {
 
     try {
         if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
+            New-Item -Path $Path -Force | Out-Null,
         }
 
         $currentValue = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
@@ -1185,16 +1236,16 @@ function Set-BinaryByte {
             if ($bytes.Length -le $ByteIndex) {
                 $newBytes = New-Object byte[] ($ByteIndex + 1)
                 [Array]::Copy($bytes, $newBytes, $bytes.Length)
-                $bytes = $newBytes
+                $bytes = $newBytes,
             }
         }
 
         $bytes[$ByteIndex] = $ByteValue
         Set-ItemProperty -Path $Path -Name $Name -Value $bytes -Type Binary -Force
-        Write-Log ""$Description | $Path\$Name byte $ByteIndex = 0x$($ByteValue.ToString('X2'))"" ""SUCCESS""
+        Write-Log ""$Description | $Path\$Name byte $ByteIndex = 0x$($ByteValue.ToString('X2'))"" ""SUCCESS"",
     }
     catch {
-        Write-Log ""Failed to modify binary byte $Path\$Name : $($_.Exception.Message)"" ""ERROR""
+        Write-Log ""Failed to modify binary byte $Path\$Name : $($_.Exception.Message)"" ""ERROR"",
     }
 }
 ");
@@ -1269,7 +1320,7 @@ function Set-BinaryByte {
         sb.AppendLine();
 
         // Embed BloatRemoval.ps1 if there are regular apps to remove
-        if (regularApps.Any() || capabilities.Any() || optionalFeatures.Any() || specialApps.Any())
+        if (regularApps.Count != 0 || capabilities.Count != 0 || optionalFeatures.Count != 0 || specialApps.Count != 0)
         {
             AppendBloatRemovalScriptContent(sb, regularApps, capabilities, optionalFeatures, specialApps, indent);
         }
@@ -1291,7 +1342,7 @@ function Set-BinaryByte {
         sb.AppendLine($"{indent}# Execute removal scripts and register scheduled tasks");
         sb.AppendLine($"{indent}$scriptsToExecute = @()");
 
-        if (regularApps.Any() || capabilities.Any() || optionalFeatures.Any() || specialApps.Any())
+        if (regularApps.Count != 0 || capabilities.Count != 0 || optionalFeatures.Count != 0 || specialApps.Count != 0)
         {
             sb.AppendLine($"{indent}$scriptsToExecute += @{{Path = \"$scriptsDir\\BloatRemoval.ps1\"; Name = \"BloatRemoval\"; TriggerType = \"Logon\"}}");
         }
@@ -1407,13 +1458,13 @@ function Get-FileFromWeb {
     function Show-Progress {
         param ([Parameter(Mandatory)][Single]$TotalValue, [Parameter(Mandatory)][Single]$CurrentValue, [Parameter(Mandatory)][string]$ProgressText, [Parameter()][int]$BarSize = 10, [Parameter()][switch]$Complete)
         $percent = $CurrentValue / $TotalValue
-        $percentComplete = $percent * 100
+        $percentComplete = $percent * 100,
         if ($psISE) { Write-Progress ""$ProgressText"" -id 0 -percentComplete $percentComplete }
         else { Write-Host -NoNewLine ""`r$ProgressText $(''.PadRight($BarSize * $percent, [char]9608).PadRight($BarSize, [char]9617)) $($percentComplete.ToString('##0.00').PadLeft(6)) % "" }
     }
     try {
         $request = [System.Net.HttpWebRequest]::Create($URL)
-        $response = $request.GetResponse()
+        $response = $request.GetResponse(),
         if ($response.StatusCode -eq 401 -or $response.StatusCode -eq 403 -or $response.StatusCode -eq 404) { throw ""Remote file either doesn't exist, is unauthorized, or is forbidden for '$URL'."" }
         if ($File -match '^\.\\') { $File = Join-Path (Get-Location -PSProvider 'FileSystem') ($File -Split '^\.')[1] }
         if ($File -and !(Split-Path $File)) { $File = Join-Path (Get-Location -PSProvider 'FileSystem') $File }
@@ -1426,13 +1477,13 @@ function Get-FileFromWeb {
         do {
             $count = $reader.Read($buffer, 0, $buffer.Length)
             $writer.Write($buffer, 0, $count)
-            $total += $count
+            $total += $count,
             if ($fullSize -gt 0) { Show-Progress -TotalValue $fullSize -CurrentValue $total -ProgressText "" Downloading Winhance Installer"" }
-        } while ($count -gt 0)
+        } while ($count -gt 0),
     }
     finally {
         $reader.Close()
-        $writer.Close()
+        $writer.Close(),
     }
 }
 
@@ -1452,7 +1503,7 @@ try {
     Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
     Write-Host """"
     Write-Host ""Press any key to exit..."" -ForegroundColor Yellow
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'),
 }
 ");
         sb.AppendLine("'@");
@@ -1495,26 +1546,31 @@ try {
         return BloatRemovalScriptGenerator.GenerateScript(packages, capabilities, optionalFeatures, specialApps, includeXboxFix);
     }
 
-
     private string SanitizeVariableName(string name)
     {
-        return name.Replace("-", "_");
+        return name.Replace("-", "_", StringComparison.Ordinal);
     }
 
     private string ExtractTaskNameFromCommand(string command)
     {
-        var tnIndex = command.IndexOf("/TN", StringComparison.OrdinalIgnoreCase);
+        var tnIndex = command.IndexOf("/TN");
         if (tnIndex == -1)
+        {
             return string.Empty;
+        }
 
         var afterTN = command.Substring(tnIndex + 3).Trim();
         var startQuote = afterTN.IndexOf('"');
         if (startQuote == -1)
+        {
             return string.Empty;
+        }
 
         var endQuote = afterTN.IndexOf('"', startQuote + 1);
         if (endQuote == -1)
+        {
             return string.Empty;
+        }
 
         return afterTN.Substring(startQuote + 1, endQuote - startQuote - 1);
     }
@@ -1522,18 +1578,20 @@ try {
     private string EscapePowerShellString(string input)
     {
         if (string.IsNullOrEmpty(input))
+        {
             return input;
+        }
 
-        return input.Replace("'", "''");
+        return input.Replace("'", "''", StringComparison.Ordinal);
     }
 
     private string ConvertRegistryPath(string registryPath)
     {
         return registryPath
-            .Replace("HKEY_CURRENT_USER\\", "HKCU:\\")
-            .Replace("HKEY_LOCAL_MACHINE\\", "HKLM:\\")
-            .Replace("HKEY_CLASSES_ROOT\\", "HKCR:\\")
-            .Replace("HKEY_USERS\\", "HKU:\\");
+            .Replace("HKEY_CURRENT_USER\\", "HKCU:\\", StringComparison.Ordinal)
+            .Replace("HKEY_LOCAL_MACHINE\\", "HKLM:\\", StringComparison.Ordinal)
+            .Replace("HKEY_CLASSES_ROOT\\", "HKCR:\\", StringComparison.Ordinal)
+            .Replace("HKEY_USERS\\", "HKU:\\", StringComparison.Ordinal);
     }
 
     private string ConvertToRegistryType(RegistryValueKind valueType)
@@ -1546,13 +1604,16 @@ try {
             RegistryValueKind.ExpandString => "ExpandString",
             RegistryValueKind.Binary => "Binary",
             RegistryValueKind.MultiString => "MultiString",
-            _ => "String"
+            _ => "String",
         };
     }
 
     private string FormatValueForPowerShell(object value, RegistryValueKind valueType)
     {
-        if (value == null) return "$null";
+        if (value == null)
+        {
+            return "$null";
+        }
 
         return valueType switch
         {
@@ -1560,7 +1621,7 @@ try {
             RegistryValueKind.DWord or RegistryValueKind.QWord => value.ToString(),
             RegistryValueKind.Binary when value is byte[] byteArray => $"@({string.Join(",", byteArray.Select(b => $"0x{b:X2}"))})",
             RegistryValueKind.Binary => $"@(0x{Convert.ToByte(value):X2})",
-            _ => $"'{value}'"
+            _ => $"'{value}'",
         };
     }
 

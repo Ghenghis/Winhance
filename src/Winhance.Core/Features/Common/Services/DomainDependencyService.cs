@@ -35,9 +35,9 @@ namespace Winhance.Core.Features.Common.Services
                 return false;
             }
 
-            if (setting.Dependencies == null || !setting.Dependencies.Any())
+            if (setting.Dependencies == null || setting.Dependencies.Count == 0)
             {
-                return true; // No dependencies, so it can be enabled
+                return true; // No dependencies, so it can be enabled,
             }
 
             foreach (var dependency in setting.Dependencies)
@@ -47,7 +47,8 @@ namespace Winhance.Core.Features.Common.Services
                     if (!currentSettingsState.TryGetValue(dependency.RequiredSettingId, out var isEnabled) || !isEnabled)
                     {
                         var requiredSetting = allSettings.FirstOrDefault(s => s.Id == dependency.RequiredSettingId);
-                        _logService.Log(LogLevel.Warning,
+                        _logService.Log(
+                            LogLevel.Warning,
                             $"Cannot enable '{setting.Name}' because required setting '{requiredSetting?.Name ?? dependency.RequiredSettingId}' is disabled");
                         return false;
                     }
@@ -57,7 +58,8 @@ namespace Winhance.Core.Features.Common.Services
                     if (currentSettingsState.TryGetValue(dependency.RequiredSettingId, out var isEnabled) && isEnabled)
                     {
                         var conflictingSetting = allSettings.FirstOrDefault(s => s.Id == dependency.RequiredSettingId);
-                        _logService.Log(LogLevel.Warning,
+                        _logService.Log(
+                            LogLevel.Warning,
                             $"Cannot enable '{setting.Name}' because conflicting setting '{conflictingSetting?.Name ?? dependency.RequiredSettingId}' is enabled");
                         return false;
                     }
@@ -111,12 +113,12 @@ namespace Winhance.Core.Features.Common.Services
             {
                 if (!currentSettingsState.TryGetValue(setting.Id, out var isEnabled) || !isEnabled)
                 {
-                    continue; // Skip disabled settings
+                    continue; // Skip disabled settings,
                 }
 
-                if (setting.Dependencies == null || !setting.Dependencies.Any())
+                if (setting.Dependencies == null || setting.Dependencies.Count == 0)
                 {
-                    continue; // No dependencies to validate
+                    continue; // No dependencies to validate,
                 }
 
                 foreach (var dependency in setting.Dependencies)
@@ -157,7 +159,7 @@ namespace Winhance.Core.Features.Common.Services
 
                 if (processedSettings.Contains(currentSettingId))
                 {
-                    continue; // Already processed
+                    continue; // Already processed,
                 }
 
                 processedSettings.Add(currentSettingId);

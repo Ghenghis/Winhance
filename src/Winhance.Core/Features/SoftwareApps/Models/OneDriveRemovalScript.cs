@@ -35,11 +35,11 @@ public static class OneDriveRemovalScript
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]""Administrator"")) {
     Try {
         Start-Process PowerShell.exe -ArgumentList (""-NoProfile -ExecutionPolicy Bypass -File `""{0}`"""" -f $PSCommandPath) -Verb RunAs
-        Exit
+        Exit,
     }
     Catch {
         Write-Host ""Failed to run as Administrator. Please rerun with elevated privileges.""
-        Exit
+        Exit,
     }
 }
 
@@ -49,7 +49,7 @@ $logFile = ""$logFolder\OneDriveRemovalLog.txt""
 
 # Create log directory if it doesn't exist
 if (!(Test-Path $logFolder)) {
-    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null,
 }
 
 # Function to write to log file
@@ -65,11 +65,11 @@ function Write-Log {
         ""$timestamp - Log rotated - previous log exceeded 500KB"" | Out-File -FilePath $logFile
 
         # Also output to console for real-time progress
-        Write-Host $Message
+        Write-Host $Message,
     }
 
     $timestamp = Get-Date -Format ""yyyy-MM-dd HH:mm:ss""
-    ""$timestamp - $Message"" | Out-File -FilePath $logFile -Append
+    ""$timestamp - $Message"" | Out-File -FilePath $logFile -Append,
 }
 
 Write-Host ""Starting OneDrive removal process. See $logFile for details.""
@@ -86,12 +86,12 @@ function Get-TargetUser {
         if ($user -and $user -ne ""NT AUTHORITY\SYSTEM"") {
             $username = $user.Split('\')[1]
             Write-Log ""Get-TargetUser: Extracted username: '$username'""
-            return $username
+            return $username,
         }
-        Write-Log ""Get-TargetUser: User is null or SYSTEM, trying fallback method""
+        Write-Log ""Get-TargetUser: User is null or SYSTEM, trying fallback method"",
     }
     catch {
-        Write-Log ""Get-TargetUser: Win32_ComputerSystem failed: $($_.Exception.Message)""
+        Write-Log ""Get-TargetUser: Win32_ComputerSystem failed: $($_.Exception.Message)"",
     }
 
     # Fallback: find user running explorer.exe
@@ -101,16 +101,16 @@ function Get-TargetUser {
         if ($explorer) {
             $owner = $explorer.GetOwner()
             Write-Log ""Get-TargetUser: Explorer owner: Domain='$($owner.Domain)', User='$($owner.User)'""
-            return $owner.User
+            return $owner.User,
         }
-        Write-Log ""Get-TargetUser: No explorer process found""
+        Write-Log ""Get-TargetUser: No explorer process found"",
     }
     catch {
-        Write-Log ""Get-TargetUser: Explorer method failed: $($_.Exception.Message)""
+        Write-Log ""Get-TargetUser: Explorer method failed: $($_.Exception.Message)"",
     }
 
     Write-Log ""Get-TargetUser: No user found, returning null""
-    return $null
+    return $null,
 }
 
 # Get the user's SID for registry access
@@ -118,11 +118,11 @@ function Get-UserSID {
     param($Username)
     try {
         $user = New-Object System.Security.Principal.NTAccount($Username)
-        return $user.Translate([System.Security.Principal.SecurityIdentifier]).Value
+        return $user.Translate([System.Security.Principal.SecurityIdentifier]).Value,
     }
     catch {
         Write-Log ""Get-UserSID: Failed for user '$Username': $($_.Exception.Message)""
-        return $null
+        return $null,
     }
 }
 
@@ -137,12 +137,12 @@ if ($env:USERNAME -eq ""SYSTEM"" -or $env:USERNAME -like ""*$"" -or $env:USERPRO
         Write-Log ""Running as SYSTEM, targeting user: '$targetUser', profile path: '$userProfilePath'""
     } else {
         Write-Log ""Running as SYSTEM but no target user found""
-        $userProfilePath = $null
+        $userProfilePath = $null,
     }
 } else {
     $targetUser = $env:USERNAME
     $userProfilePath = $env:USERPROFILE
-    Write-Log ""Running as regular user: '$targetUser', profile path: '$userProfilePath'""
+    Write-Log ""Running as regular user: '$targetUser', profile path: '$userProfilePath'"",
 }
 
 # Step 1: Check registry for OneDrive installation and run uninstaller if found
@@ -180,24 +180,24 @@ if ($targetUser) {
                     } else {
                         # Fallback: execute as-is
                         Write-Log ""Command: '$uninstallCommand'""
-                        cmd.exe /c $uninstallCommand 2>&1 | Out-Null
+                        cmd.exe /c $uninstallCommand 2>&1 | Out-Null,
                     }
                     Write-Log ""Registry-based uninstaller completed""
                 } else {
-                    Write-Log ""Could not parse UninstallString from registry output""
+                    Write-Log ""Could not parse UninstallString from registry output"",
                 }
             } else {
-                Write-Log ""OneDrive uninstall registry key not found or empty""
+                Write-Log ""OneDrive uninstall registry key not found or empty"",
             }
         }
         catch {
-            Write-Log ""Registry-based uninstall failed: $($_.Exception.Message)""
+            Write-Log ""Registry-based uninstall failed: $($_.Exception.Message)"",
         }
     } else {
-        Write-Log ""Could not get user SID for '$targetUser'""
+        Write-Log ""Could not get user SID for '$targetUser'"",
     }
 } else {
-    Write-Log ""No target user found for uninstall check""
+    Write-Log ""No target user found for uninstall check"",
 }
 
 # Step 3: Always run cleanup tasks
@@ -211,7 +211,7 @@ if ($targetUser -and $userSID) {
     if ($LASTEXITCODE -eq 0) {
         Write-Log ""Registry key deleted successfully""
     } else {
-        Write-Log ""Registry key not found or already deleted""
+        Write-Log ""Registry key not found or already deleted"",
     }
 }
 
@@ -226,13 +226,13 @@ if ($userProfilePath) {
             takeown /f $currentUserOneDrivePath /r /d y 2>&1 | Out-Null
             icacls $currentUserOneDrivePath /grant ""${env:USERNAME}:F"" /t 2>&1 | Out-Null
             Remove-Item $currentUserOneDrivePath -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log ""OneDrive folder removed for user: $targetUser""
+            Write-Log ""OneDrive folder removed for user: $targetUser"",
         }
         catch {
-            Write-Log ""Failed to remove OneDrive folder for user: $targetUser - $($_.Exception.Message)""
+            Write-Log ""Failed to remove OneDrive folder for user: $targetUser - $($_.Exception.Message)"",
         }
     } else {
-        Write-Log ""OneDrive AppData folder not found""
+        Write-Log ""OneDrive AppData folder not found"",
     }
 }
 
@@ -245,7 +245,7 @@ if ($userProfilePath) {
         Remove-Item $startMenuPath -Force -ErrorAction SilentlyContinue
         Write-Log ""OneDrive Start Menu shortcut removed""
     } else {
-        Write-Log ""OneDrive Start Menu shortcut not found""
+        Write-Log ""OneDrive Start Menu shortcut not found"",
     }
 }
 
@@ -264,13 +264,13 @@ foreach ($path in $systemPaths) {
             takeown /f $path /r /d y 2>&1 | Out-Null
             icacls $path /grant ""${env:USERNAME}:F"" /t 2>&1 | Out-Null
             Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Log ""Successfully removed: $path""
+            Write-Log ""Successfully removed: $path"",
         }
         catch {
-            Write-Log ""Failed to remove: $path - $($_.Exception.Message)""
+            Write-Log ""Failed to remove: $path - $($_.Exception.Message)"",
         }
     } else {
-        Write-Log ""Path not found: $path""
+        Write-Log ""Path not found: $path"",
     }
 }
 
@@ -283,24 +283,24 @@ try {
             # Skip the OneDriveRemoval task
             if ($task.TaskName -eq ""OneDriveRemoval"") {
                 Write-Log ""Skipping OneDriveRemoval task: $($task.TaskName)""
-                continue
+                continue,
             }
             
             Write-Log ""Found OneDrive scheduled task: $($task.TaskName) - State: $($task.State)""
             try {
                 Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false -ErrorAction SilentlyContinue
-                Write-Log ""Deleted scheduled task: $($task.TaskName)""
+                Write-Log ""Deleted scheduled task: $($task.TaskName)"",
             }
             catch {
-                Write-Log ""Failed to delete scheduled task: $($task.TaskName) - $($_.Exception.Message)""
+                Write-Log ""Failed to delete scheduled task: $($task.TaskName) - $($_.Exception.Message)"",
             }
         }
     } else {
-        Write-Log ""No OneDrive scheduled tasks found""
+        Write-Log ""No OneDrive scheduled tasks found"",
     }
 }
 catch {
-    Write-Log ""Failed to check scheduled tasks: $($_.Exception.Message)""
+    Write-Log ""Failed to check scheduled tasks: $($_.Exception.Message)"",
 }
 
 # 3.6: Configure default user registry to prevent OneDrive auto-install
@@ -320,7 +320,7 @@ if ($LASTEXITCODE -eq 0) {
 
     # Create marker to indicate this machine has been configured
     reg.exe add $markerKey /v ""DefaultUserConfigured"" /t REG_SZ /d ""$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"" /f 2>&1 | Out-Null
-    Write-Log ""Default user configuration completed and marked""
+    Write-Log ""Default user configuration completed and marked"",
 }
 
 Write-Log ""Done.""

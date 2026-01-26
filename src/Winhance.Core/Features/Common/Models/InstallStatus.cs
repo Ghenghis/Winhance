@@ -5,6 +5,6 @@ namespace Winhance.Core.Features.Common.Models
         Success,
         NotFound,
         Failed,
-        Pending
+        Pending,
     }
 }

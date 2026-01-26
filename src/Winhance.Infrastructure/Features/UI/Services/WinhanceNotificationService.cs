@@ -44,7 +44,7 @@ namespace Winhance.Infrastructure.Features.UI.Services
             }
 
             // In a real implementation, this would show a toast notification in the UI
-            // For now, we're just logging the notification
+            // For now, we're just logging the notification,
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "TheDocumentFoundation.LibreOffice",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.libreoffice.org/"
+                            WebsiteUrl = "https://www.libreoffice.org/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "ONLYOFFICE.DesktopEditors",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.onlyoffice.com/"
+                            WebsiteUrl = "https://www.onlyoffice.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "XPFCG5NRKXQPKT", // Changed to use MS Store instead of WinGet due to download issues
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.foxit.com/pdf-reader/"
+                            WebsiteUrl = "https://www.foxit.com/pdf-reader/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "SumatraPDF.SumatraPDF",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.sumatrapdfreader.org/"
+                            WebsiteUrl = "https://www.sumatrapdfreader.org/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "Apache.OpenOffice",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.openoffice.org/"
+                            WebsiteUrl = "https://www.openoffice.org/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "XPDP273C0XHQH2",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.adobe.com/acrobat/pdf-reader.html"
+                            WebsiteUrl = "https://www.adobe.com/acrobat/pdf-reader.html",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "Evernote.Evernote",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://evernote.com/"
+                            WebsiteUrl = "https://evernote.com/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "Giuspen.Cherrytree",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.giuspen.net/cherrytree/"
+                            WebsiteUrl = "https://www.giuspen.net/cherrytree/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "KDE.Okular",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://okular.kde.org/"
+                            WebsiteUrl = "https://okular.kde.org/",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "geeksoftwareGmbH.PDF24Creator",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.pdf24.org/"
+                            WebsiteUrl = "https://www.pdf24.org/",
                         },
                         new ItemDefinition
                         {
@@ -123,9 +123,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Document Viewers",
                             WinGetPackageId = "Microsoft.Office",
                             Category = "Document Viewers",
-                            WebsiteUrl = "https://www.microsoft.com/microsoft-365"
-                        }
-                    }
+                            WebsiteUrl = "https://www.microsoft.com/microsoft-365",
+                        },
+                    },
                 };
             }
         }

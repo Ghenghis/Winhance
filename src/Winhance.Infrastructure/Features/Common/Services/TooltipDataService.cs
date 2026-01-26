@@ -14,12 +14,16 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private static string FormatRegistryValue(object? value, RegistrySetting? registrySetting)
         {
             if (value == null)
+            {
                 return "(not set)";
+            }
 
             if (value is byte[] bytes && registrySetting != null)
             {
                 if (bytes.Length == 0)
+                {
                     return "(empty)";
+                }
 
                 if (registrySetting.BinaryByteIndex.HasValue && bytes.Length > registrySetting.BinaryByteIndex.Value)
                 {
@@ -57,7 +61,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
             catch (Exception)
             {
-                // Silent failure for bulk operations
+                // Silent failure for bulk operations,
             }
 
             return tooltipData;
@@ -92,7 +96,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
             catch (Exception)
             {
-                // Silent failure for bulk operations
+                // Silent failure for bulk operations,
             }
 
             return tooltipData;
@@ -112,7 +116,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
             bool hasPowerCfgSettings = setting.PowerCfgSettings?.Any() == true;
 
             if (!hasRegistrySettings && !hasCommandSettings && !hasPowerCfgSettings)
+            {
                 return null;
+            }
 
             try
             {
@@ -120,7 +126,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     SettingId = setting.Id,
                     CommandSettings = setting.CommandSettings?.ToList() ?? new List<CommandSetting>(),
-                    PowerCfgSettings = setting.PowerCfgSettings?.ToList() ?? new List<PowerCfgSetting>()
+                    PowerCfgSettings = setting.PowerCfgSettings?.ToList() ?? new List<PowerCfgSetting>(),
                 };
 
                 if (hasRegistrySettings)

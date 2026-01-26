@@ -11,17 +11,19 @@ namespace Winhance.Core.Features.Common.Events.UI
     public class TooltipsBulkLoadedEvent : IDomainEvent
     {
         public DateTime Timestamp { get; }
+
         public Guid EventId { get; }
 
         /// <summary>
-        /// Dictionary mapping setting IDs to their tooltip data.
+        /// Gets dictionary mapping setting IDs to their tooltip data.
         /// </summary>
         public Dictionary<string, SettingTooltipData> TooltipDataCollection { get; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TooltipsBulkLoadedEvent"/> class.
         /// Initializes a new instance of the TooltipsBulkLoadedEvent.
         /// </summary>
-        /// <param name="tooltipDataCollection">The collection of tooltip data indexed by setting ID</param>
+        /// <param name="tooltipDataCollection">The collection of tooltip data indexed by setting ID.</param>
         public TooltipsBulkLoadedEvent(Dictionary<string, SettingTooltipData> tooltipDataCollection)
         {
             Timestamp = DateTime.UtcNow;

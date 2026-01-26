@@ -6,12 +6,19 @@ namespace Winhance.Core.Features.Common.Models
     public class OperationResult<T>
     {
         public bool Success { get; set; }
+
         public bool IsCancelled { get; set; }
+
         public T? Result { get; set; }
+
         public string? ErrorMessage { get; set; }
+
         public Exception? Exception { get; set; }
+
         public Dictionary<string, string>? ErrorDetails { get; set; }
+
         public bool RequiresConfirmation { get; set; }
+
         public ConfirmationRequest? ConfirmationRequest { get; set; }
 
         public static OperationResult<T> CreateSuccess(T result)
@@ -19,7 +26,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 Success = true,
-                Result = result
+                Result = result,
             };
         }
 
@@ -28,7 +35,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 Success = false,
-                ErrorMessage = errorMessage
+                ErrorMessage = errorMessage,
             };
         }
 
@@ -38,7 +45,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = exception.Message,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -48,7 +55,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = errorMessage,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -62,7 +69,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 Success = true,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
 
@@ -71,7 +78,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 Success = true,
-                Result = result
+                Result = result,
             };
         }
 
@@ -85,7 +92,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 Success = false,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
 
@@ -95,7 +102,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = message,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -105,7 +112,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = message,
-                Result = result
+                Result = result,
             };
         }
 
@@ -114,7 +121,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult<T>
             {
                 RequiresConfirmation = true,
-                ConfirmationRequest = confirmationRequest
+                ConfirmationRequest = confirmationRequest,
             };
         }
 
@@ -124,7 +131,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 IsCancelled = true,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
     }
@@ -132,18 +139,24 @@ namespace Winhance.Core.Features.Common.Models
     public class OperationResult
     {
         public bool Success { get; set; }
+
         public bool IsCancelled { get; set; }
+
         public string? ErrorMessage { get; set; }
+
         public Exception? Exception { get; set; }
+
         public Dictionary<string, string>? ErrorDetails { get; set; }
+
         public bool RequiresConfirmation { get; set; }
+
         public ConfirmationRequest? ConfirmationRequest { get; set; }
 
         public static OperationResult CreateSuccess()
         {
             return new OperationResult
             {
-                Success = true
+                Success = true,
             };
         }
 
@@ -152,7 +165,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult
             {
                 Success = false,
-                ErrorMessage = errorMessage
+                ErrorMessage = errorMessage,
             };
         }
 
@@ -162,7 +175,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = exception.Message,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -172,7 +185,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = errorMessage,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -186,7 +199,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult
             {
                 Success = true,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
 
@@ -200,7 +213,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult
             {
                 Success = false,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
 
@@ -210,7 +223,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 ErrorMessage = message,
-                Exception = exception
+                Exception = exception,
             };
         }
 
@@ -219,7 +232,7 @@ namespace Winhance.Core.Features.Common.Models
             return new OperationResult
             {
                 RequiresConfirmation = true,
-                ConfirmationRequest = confirmationRequest
+                ConfirmationRequest = confirmationRequest,
             };
         }
 
@@ -229,7 +242,7 @@ namespace Winhance.Core.Features.Common.Models
             {
                 Success = false,
                 IsCancelled = true,
-                ErrorMessage = message
+                ErrorMessage = message,
             };
         }
     }

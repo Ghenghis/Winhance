@@ -5,6 +5,6 @@ namespace Winhance.Core.Features.Common.Enums
         None = 0,
         UserCancelled = 1,
         InternetConnectivityLost = 2,
-        SystemError = 3
+        SystemError = 3,
     }
 }

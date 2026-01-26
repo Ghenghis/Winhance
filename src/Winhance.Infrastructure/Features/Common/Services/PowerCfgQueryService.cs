@@ -1,10 +1,10 @@
+using System.Runtime.InteropServices;
 using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
-using Winhance.Core.Features.Common.Utils;
 using Winhance.Core.Features.Common.Native;
+using Winhance.Core.Features.Common.Utils;
 using Winhance.Core.Features.Optimize.Models;
-using System.Runtime.InteropServices;
 
 namespace Winhance.Infrastructure.Features.Common.Services;
 
@@ -26,7 +26,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
         try
         {
             logService.Log(LogLevel.Info, "[PowerCfgQueryService] Enumerating power plans via Native API");
-            
+
             var plans = new List<PowerPlan>();
             var activeGuid = GetActivePowerSchemeGuid();
 
@@ -38,12 +38,14 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             {
                 while (true)
                 {
-                    uint ret = PowerProf.PowerEnumerate(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, PowerProf.ACCESS_SCHEME, index, buffer, ref bufferSize);
-                    
-                    if (ret == PowerProf.ERROR_NO_MORE_ITEMS)
-                        break;
+                    uint ret = PowerProf.PowerEnumerate(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, PowerProf.ACCESSSCHEME, index, buffer, ref bufferSize);
 
-                    if (ret == PowerProf.ERROR_SUCCESS)
+                    if (ret == PowerProf.ERRORNOMOREITEMS)
+                    {
+                        break;
+                    }
+
+                    if (ret == PowerProf.ERRORSUCCESS)
                     {
                         var guidBytes = new byte[16];
                         Marshal.Copy(buffer, guidBytes, 0, 16);
@@ -56,11 +58,12 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                         {
                             Guid = guid.ToString(),
                             Name = name,
-                            IsActive = isActive
+                            IsActive = isActive,
                         });
                     }
+
                     index++;
-                    bufferSize = 16; // Reset for next call
+                    bufferSize = 16; // Reset for next call,
                 }
             }
             finally
@@ -73,7 +76,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
 
             var activePlan = _cachedPlans.FirstOrDefault(p => p.IsActive);
             logService.Log(LogLevel.Info, $"[PowerCfgQueryService] Discovered {_cachedPlans.Count} system power plans. Active: {activePlan?.Name ?? "None"} ({activePlan?.Guid ?? "N/A"})");
-            
+
             return _cachedPlans;
         }
         catch (Exception ex)
@@ -89,10 +92,11 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
         try
         {
             uint ret = PowerProf.PowerGetActiveScheme(IntPtr.Zero, out ptr);
-            if (ret == PowerProf.ERROR_SUCCESS && ptr != IntPtr.Zero)
+            if (ret == PowerProf.ERRORSUCCESS && ptr != IntPtr.Zero)
             {
                 return Marshal.PtrToStructure<Guid>(ptr);
             }
+
             return Guid.Empty;
         }
         finally
@@ -107,16 +111,20 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
     private string GetPowerPlanName(Guid schemeGuid)
     {
         uint bufferSize = 0;
+
         // First call to get size
         PowerProf.PowerReadFriendlyName(IntPtr.Zero, ref schemeGuid, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref bufferSize);
 
-        if (bufferSize == 0) return "Unknown Power Plan";
+        if (bufferSize == 0)
+        {
+            return "Unknown Power Plan";
+        }
 
         IntPtr buffer = Marshal.AllocHGlobal((int)bufferSize);
         try
         {
             uint ret = PowerProf.PowerReadFriendlyName(IntPtr.Zero, ref schemeGuid, IntPtr.Zero, IntPtr.Zero, buffer, ref bufferSize);
-            if (ret == PowerProf.ERROR_SUCCESS)
+            if (ret == PowerProf.ERRORSUCCESS)
             {
                 return Marshal.PtrToStringUni(buffer) ?? "Unknown Power Plan";
             }
@@ -125,6 +133,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
         {
             Marshal.FreeHGlobal(buffer);
         }
+
         return "Unknown Power Plan";
     }
 
@@ -141,7 +150,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             var activeGuid = GetActivePowerSchemeGuid();
             if (activeGuid == Guid.Empty)
             {
-                return new PowerPlan { Guid = "", Name = "Unknown", IsActive = true };
+                return new PowerPlan { Guid = string.Empty, Name = "Unknown", IsActive = true };
             }
 
             var name = GetPowerPlanName(activeGuid);
@@ -149,13 +158,13 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             {
                 Guid = activeGuid.ToString(),
                 Name = name,
-                IsActive = true
+                IsActive = true,
             };
         }
         catch (Exception ex)
         {
             logService.Log(LogLevel.Warning, $"Error getting active power plan: {ex.Message}");
-            return new PowerPlan { Guid = "", Name = "Unknown", IsActive = true };
+            return new PowerPlan { Guid = string.Empty, Name = "Unknown", IsActive = true };
         }
     }
 
@@ -181,7 +190,9 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             var activePlanData = availablePlans.FirstOrDefault(p => p.IsActive);
 
             if (activePlanData == null)
+            {
                 return 0;
+            }
 
             for (int i = 0; i < options.Count; i++)
             {
@@ -190,7 +201,9 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                     p.Name.Trim().Equals(optionName, StringComparison.OrdinalIgnoreCase));
 
                 if (matchingPlan != null && matchingPlan.Guid.Equals(activePlanData.Guid, StringComparison.OrdinalIgnoreCase))
+                {
                     return i;
+                }
             }
 
             return 0;
@@ -210,7 +223,9 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             var result = await commandService.ExecuteCommandAsync(command);
 
             if (!result.Success || string.IsNullOrEmpty(result.Output))
+            {
                 return null;
+            }
 
             return OutputParser.PowerCfg.ParsePowerSettingValue(result.Output, "Current AC Power Setting Index:");
         }
@@ -228,7 +243,10 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             return await Task.Run(() =>
             {
                 var schemeGuid = GetActivePowerSchemeGuid();
-                if (schemeGuid == Guid.Empty) return (null, null);
+                if (schemeGuid == Guid.Empty)
+                {
+                    return (null, null);
+                }
 
                 var subGuid = Guid.Parse(powerCfgSetting.SubgroupGuid);
                 var setGuid = Guid.Parse(powerCfgSetting.SettingGuid);
@@ -236,11 +254,15 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                 uint acIndex, dcIndex;
                 int? ac = null, dc = null;
 
-                if (PowerProf.PowerReadACValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out acIndex) == PowerProf.ERROR_SUCCESS)
+                if (PowerProf.PowerReadACValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out acIndex) == PowerProf.ERRORSUCCESS)
+                {
                     ac = (int)acIndex;
+                }
 
-                if (PowerProf.PowerReadDCValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out dcIndex) == PowerProf.ERROR_SUCCESS)
+                if (PowerProf.PowerReadDCValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out dcIndex) == PowerProf.ERRORSUCCESS)
+                {
                     dc = (int)dcIndex;
+                }
 
                 return (ac, dc);
             });
@@ -259,7 +281,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             return await Task.Run(() =>
             {
                 var results = new Dictionary<string, (int? acValue, int? dcValue)>();
-                
+
                 Guid schemeGuid;
                 if (string.Equals(powerPlanGuid, "SCHEME_CURRENT", StringComparison.OrdinalIgnoreCase))
                 {
@@ -267,10 +289,13 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                 }
                 else if (!Guid.TryParse(powerPlanGuid, out schemeGuid))
                 {
-                     return results;
+                    return results;
                 }
 
-                if (schemeGuid == Guid.Empty) return results;
+                if (schemeGuid == Guid.Empty)
+                {
+                    return results;
+                }
 
                 // Enumerate Subgroups
                 uint subIndex = 0;
@@ -281,9 +306,13 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                 {
                     while (true)
                     {
-                        uint ret = PowerProf.PowerEnumerate(IntPtr.Zero, ref schemeGuid, IntPtr.Zero, PowerProf.ACCESS_SUBGROUP, subIndex, buffer, ref bufferSize);
-                        if (ret == PowerProf.ERROR_NO_MORE_ITEMS) break;
-                        if (ret == PowerProf.ERROR_SUCCESS)
+                        uint ret = PowerProf.PowerEnumerate(IntPtr.Zero, ref schemeGuid, IntPtr.Zero, PowerProf.ACCESSSUBGROUP, subIndex, buffer, ref bufferSize);
+                        if (ret == PowerProf.ERRORNOMOREITEMS)
+                        {
+                            break;
+                        }
+
+                        if (ret == PowerProf.ERRORSUCCESS)
                         {
                             var subBytes = new byte[16];
                             Marshal.Copy(buffer, subBytes, 0, 16);
@@ -298,9 +327,13 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                             {
                                 while (true)
                                 {
-                                    uint setRet = PowerProf.PowerEnumerate(IntPtr.Zero, ref schemeGuid, ref subGuid, PowerProf.ACCESS_INDIVIDUAL_SETTING, setIndex, setBuffer, ref setBufferSize);
-                                    if (setRet == PowerProf.ERROR_NO_MORE_ITEMS) break;
-                                    if (setRet == PowerProf.ERROR_SUCCESS)
+                                    uint setRet = PowerProf.PowerEnumerate(IntPtr.Zero, ref schemeGuid, ref subGuid, PowerProf.ACCESSINDIVIDUALSETTING, setIndex, setBuffer, ref setBufferSize);
+                                    if (setRet == PowerProf.ERRORNOMOREITEMS)
+                                    {
+                                        break;
+                                    }
+
+                                    if (setRet == PowerProf.ERRORSUCCESS)
                                     {
                                         var setBytes = new byte[16];
                                         Marshal.Copy(setBuffer, setBytes, 0, 16);
@@ -309,17 +342,22 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                                         uint acIndex, dcIndex;
                                         int? ac = null, dc = null;
 
-                                        if (PowerProf.PowerReadACValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out acIndex) == PowerProf.ERROR_SUCCESS)
+                                        if (PowerProf.PowerReadACValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out acIndex) == PowerProf.ERRORSUCCESS)
+                                        {
                                             ac = (int)acIndex;
+                                        }
 
-                                        if (PowerProf.PowerReadDCValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out dcIndex) == PowerProf.ERROR_SUCCESS)
+                                        if (PowerProf.PowerReadDCValueIndex(IntPtr.Zero, ref schemeGuid, ref subGuid, ref setGuid, out dcIndex) == PowerProf.ERRORSUCCESS)
+                                        {
                                             dc = (int)dcIndex;
+                                        }
 
                                         if (ac.HasValue || dc.HasValue)
                                         {
                                             results[setGuid.ToString()] = (ac, dc);
                                         }
                                     }
+
                                     setIndex++;
                                     setBufferSize = 16;
                                 }
@@ -329,6 +367,7 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
                                 Marshal.FreeHGlobal(setBuffer);
                             }
                         }
+
                         subIndex++;
                         bufferSize = 16;
                     }
@@ -374,14 +413,16 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
             var capabilities = OutputParser.PowerCfg.ParsePowerSettingMinMax(result.Output);
             _capabilityCache[cacheKey] = capabilities;
 
-            logService.Log(LogLevel.Info,
+            logService.Log(
+                LogLevel.Info,
                 $"Power setting '{powerCfgSetting.SettingGUIDAlias ?? cacheKey}' capabilities: Min={capabilities.minValue}, Max={capabilities.maxValue}");
 
             return capabilities;
         }
         catch (Exception ex)
         {
-            logService.Log(LogLevel.Error,
+            logService.Log(
+                LogLevel.Error,
                 $"Error querying capabilities for {powerCfgSetting.SettingGuid}: {ex.Message}");
             return (null, null);
         }
@@ -395,11 +436,11 @@ public class PowerCfgQueryService(ICommandService commandService, ILogService lo
 
         if (isHardwareControlled)
         {
-            logService.Log(LogLevel.Info,
+            logService.Log(
+                LogLevel.Info,
                 $"Setting '{powerCfgSetting.SettingGUIDAlias ?? powerCfgSetting.SettingGuid}' is hardware-controlled (Min=0, Max=0)");
         }
 
         return isHardwareControlled;
     }
-
 }

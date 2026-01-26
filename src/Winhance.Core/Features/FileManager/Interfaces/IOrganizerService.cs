@@ -13,41 +13,49 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Analyzes a folder and generates an organization plan.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<OrganizationPlan> AnalyzeAsync(string path, OrganizationStrategy strategy, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes an organization plan.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<OrganizationResult> ExecuteAsync(OrganizationPlan plan, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets space recovery opportunities for a drive.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<SpaceRecoveryAnalysis> AnalyzeSpaceRecoveryAsync(string driveLetter, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Relocates AI models to another drive with symlink support.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<OrganizationResult> RelocateModelsAsync(string sourcePath, string destinationPath, bool createSymlinks, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Finds duplicate files in a path.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<IEnumerable<DuplicateGroup>> FindDuplicatesAsync(string path, DuplicateSearchMethod method, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets available organization rules.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<IEnumerable<OrganizationRule>> GetRulesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an organization rule.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task SaveRuleAsync(OrganizationRule rule, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Undoes an organization operation.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<OrganizationResult> UndoAsync(string transactionId, CancellationToken cancellationToken = default);
     }
 
@@ -61,7 +69,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         ByProject,
         BySize,
         ByAICategory,
-        Custom
+        Custom,
     }
 
     /// <summary>
@@ -73,7 +81,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         Name,
         Size,
         NameAndSize,
-        SimilarImage
+        SimilarImage,
     }
 
     /// <summary>
@@ -82,12 +90,19 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class OrganizationPlan
     {
         public string SourcePath { get; set; } = string.Empty;
+
         public string DestinationPath { get; set; } = string.Empty;
+
         public OrganizationStrategy Strategy { get; set; }
+
         public DateTime AnalysisDate { get; set; } = DateTime.UtcNow;
+
         public IEnumerable<OrganizationCategory> Categories { get; set; } = Array.Empty<OrganizationCategory>();
+
         public int TotalFiles { get; set; }
+
         public long TotalSize { get; set; }
+
         public int UnclassifiedFiles { get; set; }
     }
 
@@ -97,10 +112,15 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class OrganizationCategory
     {
         public string Name { get; set; } = string.Empty;
+
         public string DestinationFolder { get; set; } = string.Empty;
+
         public int FileCount { get; set; }
+
         public long TotalSize { get; set; }
+
         public IEnumerable<OrganizationItem> Items { get; set; } = Array.Empty<OrganizationItem>();
+
         public IEnumerable<OrganizationCategory> SubCategories { get; set; } = Array.Empty<OrganizationCategory>();
     }
 
@@ -110,12 +130,19 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class OrganizationItem
     {
         public string SourcePath { get; set; } = string.Empty;
+
         public string DestinationPath { get; set; } = string.Empty;
+
         public string FileName { get; set; } = string.Empty;
+
         public long Size { get; set; }
+
         public string Category { get; set; } = string.Empty;
+
         public string Extension { get; set; } = string.Empty;
+
         public DateTime DateModified { get; set; }
+
         public double Confidence { get; set; }
     }
 
@@ -125,12 +152,19 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class OrganizationResult
     {
         public bool Success { get; set; }
+
         public string TransactionId { get; set; } = string.Empty;
+
         public int FilesOrganized { get; set; }
+
         public int FilesFailed { get; set; }
+
         public int FilesSkipped { get; set; }
+
         public long BytesProcessed { get; set; }
+
         public IEnumerable<string> Errors { get; set; } = Array.Empty<string>();
+
         public string RollbackScriptPath { get; set; } = string.Empty;
     }
 
@@ -140,10 +174,15 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class SpaceRecoveryAnalysis
     {
         public string DriveLetter { get; set; } = string.Empty;
+
         public long TotalSpace { get; set; }
+
         public long FreeSpace { get; set; }
+
         public long RecoverableSpace { get; set; }
+
         public long TotalRecoverableSize { get; set; }
+
         public IEnumerable<RecoveryOpportunity> Opportunities { get; set; } = Array.Empty<RecoveryOpportunity>();
     }
 
@@ -153,14 +192,23 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class RecoveryOpportunity
     {
         public string Name { get; set; } = string.Empty;
+
         public string Category { get; set; } = string.Empty;
+
         public string Path { get; set; } = string.Empty;
+
         public long Size { get; set; }
+
         public int ItemCount { get; set; }
+
         public RecoveryAction Action { get; set; }
+
         public RecoveryAction RecommendedAction { get; set; }
+
         public string Description { get; set; } = string.Empty;
+
         public string Priority { get; set; } = string.Empty;
+
         public bool IsSafeToClean { get; set; }
     }
 
@@ -173,7 +221,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         Relocate,
         Archive,
         Clean,
-        Review
+        Review,
     }
 
     /// <summary>
@@ -182,9 +230,13 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class DuplicateGroup
     {
         public string Key { get; set; } = string.Empty;
+
         public IEnumerable<DuplicateFile> Files { get; set; } = Array.Empty<DuplicateFile>();
+
         public long TotalSize { get; set; }
+
         public long WastedSize { get; set; }
+
         public int FileCount { get; set; }
     }
 
@@ -194,11 +246,17 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class DuplicateFile
     {
         public string Path { get; set; } = string.Empty;
+
         public string Name { get; set; } = string.Empty;
+
         public long Size { get; set; }
+
         public DateTime DateModified { get; set; }
+
         public string? Hash { get; set; }
+
         public bool IsOriginal { get; set; }
+
         public bool MarkedForDeletion { get; set; }
     }
 
@@ -208,10 +266,15 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class OrganizationRule
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+
         public string Name { get; set; } = string.Empty;
+
         public int Priority { get; set; }
+
         public bool Enabled { get; set; } = true;
+
         public IEnumerable<RuleCondition> Conditions { get; set; } = Array.Empty<RuleCondition>();
+
         public RuleAction Action { get; set; } = new();
     }
 
@@ -221,7 +284,9 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class RuleCondition
     {
         public ConditionType Type { get; set; }
+
         public ConditionOperator Operator { get; set; }
+
         public string Value { get; set; } = string.Empty;
     }
 
@@ -237,7 +302,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         DateCreated,
         DateAccessed,
         Location,
-        Content
+        Content,
     }
 
     /// <summary>
@@ -254,7 +319,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         GreaterThan,
         LessThan,
         Between,
-        Matches
+        Matches,
     }
 
     /// <summary>
@@ -263,8 +328,11 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class RuleAction
     {
         public RuleActionType Type { get; set; }
+
         public string Destination { get; set; } = string.Empty;
+
         public string RenamePattern { get; set; } = string.Empty;
+
         public bool CreateSymlink { get; set; }
     }
 
@@ -279,6 +347,6 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         Rename,
         Tag,
         Compress,
-        Notify
+        Notify,
     }
 }

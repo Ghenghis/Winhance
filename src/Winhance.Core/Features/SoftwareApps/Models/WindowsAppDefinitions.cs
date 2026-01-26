@@ -25,7 +25,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Microsoft3DViewer",
                         WinGetPackageId = "9NBLGGH42THS",
                         Category = "3D/Mixed Reality",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -36,7 +36,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.MixedReality.Portal",
                         WinGetPackageId = "9NG1H8B3ZC7M",
                         Category = "3D/Mixed Reality",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Bing/Search
@@ -49,7 +49,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.BingSearch",
                         WinGetPackageId = "9NZBF4GT040C",
                         Category = "Bing",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -60,7 +60,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.BingNews",
                         WinGetPackageId = "9WZDNCRFHVFW",
                         Category = "Bing",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -71,7 +71,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.BingWeather",
                         WinGetPackageId = "9WZDNCRFJ3Q2",
                         Category = "Bing/Search",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Camera/Media
@@ -84,7 +84,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsCamera",
                         WinGetPackageId = "9WZDNCRFJBBG",
                         Category = "Camera/Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -95,7 +95,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Clipchamp.Clipchamp",
                         WinGetPackageId = "9P1J8S7CCWWT",
                         Category = "Camera/Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // System Utilities
@@ -108,7 +108,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsAlarms",
                         WinGetPackageId = "9WZDNCRFJ3PR",
                         Category = "System Utilities",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -119,7 +119,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.549981C3F5F10",
                         WinGetPackageId = "9NFFX4SZZ23L", // Package is deprecated
                         Category = "System Utilities",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -130,7 +130,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.GetHelp",
                         WinGetPackageId = "9PKDZBMV1H3T",
                         Category = "System Utilities",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -141,7 +141,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsCalculator",
                         WinGetPackageId = "9WZDNCRFHVN5",
                         Category = "System Utilities",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Development
@@ -154,7 +154,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Windows.DevHome",
                         WinGetPackageId = "9N8MHTPHNGVV", // not available in your market
                         Category = "Development",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Communication
@@ -167,7 +167,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "MicrosoftCorporationII.MicrosoftFamily",
                         WinGetPackageId = "9PDJDJS743XF",
                         Category = "Communication",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -178,7 +178,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "microsoft.windowscommunicationsapps",
                         WinGetPackageId = "9WZDNCRFHVQM",
                         Category = "Communication",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -189,7 +189,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.SkypeApp",
                         WinGetPackageId = "9WZDNCRFJ364", // Skype is retired
                         Category = "Communication",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -200,7 +200,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "MSTeams",
                         WinGetPackageId = "XP8BT8DW290MPQ",
                         Category = "Communication",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // System Tools
@@ -213,7 +213,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsFeedbackHub",
                         WinGetPackageId = "9NBLGGH4R32N",
                         Category = "System Tools",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -224,7 +224,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsMaps",
                         WinGetPackageId = "9WZDNCRDTBVB", // unavailable in your market
                         Category = "System Tools",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -235,7 +235,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsTerminal",
                         WinGetPackageId = "9N0DX20HK701",
                         Category = "System Tools",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Office & Productivity
@@ -247,7 +247,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Office",
                         AppxPackageName = "Microsoft.MicrosoftOfficeHub",
                         Category = "Office",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -258,7 +258,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.OutlookForWindows",
                         WinGetPackageId = "9NRX63209R7B",
                         Category = "Office",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Graphics & Images
@@ -270,7 +270,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Graphics",
                         AppxPackageName = "Microsoft.MSPaint",
                         Category = "Graphics",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -281,7 +281,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Paint",
                         WinGetPackageId = "9PCFS5B6T72H",
                         Category = "Graphics",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -292,7 +292,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Windows.Photos",
                         WinGetPackageId = "9WZDNCRFJBH4",
                         Category = "Graphics",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -303,7 +303,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.ScreenSketch",
                         WinGetPackageId = "9MZ95KL8MR0L",
                         Category = "Graphics",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Social & People
@@ -316,7 +316,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.People",
                         WinGetPackageId = "9NBLGGH10PG8", // unavailable in your market
                         Category = "Social",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Automation
@@ -329,7 +329,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.PowerAutomateDesktop",
                         WinGetPackageId = "9NFTCH6J7FHV",
                         Category = "Automation",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Support Tools
@@ -342,7 +342,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "MicrosoftCorporationII.QuickAssist",
                         WinGetPackageId = "9P7BP5VNWKX5",
                         Category = "Support",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Games & Entertainment
@@ -355,7 +355,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.MicrosoftSolitaireCollection",
                         WinGetPackageId = "9WZDNCRFHWD2", // https://apps.microsoft.com/detail/9wzdncrfhwd2?hl=en-US&gl=ZA
                         Category = "Games",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -385,8 +385,8 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                                 EnabledValue = null,
                                 DisabledValue = 0,
                                 ValueType = RegistryValueKind.DWord,
-                            }
-                        }
+                            },
+                        },
                     },
                     new ItemDefinition
                     {
@@ -397,7 +397,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.XboxIdentityProvider",
                         WinGetPackageId = "9WZDNCRD1HKW",
                         Category = "Games",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -426,8 +426,8 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                                 EnabledValue = null,
                                 DisabledValue = 0,
                                 ValueType = RegistryValueKind.DWord,
-                            }
-                        }
+                            },
+                        },
                     },
                     new ItemDefinition
                     {
@@ -438,7 +438,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Xbox.TCUI",
                         WinGetPackageId = "9NKNC0LD5NN6",
                         Category = "Games",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -467,8 +467,8 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                                 EnabledValue = null,
                                 DisabledValue = 0,
                                 ValueType = RegistryValueKind.DWord,
-                            }
-                        }
+                            },
+                        },
                     },
 
                     // Windows Store
@@ -481,7 +481,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsStore",
                         WinGetPackageId = "9WZDNCRFJBMP",
                         Category = "Store",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Media Players
@@ -494,7 +494,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.ZuneMusic",
                         WinGetPackageId = "9WZDNCRFJ3PT",
                         Category = "Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -505,7 +505,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.ZuneVideo",
                         WinGetPackageId = "9WZDNCRFJ3P2",
                         Category = "Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -516,7 +516,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsSoundRecorder",
                         WinGetPackageId = "9WZDNCRFHWKN",
                         Category = "Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Productivity Tools
@@ -529,7 +529,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.MicrosoftStickyNotes",
                         WinGetPackageId = "9NBLGGH4QGHW",
                         Category = "Productivity",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -539,7 +539,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Productivity",
                         AppxPackageName = "Microsoft.Getstarted",
                         Category = "Productivity",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -550,7 +550,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Todos",
                         WinGetPackageId = "9NBLGGH5R558",
                         Category = "Productivity",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -561,7 +561,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.WindowsNotepad",
                         WinGetPackageId = "9MSMLRH6LZF3",
                         Category = "Productivity",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // Phone Integration
@@ -574,7 +574,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.YourPhone",
                         WinGetPackageId = "9NMPJ99VJBWV",
                         Category = "Phone",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
 
                     // AI & Copilot
@@ -591,7 +591,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         SubPackages = new string[]
                         {
                             "Microsoft.Windows.Ai.Copilot.Provider",
-                            "Microsoft.Copilot_8wekyb3d8bbwe"
+                            "Microsoft.Copilot_8wekyb3d8bbwe",
                         },
                     },
 
@@ -606,7 +606,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         WinGetPackageId = "XPFFTQ037JWMHS",
                         Category = "Browsers",
                         CanBeReinstalled = true,
-                        RemovalScript = () => EdgeRemovalScript.GetScript()
+                        RemovalScript = () => EdgeRemovalScript.GetScript(),
                     },
                     new ItemDefinition
                     {
@@ -618,7 +618,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         WinGetPackageId = "Microsoft.OneDrive",
                         Category = "System",
                         CanBeReinstalled = true,
-                        RemovalScript = () => OneDriveRemovalScript.GetScript()
+                        RemovalScript = () => OneDriveRemovalScript.GetScript(),
                     },
                     new ItemDefinition
                     {
@@ -629,9 +629,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         AppxPackageName = "Microsoft.Office.OneNote",
                         WinGetPackageId = "XPFFZHVGQWWLHB",
                         Category = "Office",
-                        CanBeReinstalled = true
-                    }
-                }
+                        CanBeReinstalled = true,
+                    },
+                },
             };
         }
     }

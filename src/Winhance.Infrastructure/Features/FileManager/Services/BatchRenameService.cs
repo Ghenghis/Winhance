@@ -7,9 +7,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.FileManager.Interfaces;
-using Winhance.Core.Features.Common.Enums;
 
 namespace Winhance.Infrastructure.Features.FileManager.Services
 {
@@ -26,15 +26,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         public BatchRenameService(ILogService logService)
         {
             _logService = logService;
-            
+
             var appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Winhance", "FileManager"
-            );
-            
+                "Winhance", "FileManager");
+
             _transactionLogPath = Path.Combine(appDataPath, "rename-transactions");
             _presetsPath = Path.Combine(appDataPath, "rename-presets");
-            
+
             Directory.CreateDirectory(_transactionLogPath);
             Directory.CreateDirectory(_presetsPath);
 
@@ -42,7 +41,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<IEnumerable<RenamePreview>> PreviewRenameAsync(
-            IEnumerable<string> files, 
+            IEnumerable<string> files,
             IEnumerable<RenameRule> rules,
             CancellationToken cancellationToken = default)
         {
@@ -51,7 +50,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var counter = rulesList.FirstOrDefault(r => r.Type == RenameRuleType.Counter)?.CounterStart ?? 1;
             var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 foreach (var filePath in files)
                 {
@@ -76,8 +76,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         var extRule = rulesList.FirstOrDefault(r => r.Type == RenameRuleType.ChangeExtension);
                         if (extRule != null && !string.IsNullOrEmpty(extRule.NewExtension))
                         {
-                            extension = extRule.NewExtension.StartsWith(".") 
-                                ? extRule.NewExtension 
+                            extension = extRule.NewExtension.StartsWith(".", StringComparison.Ordinal)
+                                ? extRule.NewExtension
                                 : "." + extRule.NewExtension;
                         }
 
@@ -118,7 +118,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             NewName = finalNewName,
                             NewPath = newPath,
                             HasConflict = hasConflict,
-                            ConflictReason = conflictReason
+                            ConflictReason = conflictReason,
                         });
                     }
                     catch (Exception ex)
@@ -129,7 +129,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             OriginalName = Path.GetFileName(filePath),
                             NewName = Path.GetFileName(filePath),
                             HasConflict = true,
-                            ConflictReason = $"Error: {ex.Message}"
+                            ConflictReason = $"Error: {ex.Message}",
                         });
                     }
                 }
@@ -139,7 +139,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<RenameResult> ExecuteRenameAsync(
-            IEnumerable<string> files, 
+            IEnumerable<string> files,
             IEnumerable<RenameRule> rules,
             CancellationToken cancellationToken = default)
         {
@@ -162,7 +162,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     errors.AddRange(previewList.Where(p => p.HasConflict).Select(p => new RenameError
                     {
                         FilePath = p.OriginalPath,
-                        ErrorMessage = p.ConflictReason
+                        ErrorMessage = p.ConflictReason,
                     }));
                 }
 
@@ -179,7 +179,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         {
                             OriginalPath = preview.OriginalPath,
                             NewPath = preview.NewPath,
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.FilesRenamed++;
@@ -190,7 +190,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         errors.Add(new RenameError
                         {
                             FilePath = preview.OriginalPath,
-                            ErrorMessage = ex.Message
+                            ErrorMessage = ex.Message,
                         });
                         result.FilesFailed++;
                         _logService.Log(LogLevel.Error, $"Failed to rename {preview.OriginalName}: {ex.Message}");
@@ -228,7 +228,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             try
             {
                 var transactionPath = Path.Combine(_transactionLogPath, $"{transactionId}.json");
-                
+
                 if (!File.Exists(transactionPath))
                 {
                     result.Success = false;
@@ -263,7 +263,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         errors.Add(new RenameError
                         {
                             FilePath = transaction.NewPath,
-                            ErrorMessage = ex.Message
+                            ErrorMessage = ex.Message,
                         });
                         result.FilesFailed++;
                     }
@@ -291,7 +291,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var presets = new List<RenamePreset>(_builtInPresets);
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 try
                 {
@@ -307,10 +308,16 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 presets.Add(preset);
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to load preset: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Failed to load preset: {ex.Message}");
+                        }
                     }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to enumerate preset files: {ex.Message}"); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to enumerate preset files: {ex.Message}");
+                }
             }, cancellationToken);
 
             return presets;
@@ -342,8 +349,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             }
         }
 
-        #region Rule Application
-
         private string ApplyRule(string name, string extension, RenameRule rule, ref int counter)
         {
             return rule.Type switch
@@ -355,21 +360,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 RenameRuleType.ChangeCase => ApplyChangeCase(name, rule),
                 RenameRuleType.DateTime => ApplyDateTime(name, rule),
                 RenameRuleType.RegularExpression => ApplyRegex(name, rule),
-                _ => name
+                _ => name,
             };
         }
 
         private string ApplyFindReplace(string name, RenameRule rule)
         {
             if (string.IsNullOrEmpty(rule.FindText))
+            {
                 return name;
+            }
 
             if (rule.UseRegex)
             {
                 try
                 {
                     var options = rule.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
-                    return Regex.Replace(name, rule.FindText, rule.ReplaceText ?? "", options);
+                    return Regex.Replace(name, rule.FindText, rule.ReplaceText ?? string.Empty, options);
                 }
                 catch (Exception ex)
                 {
@@ -379,13 +386,15 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             }
 
             var comparison = rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-            return name.Replace(rule.FindText, rule.ReplaceText ?? "", comparison);
+            return name.Replace(rule.FindText, rule.ReplaceText ?? string.Empty, comparison);
         }
 
         private string ApplyAddText(string name, RenameRule rule)
         {
             if (string.IsNullOrEmpty(rule.TextToAdd))
+            {
                 return name;
+            }
 
             return rule.Position switch
             {
@@ -393,7 +402,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 TextPosition.Suffix => name + rule.TextToAdd,
                 TextPosition.AtIndex => name.Insert(Math.Min(rule.PositionIndex, name.Length), rule.TextToAdd),
                 TextPosition.BeforeExtension => name + rule.TextToAdd,
-                _ => name
+                _ => name,
             };
         }
 
@@ -403,7 +412,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 try
                 {
-                    return Regex.Replace(name, rule.RemovePattern, "");
+                    return Regex.Replace(name, rule.RemovePattern, string.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -432,7 +441,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 TextPosition.Prefix => counterText + name,
                 TextPosition.Suffix => name + counterText,
                 TextPosition.BeforeExtension => name + counterText,
-                _ => name + counterText
+                _ => name + counterText,
             };
         }
 
@@ -445,7 +454,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 CaseType.TitleCase => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name.ToLower()),
                 CaseType.SentenceCase => char.ToUpper(name[0]) + name.Substring(1).ToLower(),
                 CaseType.ToggleCase => new string(name.Select(c => char.IsUpper(c) ? char.ToLower(c) : char.ToUpper(c)).ToArray()),
-                _ => name
+                _ => name,
             };
         }
 
@@ -454,7 +463,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var dateTime = rule.DateSource switch
             {
                 DateSource.CurrentDate => DateTime.Now,
-                _ => DateTime.Now
+                _ => DateTime.Now,
             };
 
             try
@@ -464,7 +473,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     TextPosition.Prefix => dateStr + "_" + name,
                     TextPosition.Suffix => name + "_" + dateStr,
-                    _ => name + "_" + dateStr
+                    _ => name + "_" + dateStr,
                 };
             }
             catch (Exception ex)
@@ -477,12 +486,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private string ApplyRegex(string name, RenameRule rule)
         {
             if (string.IsNullOrEmpty(rule.FindText))
+            {
                 return name;
+            }
 
             try
             {
                 var options = rule.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
-                return Regex.Replace(name, rule.FindText, rule.ReplaceText ?? "", options);
+                return Regex.Replace(name, rule.FindText, rule.ReplaceText ?? string.Empty, options);
             }
             catch (Exception ex)
             {
@@ -490,10 +501,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 return name;
             }
         }
-
-        #endregion
-
-        #region Helper Methods
 
         private bool HasInvalidCharacters(string name)
         {
@@ -531,9 +538,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Order = 1,
                             Enabled = true,
                             DateFormat = "yyyy-MM-dd",
-                            Position = TextPosition.Prefix
-                        }
-                    }
+                            Position = TextPosition.Prefix,
+                        },
+                    },
                 },
                 new RenamePreset
                 {
@@ -547,9 +554,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Type = RenameRuleType.ChangeCase,
                             Order = 1,
                             Enabled = true,
-                            CaseType = CaseType.LowerCase
-                        }
-                    }
+                            CaseType = CaseType.LowerCase,
+                        },
+                    },
                 },
                 new RenamePreset
                 {
@@ -564,9 +571,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Order = 1,
                             Enabled = true,
                             FindText = " ",
-                            ReplaceText = "_"
-                        }
-                    }
+                            ReplaceText = "_",
+                        },
+                    },
                 },
                 new RenamePreset
                 {
@@ -584,19 +591,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             CounterStep = 1,
                             CounterPadding = 3,
                             CounterSuffix = "_",
-                            Position = TextPosition.Prefix
-                        }
-                    }
-                }
+                            Position = TextPosition.Prefix,
+                        },
+                    },
+                },
             };
         }
-
-        #endregion
 
         private class RenameTransaction
         {
             public string OriginalPath { get; set; } = string.Empty;
+
             public string NewPath { get; set; } = string.Empty;
+
             public DateTime Timestamp { get; set; }
         }
     }

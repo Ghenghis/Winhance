@@ -26,8 +26,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public object GetOrCreateView(Type viewType, IServiceProvider serviceProvider)
         {
-            if (viewType == null) throw new ArgumentNullException(nameof(viewType));
-            if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
+            if (viewType == null)
+            {
+                throw new ArgumentNullException(nameof(viewType));
+            }
+
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
 
             // Try to get from pool first
             if (_viewPool.TryGetValue(viewType, out var pool) && pool.TryTake(out var pooledView))
@@ -37,7 +44,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     _reusedCounts.AddOrUpdate(viewType.Name, 1, (k, v) => v + 1);
                 }
 
-                _logService.Log(Core.Features.Common.Enums.LogLevel.Debug,
+                _logService.Log(
+                    Core.Features.Common.Enums.LogLevel.Debug,
                     $"ViewPool: Reused {viewType.Name} from pool");
 
                 ResetViewState(pooledView);
@@ -52,7 +60,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _createdCounts.AddOrUpdate(viewType.Name, 1, (k, v) => v + 1);
             }
 
-            _logService.Log(Core.Features.Common.Enums.LogLevel.Debug,
+            _logService.Log(
+                Core.Features.Common.Enums.LogLevel.Debug,
                 $"ViewPool: Created new {viewType.Name}");
 
             return newView;
@@ -60,20 +69,25 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public void ReturnView(Type viewType, object view, bool clearDataContext = true)
         {
-            if (viewType == null || view == null) return;
+            if (viewType == null || view == null)
+            {
+                return;
+            }
 
             var pool = _viewPool.GetOrAdd(viewType, _ => new ConcurrentBag<object>());
 
             var maxSize = _maxPoolSizes.GetOrAdd(viewType, _ => 1);
             if (pool.Count >= maxSize)
             {
-                _logService.Log(Core.Features.Common.Enums.LogLevel.Debug,
+                _logService.Log(
+                    Core.Features.Common.Enums.LogLevel.Debug,
                     $"ViewPool: Rejected {viewType.Name} - pool full");
 
                 if (clearDataContext && view is FrameworkElement fe)
                 {
                     fe.DataContext = null;
                 }
+
                 return;
             }
 
@@ -90,7 +104,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
 
             pool.Add(view);
-            _logService.Log(Core.Features.Common.Enums.LogLevel.Debug,
+            _logService.Log(
+                Core.Features.Common.Enums.LogLevel.Debug,
                 $"ViewPool: Returned {viewType.Name} to pool (size: {pool.Count})");
         }
 
@@ -100,7 +115,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             foreach (var pool in _viewPool.Values)
             {
-                while (pool.TryTake(out _)) { }
+                while (pool.TryTake(out _))
+                {
+                }
             }
 
             _viewPool.Clear();
@@ -119,7 +136,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     ReusedViewCounts = new Dictionary<string, int>(_reusedCounts),
                     TotalPooledViews = _viewPool.Sum(kvp => kvp.Value.Count),
                     TotalCreatedViews = _createdCounts.Sum(kvp => kvp.Value),
-                    TotalReusedViews = _reusedCounts.Sum(kvp => kvp.Value)
+                    TotalReusedViews = _reusedCounts.Sum(kvp => kvp.Value),
                 };
             }
         }

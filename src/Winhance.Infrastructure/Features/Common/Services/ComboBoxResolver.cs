@@ -13,12 +13,12 @@ namespace Winhance.Infrastructure.Features.Common.Services
         ISystemSettingsDiscoveryService discoveryService,
         ILogService logService) : IComboBoxResolver
     {
-        public const int CUSTOM_STATE_INDEX = -1;
+        public const int CUSTOMSTATEINDEX = -1;
 
         public async Task<object?> ResolveCurrentValueAsync(SettingDefinition setting, Dictionary<string, object?>? existingRawValues = null)
         {
             var rawValues = await GetRawValues(setting, existingRawValues);
-            
+
             if (setting.InputType == InputType.Selection && setting.CustomProperties?.ContainsKey(CustomPropertyKeys.ValueMappings) == true)
             {
                 return ResolveRawValuesToIndex(setting, rawValues);
@@ -48,7 +48,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public int GetValueFromIndex(SettingDefinition setting, int index)
         {
-            if (index == CUSTOM_STATE_INDEX)
+            if (index == CUSTOMSTATEINDEX)
             {
                 return 0;
             }
@@ -67,8 +67,6 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             return index;
         }
-
-
 
         public int ResolveRawValuesToIndex(SettingDefinition setting, Dictionary<string, object?> rawValues)
         {
@@ -136,7 +134,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             var supportsCustomState = setting.CustomProperties?.TryGetValue(CustomPropertyKeys.SupportsCustomState, out var supports) == true && (bool)supports;
             if (supportsCustomState)
             {
-                return CUSTOM_STATE_INDEX;
+                return CUSTOMSTATEINDEX;
             }
 
             return 0;
@@ -176,13 +174,21 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
             }
+
             return 0;
         }
 
         private static bool ValuesAreEqual(object? value1, object? value2)
         {
-            if (value1 == null && value2 == null) return true;
-            if (value1 == null || value2 == null) return false;
+            if (value1 == null && value2 == null)
+            {
+                return true;
+            }
+
+            if (value1 == null || value2 == null)
+            {
+                return false;
+            }
 
             if (value1 is byte[] bytes1 && value2 is byte[] bytes2)
             {
@@ -204,7 +210,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 return i1 == b2Int;
             }
 
-            return value1.Equals(value2);
+            return Equals(value1, value2);
         }
     }
 }

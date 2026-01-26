@@ -52,18 +52,20 @@ namespace Winhance.Core.Features.Agents.Interfaces
         int QueueLength { get; }
 
         /// <summary>
-        /// Gets whether any agent is currently running.
+        /// Gets a value indicating whether gets whether any agent is currently running.
         /// </summary>
         bool IsRunning { get; }
 
         /// <summary>
         /// Queues a new agent task for execution.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<string> QueueTaskAsync(AgentTask task);
 
         /// <summary>
         /// Starts a task immediately.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task StartTaskAsync(string taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -79,16 +81,19 @@ namespace Winhance.Core.Features.Agents.Interfaces
         /// <summary>
         /// Pauses a running task.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task PauseTaskAsync(string taskId);
 
         /// <summary>
         /// Resumes a paused task.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task ResumeTaskAsync(string taskId);
 
         /// <summary>
         /// Cancels a task.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task CancelTaskAsync(string taskId, string? reason = null);
 
         /// <summary>
@@ -104,6 +109,7 @@ namespace Winhance.Core.Features.Agents.Interfaces
         /// <summary>
         /// Gets a task by ID.
         /// </summary>
+        /// <returns></returns>
         AgentTask? GetTask(string taskId);
 
         /// <summary>
@@ -115,6 +121,7 @@ namespace Winhance.Core.Features.Agents.Interfaces
     public class AgentTaskEventArgs : EventArgs
     {
         public AgentTask Task { get; }
+
         public string? Message { get; }
 
         public AgentTaskEventArgs(AgentTask task, string? message = null)

@@ -1,10 +1,10 @@
-using Microsoft.Extensions.Hosting;
-using Winhance.Core.Features.Common.Interfaces;
-using Winhance.Core.Features.Common.Enums;
-using Winhance.Core.Features.Common.Models;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
+using Microsoft.Extensions.Hosting;
+using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
+using Winhance.Core.Features.Common.Models;
 
 namespace Winhance.Core.Features.Common.Services
 {
@@ -71,7 +71,6 @@ namespace Winhance.Core.Features.Common.Services
         {
             _logService.Log(level, message, exception);
         }
-
 
         public string GetLogPath()
         {

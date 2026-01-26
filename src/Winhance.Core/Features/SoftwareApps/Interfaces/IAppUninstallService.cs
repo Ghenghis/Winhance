@@ -21,5 +21,5 @@ public enum UninstallMethod
     None,
     WinGet,
     Registry,
-    CustomScript
+    CustomScript,
 }

@@ -20,7 +20,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private readonly ILogService _logService;
         private static readonly Dictionary<string, (string Category, string Color)> FileTypeCategories = new()
         {
-            // Documents
+            // Documents,
             { ".pdf", ("Documents", "#E74C3C") },
             { ".doc", ("Documents", "#E74C3C") },
             { ".docx", ("Documents", "#E74C3C") },
@@ -30,8 +30,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             { ".pptx", ("Documents", "#E74C3C") },
             { ".txt", ("Documents", "#E74C3C") },
             { ".rtf", ("Documents", "#E74C3C") },
-            
-            // Images
+
+            // Images,
             { ".jpg", ("Images", "#3498DB") },
             { ".jpeg", ("Images", "#3498DB") },
             { ".png", ("Images", "#3498DB") },
@@ -41,8 +41,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             { ".webp", ("Images", "#3498DB") },
             { ".ico", ("Images", "#3498DB") },
             { ".raw", ("Images", "#3498DB") },
-            
-            // Video
+
+            // Video,
             { ".mp4", ("Video", "#9B59B6") },
             { ".avi", ("Video", "#9B59B6") },
             { ".mkv", ("Video", "#9B59B6") },
@@ -50,23 +50,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             { ".wmv", ("Video", "#9B59B6") },
             { ".flv", ("Video", "#9B59B6") },
             { ".webm", ("Video", "#9B59B6") },
-            
-            // Audio
+
+            // Audio,
             { ".mp3", ("Audio", "#1ABC9C") },
             { ".wav", ("Audio", "#1ABC9C") },
             { ".flac", ("Audio", "#1ABC9C") },
             { ".aac", ("Audio", "#1ABC9C") },
             { ".ogg", ("Audio", "#1ABC9C") },
             { ".wma", ("Audio", "#1ABC9C") },
-            
-            // Archives
+
+            // Archives,
             { ".zip", ("Archives", "#F39C12") },
             { ".rar", ("Archives", "#F39C12") },
             { ".7z", ("Archives", "#F39C12") },
             { ".tar", ("Archives", "#F39C12") },
             { ".gz", ("Archives", "#F39C12") },
-            
-            // Code
+
+            // Code,
             { ".cs", ("Code", "#2ECC71") },
             { ".js", ("Code", "#2ECC71") },
             { ".ts", ("Code", "#2ECC71") },
@@ -77,12 +77,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             { ".h", ("Code", "#2ECC71") },
             { ".rs", ("Code", "#2ECC71") },
             { ".go", ("Code", "#2ECC71") },
-            
-            // Executables
+
+            // Executables,
             { ".exe", ("Executables", "#E67E22") },
             { ".dll", ("Executables", "#E67E22") },
             { ".msi", ("Executables", "#E67E22") },
-            { ".sys", ("Executables", "#E67E22") }
+            { ".sys", ("Executables", "#E67E22") },
         };
 
         public SpaceAnalyzerService(ILogService logService)
@@ -100,7 +100,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             // Build tree structure
             result.RootNode = await BuildTreeNodeAsync(path, options, 0, progress, ct);
-            
+
             // Calculate totals
             CalculateTotals(result.RootNode, result);
 
@@ -118,44 +118,61 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             sw.Stop();
             result.AnalysisDuration = sw.Elapsed;
 
-            _logService.Log(LogLevel.Info, 
+            _logService.Log(
+                LogLevel.Info,
                 $"Space analysis complete: {result.FormattedSize} in {result.TotalFiles:N0} files");
 
             return result;
         }
 
-        private async Task<TreemapNode> BuildTreeNodeAsync(string path, SpaceAnalysisOptions options, 
+        private async Task<TreemapNode> BuildTreeNodeAsync(string path, SpaceAnalysisOptions options,
             int depth, IProgress<SpaceAnalysisProgress>? progress, CancellationToken ct)
         {
             var node = new TreemapNode
             {
                 Name = Path.GetFileName(path),
                 FullPath = path,
-                IsFile = false
+                IsFile = false,
             };
 
             if (string.IsNullOrEmpty(node.Name))
-                node.Name = path; // For drive roots
+            {
+                node.Name = path; // For drive roots,
+            }
 
-            if (depth > options.MaxDepth) return node;
+            if (depth > options.MaxDepth)
+            {
+                return node;
+            }
 
             try
             {
                 // Process files
                 foreach (var file in Directory.EnumerateFiles(path))
                 {
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
                     try
                     {
                         var fi = new FileInfo(file);
-                        
+
                         if (!options.IncludeHiddenFiles && fi.Attributes.HasFlag(FileAttributes.Hidden))
+                        {
                             continue;
+                        }
+
                         if (!options.IncludeSystemFiles && fi.Attributes.HasFlag(FileAttributes.System))
+                        {
                             continue;
+                        }
+
                         if (fi.Length < options.MinFileSize)
+                        {
                             continue;
+                        }
 
                         var ext = fi.Extension.ToLowerInvariant();
                         var (category, color) = FileTypeCategories.GetValueOrDefault(ext, ("Other", "#95A5A6"));
@@ -166,41 +183,57 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             FullPath = fi.FullName,
                             Size = fi.Length,
                             IsFile = true,
-                            Color = color
+                            Color = color,
                         });
 
                         node.Size += fi.Length;
                     }
-                    catch (UnauthorizedAccessException) { /* Skip inaccessible files */ }
-                    catch (IOException) { /* Skip inaccessible files */ }
+                    catch (UnauthorizedAccessException)
+                    { /* Skip inaccessible files */
+                    }
+                    catch (IOException)
+                    { /* Skip inaccessible files */
+                    }
                 }
 
                 // Process subdirectories
                 foreach (var dir in Directory.EnumerateDirectories(path))
                 {
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
                     try
                     {
                         var di = new DirectoryInfo(dir);
-                        
+
                         if (!options.IncludeHiddenFiles && di.Attributes.HasFlag(FileAttributes.Hidden))
+                        {
                             continue;
+                        }
+
                         if (!options.IncludeSystemFiles && di.Attributes.HasFlag(FileAttributes.System))
+                        {
                             continue;
+                        }
 
                         progress?.Report(new SpaceAnalysisProgress
                         {
                             Phase = "Scanning",
-                            CurrentPath = dir
+                            CurrentPath = dir,
                         });
 
                         var childNode = await BuildTreeNodeAsync(dir, options, depth + 1, progress, ct);
                         node.Children.Add(childNode);
                         node.Size += childNode.Size;
                     }
-                    catch (UnauthorizedAccessException) { /* Skip inaccessible directories */ }
-                    catch (IOException) { /* Skip inaccessible directories */ }
+                    catch (UnauthorizedAccessException)
+                    { /* Skip inaccessible directories */
+                    }
+                    catch (IOException)
+                    { /* Skip inaccessible directories */
+                    }
                 }
 
                 // Sort children by size descending
@@ -249,7 +282,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Path = node.FullPath,
                     Name = node.Name,
                     Extension = Path.GetExtension(node.Name),
-                    Size = node.Size
+                    Size = node.Size,
                 });
             }
             else
@@ -264,7 +297,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Size = node.Size,
                     FileCount = fileCount,
                     FolderCount = folderCount,
-                    Percentage = node.Percentage
+                    Percentage = node.Percentage,
                 });
 
                 foreach (var child in node.Children)
@@ -276,12 +309,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
         private void CountItems(TreemapNode node, ref long files, ref long folders)
         {
-            if (node.IsFile) files++;
+            if (node.IsFile)
+            {
+                files++;
+            }
             else
             {
                 folders++;
                 foreach (var child in node.Children)
+                {
                     CountItems(child, ref files, ref folders);
+                }
             }
         }
 
@@ -294,7 +332,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     var ext = g.Key;
                     var (category, color) = FileTypeCategories.GetValueOrDefault(ext, ("Other", "#95A5A6"));
                     var size = g.Sum(f => f.Size);
-                    
+
                     return new FileTypeSpaceInfo
                     {
                         Extension = ext,
@@ -302,7 +340,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         TotalSize = size,
                         FileCount = g.Count(),
                         Percentage = totalSize > 0 ? (double)size / totalSize * 100 : 0,
-                        Color = color
+                        Color = color,
                     };
                 })
                 .OrderByDescending(t => t.TotalSize)
@@ -314,13 +352,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var files = new List<FileSpaceInfo>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 try
                 {
                     foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                     {
-                        if (ct.IsCancellationRequested) break;
+                        if (ct.IsCancellationRequested)
+                        {
+                            break;
+                        }
 
                         try
                         {
@@ -331,15 +373,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 Name = fi.Name,
                                 Extension = fi.Extension,
                                 Size = fi.Length,
-                                ModifiedTime = fi.LastWriteTime
+                                ModifiedTime = fi.LastWriteTime,
                             });
                         }
-                        catch (UnauthorizedAccessException) { /* Skip inaccessible files */ }
-                    catch (IOException) { /* Skip inaccessible files */ }
+                        catch (UnauthorizedAccessException)
+                        { /* Skip inaccessible files */
+                        }
+                        catch (IOException)
+                        { /* Skip inaccessible files */
+                        }
                     }
                 }
-                catch (UnauthorizedAccessException) { /* Skip inaccessible paths */ }
-                catch (IOException) { /* Skip inaccessible paths */ }
+                catch (UnauthorizedAccessException)
+                { /* Skip inaccessible paths */
+                }
+                catch (IOException)
+                { /* Skip inaccessible paths */
+                }
             }, ct);
 
             return files.OrderByDescending(f => f.Size).Take(count);
@@ -350,13 +400,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var folders = new List<FolderSpaceInfo>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 try
                 {
                     foreach (var dir in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories))
                     {
-                        if (ct.IsCancellationRequested) break;
+                        if (ct.IsCancellationRequested)
+                        {
+                            break;
+                        }
 
                         try
                         {
@@ -365,15 +419,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             {
                                 Path = dir,
                                 Name = Path.GetFileName(dir),
-                                Size = size
+                                Size = size,
                             });
                         }
-                        catch (UnauthorizedAccessException) { /* Skip inaccessible directories */ }
-                    catch (IOException) { /* Skip inaccessible directories */ }
+                        catch (UnauthorizedAccessException)
+                        { /* Skip inaccessible directories */
+                        }
+                        catch (IOException)
+                        { /* Skip inaccessible directories */
+                        }
                     }
                 }
-                catch (UnauthorizedAccessException) { /* Skip inaccessible paths */ }
-                catch (IOException) { /* Skip inaccessible paths */ }
+                catch (UnauthorizedAccessException)
+                { /* Skip inaccessible paths */
+                }
+                catch (IOException)
+                { /* Skip inaccessible paths */
+                }
             }, ct);
 
             return folders.OrderByDescending(f => f.Size).Take(count);
@@ -386,17 +448,30 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                 {
-                    try { size += new FileInfo(file).Length; }
-                    catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                    try
+                    {
+                        size += new FileInfo(file).Length;
+                    }
+                    catch (UnauthorizedAccessException)
+                    { /* Skip inaccessible */
+                    }
+                    catch (IOException)
+                    { /* Skip inaccessible */
+                    }
                 }
             }
-            catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+            catch (UnauthorizedAccessException)
+            { /* Skip inaccessible */
+            }
+            catch (IOException)
+            { /* Skip inaccessible */
+            }
+
             return size;
         }
 
-        public async Task<IEnumerable<FileTypeSpaceInfo>> GetSpaceByFileTypeAsync(string path,
+        public async Task<IEnumerable<FileTypeSpaceInfo>> GetSpaceByFileTypeAsync(
+            string path,
             CancellationToken ct = default)
         {
             var files = await GetLargestFilesAsync(path, int.MaxValue, ct);
@@ -404,7 +479,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             return CalculateSpaceByType(files.ToList(), totalSize);
         }
 
-        public async Task<IEnumerable<AgeGroupSpaceInfo>> GetSpaceByAgeAsync(string path,
+        public async Task<IEnumerable<AgeGroupSpaceInfo>> GetSpaceByAgeAsync(
+            string path,
             CancellationToken ct = default)
         {
             var ageGroups = new Dictionary<string, (long Size, long Count, DateTime Oldest, DateTime Newest)>
@@ -415,18 +491,22 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 { "3 - 6 months", (0, 0, DateTime.MaxValue, DateTime.MinValue) },
                 { "6 months - 1 year", (0, 0, DateTime.MaxValue, DateTime.MinValue) },
                 { "1 - 2 years", (0, 0, DateTime.MaxValue, DateTime.MinValue) },
-                { "> 2 years", (0, 0, DateTime.MaxValue, DateTime.MinValue) }
+                { "> 2 years", (0, 0, DateTime.MaxValue, DateTime.MinValue) },
             };
 
             var now = DateTime.Now;
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 try
                 {
                     foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                     {
-                        if (ct.IsCancellationRequested) break;
+                        if (ct.IsCancellationRequested)
+                        {
+                            break;
+                        }
 
                         try
                         {
@@ -440,7 +520,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 < 180 => "3 - 6 months",
                                 < 365 => "6 months - 1 year",
                                 < 730 => "1 - 2 years",
-                                _ => "> 2 years"
+                                _ => "> 2 years",
                             };
 
                             var current = ageGroups[group];
@@ -448,15 +528,22 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 current.Size + fi.Length,
                                 current.Count + 1,
                                 fi.LastWriteTime < current.Oldest ? fi.LastWriteTime : current.Oldest,
-                                fi.LastWriteTime > current.Newest ? fi.LastWriteTime : current.Newest
-                            );
+                                fi.LastWriteTime > current.Newest ? fi.LastWriteTime : current.Newest);
                         }
-                        catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                        catch (UnauthorizedAccessException)
+                        { /* Skip inaccessible */
+                        }
+                        catch (IOException)
+                        { /* Skip inaccessible */
+                        }
                     }
                 }
-                catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                catch (UnauthorizedAccessException)
+                { /* Skip inaccessible */
+                }
+                catch (IOException)
+                { /* Skip inaccessible */
+                }
             }, ct);
 
             return ageGroups.Select(g => new AgeGroupSpaceInfo
@@ -465,7 +552,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 TotalSize = g.Value.Size,
                 FileCount = g.Value.Count,
                 OldestFile = g.Value.Oldest == DateTime.MaxValue ? DateTime.MinValue : g.Value.Oldest,
-                NewestFile = g.Value.Newest == DateTime.MinValue ? DateTime.MaxValue : g.Value.Newest
+                NewestFile = g.Value.Newest == DateTime.MinValue ? DateTime.MaxValue : g.Value.Newest,
             }).Where(g => g.FileCount > 0);
         }
 
@@ -474,32 +561,47 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var emptyFolders = new List<string>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 try
                 {
                     foreach (var dir in Directory.EnumerateDirectories(path, "*", option))
                     {
-                        if (ct.IsCancellationRequested) break;
+                        if (ct.IsCancellationRequested)
+                        {
+                            break;
+                        }
 
                         try
                         {
                             if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                            {
                                 emptyFolders.Add(dir);
+                            }
                         }
-                        catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                        catch (UnauthorizedAccessException)
+                        { /* Skip inaccessible */
+                        }
+                        catch (IOException)
+                        { /* Skip inaccessible */
+                        }
                     }
                 }
-                catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                catch (UnauthorizedAccessException)
+                { /* Skip inaccessible */
+                }
+                catch (IOException)
+                { /* Skip inaccessible */
+                }
             }, ct);
 
             return emptyFolders;
         }
 
-        public async Task<CleanupSuggestions> GetCleanupSuggestionsAsync(string? path = null,
+        public async Task<CleanupSuggestions> GetCleanupSuggestionsAsync(
+            string? path = null,
             CancellationToken ct = default)
         {
             var suggestions = new CleanupSuggestions();
@@ -507,7 +609,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 // Temp files
                 AddCleanupItems(suggestions.TempFiles, Path.GetTempPath(), "*", "Temporary files", CleanupRisk.Safe);
@@ -544,23 +647,30 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     Path = file,
                                     Description = $"Downloaded > 30 days ago",
                                     Size = fi.Length,
-                                    Risk = CleanupRisk.Medium
+                                    Risk = CleanupRisk.Medium,
                                 });
                             }
                         }
                     }
-                    catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                    catch (UnauthorizedAccessException)
+                    { /* Skip inaccessible */
+                    }
+                    catch (IOException)
+                    { /* Skip inaccessible */
+                    }
                 }
             }, ct);
 
             return suggestions;
         }
 
-        private void AddCleanupItems(List<CleanupItem> items, string path, string pattern, 
+        private void AddCleanupItems(List<CleanupItem> items, string path, string pattern,
             string description, CleanupRisk risk)
         {
-            if (!Directory.Exists(path)) return;
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
 
             try
             {
@@ -574,15 +684,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Path = file,
                             Description = description,
                             Size = fi.Length,
-                            Risk = risk
+                            Risk = risk,
                         });
                     }
-                    catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+                    catch (UnauthorizedAccessException)
+                    { /* Skip inaccessible */
+                    }
+                    catch (IOException)
+                    { /* Skip inaccessible */
+                    }
                 }
             }
-            catch (UnauthorizedAccessException) { /* Skip inaccessible */ }
-                    catch (IOException) { /* Skip inaccessible */ }
+            catch (UnauthorizedAccessException)
+            { /* Skip inaccessible */
+            }
+            catch (IOException)
+            { /* Skip inaccessible */
+            }
         }
     }
 }

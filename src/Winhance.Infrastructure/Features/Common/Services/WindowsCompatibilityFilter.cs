@@ -42,7 +42,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var isWindows11 = _versionService.IsWindows11();
                 var buildNumber = _versionService.GetWindowsBuildNumber();
 
-                _logService.Log(LogLevel.Debug,
+                _logService.Log(
+                    LogLevel.Debug,
                     $"Filtering settings for Windows {(isWindows11 ? "11" : "10")} build {buildNumber}");
 
                 var compatibleSettings = new List<SettingDefinition>();
@@ -51,7 +52,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 foreach (var setting in settings)
                 {
                     bool isCompatible = true;
-                    string incompatibilityReason = "";
+                    string incompatibilityReason = string.Empty;
 
                     // Check Windows version compatibility using polymorphism
                     bool isWindows10Only = false;
@@ -76,12 +77,14 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         isCompatible = false;
                         incompatibilityReason = "Windows 10 only";
                     }
+
                     // Check Windows 11 only restriction
                     else if (isWindows11Only && !isWindows11)
                     {
                         isCompatible = false;
                         incompatibilityReason = "Windows 11 only";
                     }
+
                     // Check build ranges (takes precedence over min/max if specified)
                     else if (supportedRanges?.Count > 0)
                     {
@@ -95,12 +98,14 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             incompatibilityReason = $"build not in supported ranges: {rangesStr}";
                         }
                     }
+
                     // Check minimum build number
                     else if (minimumBuild.HasValue && buildNumber < minimumBuild.Value)
                     {
                         isCompatible = false;
                         incompatibilityReason = $"requires build >= {minimumBuild.Value}";
                     }
+
                     // Check maximum build number
                     else if (maximumBuild.HasValue && buildNumber > maximumBuild.Value)
                     {
@@ -115,14 +120,16 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     else
                     {
                         filteredCount++;
-                        _logService.Log(LogLevel.Debug,
+                        _logService.Log(
+                            LogLevel.Debug,
                             $"Filtered out setting '{setting.Id}': {incompatibilityReason}");
                     }
                 }
 
                 if (filteredCount > 0)
                 {
-                    _logService.Log(LogLevel.Debug,
+                    _logService.Log(
+                        LogLevel.Debug,
                         $"Filtered out {filteredCount} incompatible settings. {compatibleSettings.Count} settings remain.");
                 }
 
@@ -130,7 +137,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
             catch (Exception ex)
             {
-                _logService.Log(LogLevel.Error,
+                _logService.Log(
+                    LogLevel.Error,
                     $"Error filtering settings by Windows version: {ex.Message}. Returning all settings.");
                 return settings;
             }
@@ -171,7 +179,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                     if (!inRange)
                     {
-                        var rangeText = string.Join(" or ",
+                        var rangeText = string.Join(
+                            " or ",
                             setting.SupportedBuildRanges.Select(r => $"{r.MinBuild}-{r.MaxBuild}"));
                         compatibilityMessage = $"Compatibility_BuildRange|{rangeText}";
                     }
@@ -188,7 +197,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                     var updatedProperties = new Dictionary<string, object>(setting.CustomProperties)
                     {
-                        [Winhance.Core.Features.Common.Constants.CustomPropertyKeys.VersionCompatibilityMessage] = compatibilityMessage
+                        [Winhance.Core.Features.Common.Constants.CustomPropertyKeys.VersionCompatibilityMessage] = compatibilityMessage,
                     };
 
                     yield return setting with { CustomProperties = updatedProperties };

@@ -29,20 +29,20 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         /// <inheritdoc/>
         public async Task<VerificationResult> VerifyInstallationAsync(
             string packageId,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageId))
+            {
                 throw new ArgumentException(
                     "Package ID cannot be null or whitespace.",
-                    nameof(packageId)
-                );
+                    nameof(packageId));
+            }
 
             // Add a short delay before verification to allow Windows to complete registration
             await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
 
             var results = new List<VerificationResult>();
-            VerificationResult successfulResult = null;
+            VerificationResult? successfulResult = null;
 
             // Try verification with up to 3 attempts with increasing delays
             for (int attempt = 1; attempt <= 3; attempt++)
@@ -64,7 +64,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                         if (result.IsVerified)
                         {
                             successfulResult = result;
-                            break; // Stop at first successful verification
+                            break; // Stop at first successful verification,
                         }
                     }
                     catch (OperationCanceledException)
@@ -74,14 +74,15 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     catch (Exception ex)
                     {
                         results.Add(
-                            VerificationResult.Failure($"Error in {method.Name}: {ex.Message}")
-                        );
+                            VerificationResult.Failure($"Error in {method.Name}: {ex.Message}"));
                     }
                 }
 
                 // If we found a successful result, return it immediately
                 if (successfulResult != null)
+                {
                     return successfulResult;
+                }
 
                 // If this isn't the last attempt, wait before trying again
                 if (attempt < 3)
@@ -111,22 +112,24 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         public async Task<VerificationResult> VerifyInstallationAsync(
             string packageId,
             string version,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageId))
+            {
                 throw new ArgumentException(
                     "Package ID cannot be null or whitespace.",
-                    nameof(packageId)
-                );
+                    nameof(packageId));
+            }
+
             if (string.IsNullOrWhiteSpace(version))
+            {
                 throw new ArgumentException(
                     "Version cannot be null or whitespace.",
-                    nameof(version)
-                );
+                    nameof(version));
+            }
 
             var results = new List<VerificationResult>();
-            VerificationResult successfulResult = null;
+            VerificationResult? successfulResult = null;
 
             foreach (var method in _verificationMethods)
             {
@@ -141,7 +144,8 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     if (result.IsVerified)
                     {
                         successfulResult = result;
-                        // Don't break here, as we want to try all methods to find an exact version match
+
+                        // Don't break here, as we want to try all methods to find an exact version match,
                     }
                 }
                 catch (OperationCanceledException)
@@ -151,22 +155,22 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                 catch (Exception ex)
                 {
                     results.Add(
-                        VerificationResult.Failure($"Error in {method.Name}: {ex.Message}")
-                    );
+                        VerificationResult.Failure($"Error in {method.Name}: {ex.Message}"));
                 }
             }
 
             // If we found a successful result, return it
             if (successfulResult != null)
+            {
                 return successfulResult;
+            }
 
             // Check if any method found the package but with a different version
             var versionMismatch = results.FirstOrDefault(r =>
                 r.IsVerified
                 && r.AdditionalInfo is IDictionary<string, object> info
                 && info.ContainsKey("Version")
-                && info["Version"]?.ToString() != version
-            );
+                && info["Version"]?.ToString() != version);
 
             if (versionMismatch != null)
             {
@@ -176,8 +180,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                     ]?.ToString() ?? "unknown";
                 return VerificationResult.Failure(
                     $"Version mismatch for '{packageId}'. Installed: {installedVersion}, Expected: {version}",
-                    versionMismatch.MethodUsed
-                );
+                    versionMismatch.MethodUsed);
             }
 
             // Otherwise, return a composite result with all the failures

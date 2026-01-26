@@ -24,6 +24,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 await ApplyThemeModeWindowsAsync(setting, index, applyWallpaper: additionalContext);
                 return true;
             }
+
             return false;
         }
 
@@ -43,7 +44,9 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         public async Task ApplyThemeModeWindowsAsync(SettingDefinition setting, object value, bool applyWallpaper = false)
         {
             if (value is not int selectionIndex)
+            {
                 throw new ArgumentException("Expected integer selection index for theme mode");
+            }
 
             logService.Log(LogLevel.Info, $"[WindowsThemeService] Applying theme mode - Index: {selectionIndex}, ApplyWallpaper: {applyWallpaper}");
 

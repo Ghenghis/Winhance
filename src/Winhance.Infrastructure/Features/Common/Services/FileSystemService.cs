@@ -44,6 +44,7 @@ namespace Winhance.Infrastructure.FileSystem
                 {
                     Directory.CreateDirectory(path);
                 }
+
                 return true;
             }
             catch (Exception)
@@ -220,6 +221,7 @@ namespace Winhance.Infrastructure.FileSystem
                 {
                     File.Delete(path);
                 }
+
                 return true;
             }
             catch (Exception)
@@ -276,6 +278,7 @@ namespace Winhance.Infrastructure.FileSystem
             {
                 return Environment.GetFolderPath(folder);
             }
+
             return string.Empty;
         }
 

@@ -22,6 +22,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     return IsWindows11() ? "Windows 11" : "Windows 10";
                 }
+
                 return $"Windows {os.Version}";
             }
             catch (Exception ex)
@@ -59,15 +60,21 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 var os = Environment.OSVersion;
-                if (os.Version.Major != 10) return false;
+                if (os.Version.Major != 10)
+                {
+                    return false;
+                }
 
                 // Check build number first (most reliable)
-                if (os.Version.Build >= 22000) return true;
+                if (os.Version.Build >= 22000)
+                {
+                    return true;
+                }
 
                 // Fallback to registry check
                 using var key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
-                var productName = key?.GetValue("ProductName")?.ToString() ?? "";
-                return productName.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0;
+                var productName = key?.GetValue("ProductName")?.ToString() ?? string.Empty;
+                return productName.IndexOf("Windows 11") >= 0;
             }
             catch (Exception ex)
             {

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using System.Timers;
 using Winhance.Core.Features.Agents.Interfaces;
 using Winhance.Core.Features.Agents.Models;
-using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
 
 namespace Winhance.Infrastructure.Features.Agents.Services
 {
@@ -27,7 +27,9 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         private const int MaxCompletedHistory = 50;
 
         public event EventHandler<AgentTaskEventArgs>? TaskUpdated;
+
         public event EventHandler<AgentTaskEventArgs>? TaskQueued;
+
         public event EventHandler<AgentTaskEventArgs>? TaskCompleted;
 
         public AgentOrchestrationService(ILogService logService)
@@ -41,10 +43,10 @@ namespace Winhance.Infrastructure.Features.Agents.Services
             _statusUpdateTimer.Start();
         }
 
-        public IReadOnlyList<AgentTask> ActiveTasks => 
+        public IReadOnlyList<AgentTask> ActiveTasks =>
             _tasks.Values.Where(t => t.Status == AgentTaskStatus.Running).ToList();
 
-        public IReadOnlyList<AgentTask> QueuedTasks => 
+        public IReadOnlyList<AgentTask> QueuedTasks =>
             _tasks.Values.Where(t => t.Status == AgentTaskStatus.Queued || t.Status == AgentTaskStatus.Pending).ToList();
 
         public IReadOnlyList<AgentTask> CompletedTasks
@@ -97,11 +99,15 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public void UpdateProgress(string taskId, int processedItems, string? currentAction = null)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return;
+            }
 
             task.ProcessedItems = processedItems;
             if (!string.IsNullOrEmpty(currentAction))
+            {
                 task.CurrentAction = currentAction;
+            }
 
             TaskUpdated?.Invoke(this, new AgentTaskEventArgs(task));
         }
@@ -109,11 +115,15 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public void UpdateProgressBytes(string taskId, long processedBytes, string? currentAction = null)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return;
+            }
 
             task.ProcessedBytes = processedBytes;
             if (!string.IsNullOrEmpty(currentAction))
+            {
                 task.CurrentAction = currentAction;
+            }
 
             TaskUpdated?.Invoke(this, new AgentTaskEventArgs(task));
         }
@@ -121,7 +131,9 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public Task PauseTaskAsync(string taskId)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return Task.CompletedTask;
+            }
 
             if (task.Status == AgentTaskStatus.Running && task.CanPause)
             {
@@ -136,7 +148,9 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public Task ResumeTaskAsync(string taskId)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return Task.CompletedTask;
+            }
 
             if (task.Status == AgentTaskStatus.Paused)
             {
@@ -151,7 +165,9 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public Task CancelTaskAsync(string taskId, string? reason = null)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return Task.CompletedTask;
+            }
 
             if (task.CanCancel && task.Status != AgentTaskStatus.Completed)
             {
@@ -175,13 +191,16 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public void CompleteTask(string taskId, bool success = true, string? message = null)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return;
+            }
 
             task.Status = success ? AgentTaskStatus.Completed : AgentTaskStatus.Failed;
             task.CompletedAt = DateTime.UtcNow;
 
             MoveToCompleted(task);
-            _logService.Log(LogLevel.Info, 
+            _logService.Log(
+                LogLevel.Info,
                 $"Agent task completed: {task.AgentName} - {task.ProcessedItems}/{task.TotalItems} items");
             TaskCompleted?.Invoke(this, new AgentTaskEventArgs(task, message ?? "Task completed"));
         }
@@ -189,7 +208,9 @@ namespace Winhance.Infrastructure.Features.Agents.Services
         public void FailTask(string taskId, string errorMessage)
         {
             if (!_tasks.TryGetValue(taskId, out var task))
+            {
                 return;
+            }
 
             task.Status = AgentTaskStatus.Failed;
             task.CompletedAt = DateTime.UtcNow;
@@ -248,6 +269,7 @@ namespace Winhance.Infrastructure.Features.Agents.Services
             {
                 cts.Dispose();
             }
+
             _cancellationTokens.Clear();
         }
     }

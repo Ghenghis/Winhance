@@ -4,7 +4,8 @@ namespace Winhance.Core.Models.Exceptions
 {
     public class InstallationStatusException : Exception
     {
-        public InstallationStatusException(string message) : base(message)
+        public InstallationStatusException(string message)
+            : base(message)
         {
         }
 

@@ -8,10 +8,10 @@ using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic.FileIO;
 using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.FileManager.Interfaces;
-using Microsoft.VisualBasic.FileIO;
 
 namespace Winhance.Infrastructure.Features.FileManager.Services
 {
@@ -33,7 +33,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // BULK COPY - High performance with verification
         // ====================================================================
-
         public async Task<BulkOperationResult> BulkCopyAsync(IEnumerable<string> sources, string destination,
             BulkCopyOptions options, IProgress<BulkProgress>? progress = null, CancellationToken ct = default)
         {
@@ -49,8 +48,11 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var source in sourceList)
             {
-                if (ct.IsCancellationRequested) break;
-                
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 try
                 {
                     var fileName = Path.GetFileName(source);
@@ -101,7 +103,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         TotalFiles = totalFiles,
                         CurrentFileName = fileName,
                         BytesProcessed = totalBytes,
-                        Phase = "Copying"
+                        Phase = "Copying",
                     });
                 }
                 catch (Exception ex)
@@ -132,7 +134,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             using var sha = System.Security.Cryptography.SHA256.Create();
             await using var stream = File.OpenRead(path);
             var hash = await sha.ComputeHashAsync(stream, ct);
-            return BitConverter.ToString(hash).Replace("-", "");
+            return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
         }
 
         private void CopyDirectory(string source, string dest, bool preserveTimestamps)
@@ -149,6 +151,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     File.SetLastWriteTime(destFile, fi.LastWriteTime);
                 }
             }
+
             foreach (var dir in Directory.GetDirectories(source))
             {
                 CopyDirectory(dir, Path.Combine(dest, Path.GetFileName(dir)), preserveTimestamps);
@@ -157,7 +160,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
         private string? HandleCollision(string path, CollisionHandling handling)
         {
-            if (!File.Exists(path) && !Directory.Exists(path)) return path;
+            if (!File.Exists(path) && !Directory.Exists(path))
+            {
+                return path;
+            }
 
             return handling switch
             {
@@ -165,13 +171,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 CollisionHandling.Overwrite => path,
                 CollisionHandling.OverwriteIfNewer => path, // Caller handles logic
                 CollisionHandling.Rename or CollisionHandling.RenameWithNumber => GetUniqueFileName(path),
-                _ => path
+                _ => path,
             };
         }
 
         private string GetUniqueFileName(string path)
         {
-            var dir = Path.GetDirectoryName(path) ?? "";
+            var dir = Path.GetDirectoryName(path) ?? string.Empty;
             var name = Path.GetFileNameWithoutExtension(path);
             var ext = Path.GetExtension(path);
             var counter = 1;
@@ -180,13 +186,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 path = Path.Combine(dir, $"{name} ({counter++}){ext}");
             }
+
             return path;
         }
 
         // ====================================================================
         // BULK MOVE
         // ====================================================================
-
         public async Task<BulkOperationResult> BulkMoveAsync(IEnumerable<string> sources, string destination,
             CollisionHandling collision, IProgress<BulkProgress>? progress = null, CancellationToken ct = default)
         {
@@ -198,7 +204,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var source in sourceList)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 try
                 {
@@ -237,7 +246,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // BULK DELETE
         // ====================================================================
-
         public async Task<BulkOperationResult> BulkDeleteAsync(IEnumerable<string> paths, DeleteOptions options,
             IProgress<BulkProgress>? progress = null, CancellationToken ct = default)
         {
@@ -247,7 +255,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var path in pathList)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 try
                 {
@@ -267,6 +278,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             {
                                 File.SetAttributes(path, FileAttributes.Normal);
                             }
+
                             File.Delete(path);
                         }
                     }
@@ -310,11 +322,16 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
                 while (stream.Position < length)
                 {
-                    if (ct.IsCancellationRequested) return;
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     random.NextBytes(buffer);
                     var bytesToWrite = (int)Math.Min(buffer.Length, length - stream.Position);
                     await stream.WriteAsync(buffer.AsMemory(0, bytesToWrite), ct);
                 }
+
                 await stream.FlushAsync(ct);
             }
 
@@ -324,8 +341,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // SMART RENAME
         // ====================================================================
-
-        public async Task<IEnumerable<SmartRenameResult>> SmartRenameAsync(IEnumerable<string> files,
+        public async Task<IEnumerable<SmartRenameResult>> SmartRenameAsync(
+            IEnumerable<string> files,
             SmartRenamePattern pattern, CancellationToken ct = default)
         {
             var results = new List<SmartRenameResult>();
@@ -333,13 +350,16 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var file in files)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 var result = new SmartRenameResult { OriginalPath = file };
                 try
                 {
                     var newName = ApplyPattern(file, pattern, counter++);
-                    var dir = Path.GetDirectoryName(file) ?? "";
+                    var dir = Path.GetDirectoryName(file) ?? string.Empty;
                     var newPath = Path.Combine(dir, newName);
 
                     if (newPath != file)
@@ -359,6 +379,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     result.Success = false;
                     result.Error = ex.Message;
                 }
+
                 results.Add(result);
             }
 
@@ -382,7 +403,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     OriginalName = originalName,
                     NewName = newName,
                     HasConflict = hasConflict,
-                    ConflictReason = hasConflict ? "Duplicate name" : null
+                    ConflictReason = hasConflict ? "Duplicate name" : null,
                 });
 
                 usedNames.Add(newName);
@@ -398,9 +419,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var fileInfo = new FileInfo(filePath);
 
             var result = pattern.Pattern
-                .Replace("{name}", name)
+                .Replace("{name}", name, StringComparison.Ordinal)
                 .Replace("{ext}", ext.TrimStart('.'))
-                .Replace("{counter}", counter.ToString().PadLeft(pattern.CounterPadding, '0'))
+                .Replace("{counter}", counter.ToString().PadLeft(pattern.CounterPadding, '0'), StringComparison.Ordinal)
                 .Replace("{date}", fileInfo.LastWriteTime.ToString(pattern.DateFormat))
                 .Replace("{created}", fileInfo.CreationTime.ToString(pattern.DateFormat))
                 .Replace("{size}", fileInfo.Length.ToString());
@@ -415,7 +436,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 CaseTransform.LowerCase => result.ToLowerInvariant(),
                 CaseTransform.UpperCase => result.ToUpperInvariant(),
                 CaseTransform.TitleCase => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(result.ToLower()),
-                _ => result
+                _ => result,
             };
 
             if (pattern.TrimSpaces)
@@ -434,16 +455,20 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // FILE ATTRIBUTES
         // ====================================================================
-
         public async Task<int> SetAttributesAsync(IEnumerable<string> paths, FileAttributeChanges changes,
             bool recursive = false, CancellationToken ct = default)
         {
             int count = 0;
             foreach (var path in paths)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 count += SetAttributesRecursive(path, changes, recursive);
             }
+
             return count;
         }
 
@@ -453,13 +478,24 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var attr = File.GetAttributes(path);
 
             if (changes.Hidden.HasValue)
+            {
                 attr = changes.Hidden.Value ? attr | FileAttributes.Hidden : attr & ~FileAttributes.Hidden;
+            }
+
             if (changes.ReadOnly.HasValue)
+            {
                 attr = changes.ReadOnly.Value ? attr | FileAttributes.ReadOnly : attr & ~FileAttributes.ReadOnly;
+            }
+
             if (changes.System.HasValue)
+            {
                 attr = changes.System.Value ? attr | FileAttributes.System : attr & ~FileAttributes.System;
+            }
+
             if (changes.Archive.HasValue)
+            {
                 attr = changes.Archive.Value ? attr | FileAttributes.Archive : attr & ~FileAttributes.Archive;
+            }
 
             File.SetAttributes(path, attr);
             count++;
@@ -467,9 +503,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             if (recursive && Directory.Exists(path))
             {
                 foreach (var file in Directory.GetFiles(path))
+                {
                     count += SetAttributesRecursive(file, changes, false);
+                }
+
                 foreach (var dir in Directory.GetDirectories(path))
+                {
                     count += SetAttributesRecursive(dir, changes, true);
+                }
             }
 
             return count;
@@ -481,32 +522,45 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             int count = 0;
             foreach (var path in paths)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 if (changes.CreatedTime.HasValue)
+                {
                     File.SetCreationTime(path, changes.CreatedTime.Value);
+                }
+
                 if (changes.ModifiedTime.HasValue)
+                {
                     File.SetLastWriteTime(path, changes.ModifiedTime.Value);
+                }
+
                 if (changes.AccessedTime.HasValue)
+                {
                     File.SetLastAccessTime(path, changes.AccessedTime.Value);
+                }
+
                 count++;
             }
+
             return count;
         }
 
         // ====================================================================
         // PATH OPERATIONS
         // ====================================================================
-
         public void CopyPathToClipboard(string path, PathFormat format = PathFormat.Windows)
         {
             var formattedPath = format switch
             {
-                PathFormat.Unix => path.Replace('\\', '/').Replace("C:", "/c"),
+                PathFormat.Unix => path.Replace('\\', '/').Replace("C:", "/c", StringComparison.Ordinal),
                 PathFormat.Uri => new Uri(path).AbsoluteUri,
                 PathFormat.Escaped => path.Replace("\\", "\\\\"),
                 PathFormat.FileName => Path.GetFileName(path),
                 PathFormat.Directory => Path.GetDirectoryName(path) ?? path,
-                _ => path
+                _ => path,
             };
 
             System.Windows.Clipboard.SetText(formattedPath);
@@ -515,7 +569,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         public async Task<bool> CopyFileContentsToClipboardAsync(string path, int maxSizeKb = 100)
         {
             var fileInfo = new FileInfo(path);
-            if (fileInfo.Length > maxSizeKb * 1024) return false;
+            if (fileInfo.Length > maxSizeKb * 1024)
+            {
+                return false;
+            }
 
             var contents = await File.ReadAllTextAsync(path);
             System.Windows.Clipboard.SetText(contents);
@@ -531,7 +588,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 TerminalType.PowerShell => ("powershell.exe", $"-NoExit -Command \"Set-Location '{dir}'\""),
                 TerminalType.WindowsTerminal => ("wt.exe", $"-d \"{dir}\""),
                 TerminalType.GitBash => ("git-bash.exe", $"--cd=\"{dir}\""),
-                _ => ("powershell.exe", $"-NoExit -Command \"Set-Location '{dir}'\"")
+                _ => ("powershell.exe", $"-NoExit -Command \"Set-Location '{dir}'\""),
             };
 
             Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = true });
@@ -545,7 +602,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // SYMBOLIC LINKS
         // ====================================================================
-
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, int dwFlags);
 
@@ -573,7 +629,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     FileName = "cmd.exe",
                     Arguments = $"/c mklink /J \"{linkPath}\" \"{targetPath}\"",
                     CreateNoWindow = true,
-                    UseShellExecute = false
+                    UseShellExecute = false,
                 });
                 process?.WaitForExit();
                 return Task.FromResult(Directory.Exists(linkPath));
@@ -591,13 +647,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 return fileInfo.LinkTarget;
             }
+
             return null;
         }
 
         // ====================================================================
         // FILE SPLITTING/JOINING
         // ====================================================================
-
         public async Task<IEnumerable<string>> SplitFileAsync(string path, long partSizeBytes,
             IProgress<BulkProgress>? progress = null, CancellationToken ct = default)
         {
@@ -611,7 +667,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             for (int i = 0; i < totalParts; i++)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 var partPath = $"{baseName}.{i + 1:D3}";
                 parts.Add(partPath);
@@ -623,7 +682,11 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     var toRead = (int)Math.Min(buffer.Length, remaining);
                     var read = await source.ReadAsync(buffer.AsMemory(0, toRead), ct);
-                    if (read == 0) break;
+                    if (read == 0)
+                    {
+                        break;
+                    }
+
                     await dest.WriteAsync(buffer.AsMemory(0, read), ct);
                     remaining -= read;
                 }
@@ -632,7 +695,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     CurrentFile = i + 1,
                     TotalFiles = totalParts,
-                    Phase = "Splitting"
+                    Phase = "Splitting",
                 });
             }
 
@@ -649,7 +712,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var part in partList)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 await using var input = File.OpenRead(part);
                 int read;
@@ -662,7 +728,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     CurrentFile = ++current,
                     TotalFiles = partList.Count,
-                    Phase = "Joining"
+                    Phase = "Joining",
                 });
             }
 
@@ -672,7 +738,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         // ====================================================================
         // OWNERSHIP
         // ====================================================================
-
         public async Task<bool> TakeOwnershipAsync(string path, bool recursive = false)
         {
             try
@@ -683,7 +748,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Arguments = recursive ? $"/F \"{path}\" /R /D Y" : $"/F \"{path}\"",
                     CreateNoWindow = true,
                     UseShellExecute = false,
-                    Verb = "runas"
+                    Verb = "runas",
                 });
                 await (process?.WaitForExitAsync() ?? Task.CompletedTask);
                 return process?.ExitCode == 0;
@@ -707,7 +772,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Arguments = args,
                     CreateNoWindow = true,
                     UseShellExecute = false,
-                    Verb = "runas"
+                    Verb = "runas",
                 });
                 await (process?.WaitForExitAsync() ?? Task.CompletedTask);
                 return process?.ExitCode == 0;

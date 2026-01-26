@@ -22,8 +22,7 @@ namespace Winhance.Core.Features.Customize.Models
                 {
                     return System.IO.Path.Combine(
                         Windows11BasePath,
-                        isDarkMode ? Windows11DarkWallpaper : Windows11LightWallpaper
-                    );
+                        isDarkMode ? Windows11DarkWallpaper : Windows11LightWallpaper);
                 }
 
                 return Windows10Wallpaper;

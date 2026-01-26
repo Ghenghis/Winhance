@@ -13,7 +13,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         private static readonly int[] LaptopChassisTypes = new int[]
         {
-            3, 8, 9, 10, 11, 14, 30, 31, 32
+            3, 8, 9, 10, 11, 14, 30, 31, 32,
         };
 
         public HardwareDetectionService(ILogService logService)
@@ -49,7 +49,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     using var collection = searcher.Get();
 
                     if (collection.Count == 0)
+                    {
                         return null;
+                    }
 
                     foreach (ManagementObject mo in collection)
                     {
@@ -76,7 +78,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     using var collection = searcher.Get();
 
                     if (collection.Count == 0)
+                    {
                         return false;
+                    }
 
                     foreach (ManagementObject battery in collection)
                     {
@@ -112,9 +116,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             {
                                 int pcSystemType = Convert.ToInt32(system["PCSystemType"]);
                                 if (pcSystemType == 2)
+                                {
                                     return true;
+                                }
                                 else if (pcSystemType == 1)
+                                {
                                     return false;
+                                }
                             }
                         }
                     }
@@ -130,7 +138,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                                 {
                                     int type = Convert.ToInt32(chassisType);
                                     if (LaptopChassisTypes.Contains(type))
+                                    {
                                         return true;
+                                    }
                                 }
                             }
                         }
@@ -156,7 +166,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     var hasLid = await HasLidAsync();
 
                     if (hasBattery && hasLid)
+                    {
                         return true;
+                    }
 
                     using var searcher = new ManagementObjectSearcher("SELECT * FROM WmiMonitorBrightness");
                     using var collection = searcher.Get();

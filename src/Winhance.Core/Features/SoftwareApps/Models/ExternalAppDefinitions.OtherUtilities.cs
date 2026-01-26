@@ -20,7 +20,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "GlennDelahoy.SnappyDriverInstallerOrigin",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://www.snappy-driver-installer.org/"
+                            WebsiteUrl = "https://www.snappy-driver-installer.org/",
                         },
                         new ItemDefinition
                         {
@@ -30,7 +30,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "XPDLS1XBTXVPP4",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://www.wisecleaner.com/wise-registry-cleaner.html"
+                            WebsiteUrl = "https://www.wisecleaner.com/wise-registry-cleaner.html",
                         },
                         new ItemDefinition
                         {
@@ -40,7 +40,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "MartiCliment.UniGetUI",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://www.marticliment.com/unigetui/"
+                            WebsiteUrl = "https://www.marticliment.com/unigetui/",
                         },
                         new ItemDefinition
                         {
@@ -50,7 +50,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "OpenRGB.OpenRGB",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://openrgb.org/"
+                            WebsiteUrl = "https://openrgb.org/",
                         },
                         new ItemDefinition
                         {
@@ -60,7 +60,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "AppWork.JDownloader",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://jdownloader.org/"
+                            WebsiteUrl = "https://jdownloader.org/",
                         },
                         new ItemDefinition
                         {
@@ -70,7 +70,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "OpenAudible.OpenAudible",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://openaudible.org/"
+                            WebsiteUrl = "https://openaudible.org/",
                         },
                         new ItemDefinition
                         {
@@ -80,7 +80,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "Cyanfish.NAPS2",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://www.naps2.com/"
+                            WebsiteUrl = "https://www.naps2.com/",
                         },
                         new ItemDefinition
                         {
@@ -90,9 +90,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Other Utilities",
                             WinGetPackageId = "Oracle.VirtualBox",
                             Category = "Other Utilities",
-                            WebsiteUrl = "https://www.virtualbox.org/"
-                        }
-                    }
+                            WebsiteUrl = "https://www.virtualbox.org/",
+                        },
+                    },
                 };
             }
         }

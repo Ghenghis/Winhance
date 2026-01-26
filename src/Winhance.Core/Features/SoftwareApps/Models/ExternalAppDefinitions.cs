@@ -32,7 +32,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
             {
                 Name = "External Apps",
                 FeatureId = FeatureIds.ExternalApps,
-                Items = allItems
+                Items = allItems,
             };
         }
     }

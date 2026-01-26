@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "Python.Python.3.13",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://www.python.org/"
+                            WebsiteUrl = "https://www.python.org/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "Notepad++.Notepad++",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://notepad-plus-plus.org/"
+                            WebsiteUrl = "https://notepad-plus-plus.org/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "WinSCP.WinSCP",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://winscp.net/"
+                            WebsiteUrl = "https://winscp.net/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "PuTTY.PuTTY",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://www.putty.org/"
+                            WebsiteUrl = "https://www.putty.org/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "WinMerge.WinMerge",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://winmerge.org/"
+                            WebsiteUrl = "https://winmerge.org/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "EclipseFoundation.EclipseIDEforJavaDevelopers",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://www.eclipse.org/"
+                            WebsiteUrl = "https://www.eclipse.org/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "Microsoft.VisualStudioCode",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://code.visualstudio.com/"
+                            WebsiteUrl = "https://code.visualstudio.com/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "Git.Git",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://git-scm.com/"
+                            WebsiteUrl = "https://git-scm.com/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "GitHub.GitHubDesktop",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://desktop.github.com/"
+                            WebsiteUrl = "https://desktop.github.com/",
                         },
                         new ItemDefinition
                         {
@@ -113,9 +113,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Development Apps",
                             WinGetPackageId = "Meld.Meld",
                             Category = "Development Apps",
-                            WebsiteUrl = "https://meldmerge.org/"
-                        }
-                    }
+                            WebsiteUrl = "https://meldmerge.org/",
+                        },
+                    },
                 };
             }
         }

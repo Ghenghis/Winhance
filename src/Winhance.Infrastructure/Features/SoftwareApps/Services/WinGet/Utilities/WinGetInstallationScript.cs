@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
 
-
 namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilities
 {
     public static class WinGetInstallationScript
@@ -21,11 +20,11 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]""Administrator"")) {
     Try {
         Start-Process PowerShell.exe -ArgumentList (""-NoProfile -ExecutionPolicy Bypass -File `""{0}`"""" -f $PSCommandPath) -Verb RunAs
-        Exit
+        Exit,
     }
     Catch {
         Write-Host ""Failed to run as Administrator. Please rerun with elevated privileges.""
-        Exit
+        Exit,
     }
 }
 
@@ -35,7 +34,7 @@ $logFile = ""$logFolder\WinGetInstallationLog.txt""
 
 # Create log directory if it doesn't exist
 if (!(Test-Path $logFolder)) {
-    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null
+    New-Item -ItemType Directory -Path $logFolder -Force | Out-Null,
 }
 
 # Function to write to log file
@@ -48,14 +47,14 @@ function Write-Log {
     if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 512000) {
         Remove-Item $logFile -Force -ErrorAction SilentlyContinue
         $timestamp = Get-Date -Format ""yyyy-MM-dd HH:mm:ss""
-        ""$timestamp - Log rotated - previous log exceeded 500KB"" | Out-File -FilePath $logFile
+        ""$timestamp - Log rotated - previous log exceeded 500KB"" | Out-File -FilePath $logFile,
     }
     
     $timestamp = Get-Date -Format ""yyyy-MM-dd HH:mm:ss""
     ""$timestamp - $Message"" | Out-File -FilePath $logFile -Append
     
     # Also output to console for real-time progress
-    Write-Host $Message
+    Write-Host $Message,
 }
 
 # Function to download files with progress tracking
@@ -85,7 +84,7 @@ function Get-FileFromWeb {
         # Log completion to file
         if ($Complete -or $percentComplete -ge 100) {
             Write-Host """" # New line after progress bar
-            Write-Log ""$ProgressText completed (100%)""
+            Write-Log ""$ProgressText completed (100%)"",
         }
     }
     
@@ -97,21 +96,21 @@ function Get-FileFromWeb {
         $response = $request.GetResponse()
         
         if ($response.StatusCode -eq 401 -or $response.StatusCode -eq 403 -or $response.StatusCode -eq 404) {
-            throw ""Remote file either doesn't exist, is unauthorized, or is forbidden for '$URL'.""
+            throw ""Remote file either doesn't exist, is unauthorized, or is forbidden for '$URL'."",
         }
         
         if ($File -match '^\\.(\\|\\/)')  {
-            $File = Join-Path (Get-Location -PSProvider 'FileSystem') ($File -Split '^\\.(\\|\\/)')
+            $File = Join-Path (Get-Location -PSProvider 'FileSystem') ($File -Split '^\\.(\\|\\/)'),
         }
         
         if ($File -and !(Split-Path $File)) {
-            $File = Join-Path (Get-Location -PSProvider 'FileSystem') $File
+            $File = Join-Path (Get-Location -PSProvider 'FileSystem') $File,
         }
         
         if ($File) {
             $fileDirectory = $([System.IO.Path]::GetDirectoryName($File))
             if (!(Test-Path($fileDirectory))) {
-                [System.IO.Directory]::CreateDirectory($fileDirectory) | Out-Null
+                [System.IO.Directory]::CreateDirectory($fileDirectory) | Out-Null,
             }
         }
         
@@ -133,20 +132,20 @@ function Get-FileFromWeb {
             $now = Get-Date
             if ($fullSize -gt 0 -and ($now - $lastProgressTime).TotalMilliseconds -gt 500) {
                 Show-Progress -TotalValue $fullSize -CurrentValue $total -ProgressText ""Downloading $fileName""
-                $lastProgressTime = $now
+                $lastProgressTime = $now,
             }
         } while ($count -gt 0)
         
         # Show final progress
         if ($fullSize -gt 0) {
-            Show-Progress -TotalValue $fullSize -CurrentValue $total -ProgressText ""Downloading $fileName"" -Complete
+            Show-Progress -TotalValue $fullSize -CurrentValue $total -ProgressText ""Downloading $fileName"" -Complete,
         }
         
-        Write-Log ""Successfully downloaded: $fileName ($total bytes)""
+        Write-Log ""Successfully downloaded: $fileName ($total bytes)"",
     }
     catch {
         Write-Log ""Failed to download $fileName : $($_.Exception.Message)""
-        throw
+        throw,
     }
     finally {
         if ($reader) { $reader.Close() }
@@ -154,7 +153,7 @@ function Get-FileFromWeb {
     }
 }
 
-$tempDir = Join-Path $env:TEMP ""WinGetInstall""
+$tempDir = Join-Path $env:TEMP ""WinGetInstall"",
 if (Test-Path $tempDir) { Remove-Item -Path $tempDir -Recurse -Force }
 New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
 
@@ -165,10 +164,10 @@ try {
     $files = @{
         Dependencies = ""$baseUrl/DesktopAppInstaller_Dependencies.zip""
         Installer = ""$baseUrl/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle""
-        License = ""$baseUrl/e53e159d00e04f729cc2180cffd1c02e_License1.xml""
+        License = ""$baseUrl/e53e159d00e04f729cc2180cffd1c02e_License1.xml"",
     }
     
-    Write-Log ""Downloading WinGet components from GitHub...""
+    Write-Log ""Downloading WinGet components from GitHub..."",
     $paths = @{}
     
     foreach ($key in $files.Keys) {
@@ -176,11 +175,11 @@ try {
         Write-Log ""Starting $key download...""
         try {
             Get-FileFromWeb -URL $files[$key] -File $paths[$key]
-            Write-Log ""$key download completed""
+            Write-Log ""$key download completed"",
         }
         catch {
             Write-Log ""Failed to download $key : $($_.Exception.Message)""
-            throw
+            throw,
         }
     }
     
@@ -188,11 +187,11 @@ try {
     $extractPath = Join-Path $tempDir ""Dependencies""
     try {
         Expand-Archive -Path $paths.Dependencies -DestinationPath $extractPath -Force
-        Write-Log ""Dependencies extracted successfully""
+        Write-Log ""Dependencies extracted successfully"",
     }
     catch {
         Write-Log ""Failed to extract dependencies: $($_.Exception.Message)""
-        throw
+        throw,
     }
     
     Write-Log ""Installing dependencies...""
@@ -203,33 +202,33 @@ try {
         try {
             Write-Log ""Installing dependency: $($file.Name)""
             Add-AppxPackage -Path $file.FullName
-            Write-Log ""Successfully installed: $($file.Name)""
+            Write-Log ""Successfully installed: $($file.Name)"",
         }
         catch {
             Write-Log ""Failed to install $($file.Name): $($_.Exception.Message)""
-            throw
+            throw,
         }
     }
     
     Write-Log ""Installing WinGet...""
     try {
         Add-AppxProvisionedPackage -Online -PackagePath $paths.Installer -LicensePath $paths.License
-        Write-Log ""WinGet installation completed successfully""
+        Write-Log ""WinGet installation completed successfully"",
     }
     catch {
         Write-Log ""Failed to install WinGet: $($_.Exception.Message)""
-        throw
+        throw,
     }
 }
 catch {
     Write-Log ""Error during WinGet installation: $($_.Exception.Message)""
     Write-Log ""Installation failed - check log for details""
-    throw
+    throw,
 }
 finally {
     if (Test-Path $tempDir) {
         Remove-Item -Path $tempDir -Recurse -Force
-        Write-Log ""Cleaned up temporary files""
+        Write-Log ""Cleaned up temporary files"",
     }
 }
 ";
@@ -237,8 +236,7 @@ finally {
         public static async Task<(bool Success, string Message)> InstallWinGetAsync(
             IProgress<TaskProgressDetail>? progress = null,
             ILogService? logger = null,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             return await InstallWinGetAsync(null, progress, logger, cancellationToken);
         }
@@ -247,8 +245,7 @@ finally {
             IPowerShellExecutionService? powerShellService,
             IProgress<TaskProgressDetail>? progress = null,
             ILogService? logger = null,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             logger?.LogInformation("Starting WinGet installation from GitHub");
 
@@ -262,7 +259,7 @@ finally {
                 if (powerShellService != null)
                 {
                     // Use PowerShellExecutionService for proper console output capture
-                    await powerShellService.ExecuteScriptFileWithProgressAsync(scriptPath, "", progress, cancellationToken);
+                    await powerShellService.ExecuteScriptFileWithProgressAsync(scriptPath, string.Empty, progress, cancellationToken);
                 }
                 else
                 {
@@ -322,7 +319,10 @@ finally {
 
         private static void ProcessOutputLine(string output, IProgress<TaskProgressDetail> progress)
         {
-            if (string.IsNullOrEmpty(output)) return;
+            if (string.IsNullOrEmpty(output))
+            {
+                return;
+            }
 
             // Check for progress markers in the output
             var progressMatch = Regex.Match(output, @"\[PROGRESS:(\d+)\]");
@@ -331,7 +331,7 @@ finally {
                 progress?.Report(new TaskProgressDetail
                 {
                     Progress = progressValue,
-                    StatusText = output.Replace(progressMatch.Value, "").Trim(),
+                    StatusText = output.Replace(progressMatch.Value, string.Empty, StringComparison.Ordinal).Trim(),
                 });
             }
         }

@@ -158,12 +158,12 @@ public static class StartMenuCustomizations
                             [0] = new Dictionary<string, object?> // Show (delete registry values)
                             {
                                 ["HideRecommendedSection"] = null, // Delete
-                                ["IsEducationEnvironment"] = null, // Delete 
+                                ["IsEducationEnvironment"] = null, // Delete,
                             },
                             [1] = new Dictionary<string, object?> // Hide (set registry values)
                             {
                                 ["HideRecommendedSection"] = 1, // Set to 1
-                                ["IsEducationEnvironment"] = 1, // Set to 1
+                                ["IsEducationEnvironment"] = 1, // Set to 1,
                             },
                         },
                     },
@@ -181,7 +181,7 @@ public static class StartMenuCustomizations
                     SupportedBuildRanges = new List<(int, int)>
                     {
                         (26120, int.MaxValue), // Windows 11 24H2 build 26120.4250 and later
-                        (26200, int.MaxValue), // Windows 11 25H2 build 26200.5670 and later
+                        (26200, int.MaxValue), // Windows 11 25H2 build 26200.5670 and later,
                     },
                     RegistrySettings = new List<RegistrySetting>
                     {

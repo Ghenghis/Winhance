@@ -4,7 +4,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
 {
     public class WinGetOutputParser
     {
-        private string _lastLine = "";
+        private string _lastLine = string.Empty;
         private readonly string _appName;
 
         public WinGetOutputParser(string appName = null!)
@@ -15,7 +15,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
         public InstallationProgress ParseOutputLine(string outputLine)
         {
             if (string.IsNullOrWhiteSpace(outputLine))
+            {
                 return null;
+            }
 
             string trimmedLine = outputLine.Trim();
 
@@ -28,14 +30,14 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
                     LastLine = trimmedLine,
                     IsActive = true,
                     IsError = true,
-                    IsConnectivityIssue = true
+                    IsConnectivityIssue = true,
                 };
             }
 
             // If line contains progress bar characters, don't show the raw output
             if (ContainsProgressBar(trimmedLine))
             {
-                _lastLine = ""; // Hide the corrupted progress bar
+                _lastLine = string.Empty; // Hide the corrupted progress bar,
             }
             else
             {
@@ -43,29 +45,29 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
             }
 
             // Check for completion
-            if (outputLine.Contains("Successfully installed") ||
-                outputLine.Contains("Successfully uninstalled") ||
-                outputLine.Contains("completed successfully") ||
-                outputLine.Contains("installation complete") ||
-                outputLine.Contains("uninstallation complete"))
+            if (outputLine.Contains("Successfully installed", StringComparison.Ordinal) ||
+                outputLine.Contains("Successfully uninstalled", StringComparison.Ordinal) ||
+                outputLine.Contains("completed successfully", StringComparison.Ordinal) ||
+                outputLine.Contains("installation complete", StringComparison.Ordinal) ||
+                outputLine.Contains("uninstallation complete", StringComparison.Ordinal))
             {
                 return new InstallationProgress
                 {
-                    Status = outputLine.Contains("uninstall") ? "Uninstallation completed successfully!" : "Installation completed successfully!",
+                    Status = outputLine.Contains("uninstall", StringComparison.Ordinal) ? "Uninstallation completed successfully!" : "Installation completed successfully!",
                     LastLine = _lastLine,
-                    IsActive = false
+                    IsActive = false,
                 };
             }
 
             // Check if this is an uninstall operation
-            bool isUninstall = outputLine.Contains("uninstall") || outputLine.Contains("Uninstall") ||
-                              _lastLine.Contains("uninstall") || _lastLine.Contains("Uninstall");
+            bool isUninstall = outputLine.Contains("uninstall", StringComparison.Ordinal) || outputLine.Contains("Uninstall", StringComparison.Ordinal) ||
+                              _lastLine.Contains("uninstall", StringComparison.Ordinal) || _lastLine.Contains("Uninstall", StringComparison.Ordinal);
 
             return new InstallationProgress
             {
                 Status = GetStatusMessage(isUninstall),
                 LastLine = _lastLine,
-                IsActive = true
+                IsActive = true,
             };
         }
 
@@ -80,19 +82,36 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
             if (!string.IsNullOrEmpty(_lastLine))
             {
                 var lowerLine = _lastLine.ToLowerInvariant();
-                
-                if (lowerLine.Contains("downloading") || lowerLine.Contains("download"))
+
+                if (lowerLine.Contains("downloading", StringComparison.Ordinal) || lowerLine.Contains("download", StringComparison.Ordinal))
+                {
                     return $"Downloading {_appName}...";
-                if (lowerLine.Contains("extracting") || lowerLine.Contains("extract"))
+                }
+
+                if (lowerLine.Contains("extracting", StringComparison.Ordinal) || lowerLine.Contains("extract", StringComparison.Ordinal))
+                {
                     return $"Extracting {_appName}...";
-                if (lowerLine.Contains("installing") || lowerLine.Contains("install"))
+                }
+
+                if (lowerLine.Contains("installing", StringComparison.Ordinal) || lowerLine.Contains("install", StringComparison.Ordinal))
+                {
                     return $"Installing {_appName}...";
-                if (lowerLine.Contains("configuring") || lowerLine.Contains("configure"))
+                }
+
+                if (lowerLine.Contains("configuring", StringComparison.Ordinal) || lowerLine.Contains("configure", StringComparison.Ordinal))
+                {
                     return $"Configuring {_appName}...";
-                if (lowerLine.Contains("verifying") || lowerLine.Contains("verify"))
+                }
+
+                if (lowerLine.Contains("verifying", StringComparison.Ordinal) || lowerLine.Contains("verify", StringComparison.Ordinal))
+                {
                     return $"Verifying {_appName} installation...";
-                if (lowerLine.Contains("finalizing") || lowerLine.Contains("finalize"))
+                }
+
+                if (lowerLine.Contains("finalizing", StringComparison.Ordinal) || lowerLine.Contains("finalize", StringComparison.Ordinal))
+                {
                     return $"Finalizing {_appName} installation...";
+                }
             }
 
             return isUninstall ? $"Uninstalling {_appName}..." : $"Installing {_appName}...";
@@ -101,41 +120,43 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Utilitie
         private bool ContainsProgressBar(string line)
         {
             // Check if line contains the corrupted progress bar characters or percentage
-            return line.Contains("â–") || // Contains any corrupted block character
-                   (line.Contains("%") && line.Length > 10); // Contains percentage and looks like progress
+            return line.Contains("â–", StringComparison.Ordinal) || // Contains any corrupted block character
+                   (line.Contains("%", StringComparison.Ordinal) && line.Length > 10); // Contains percentage and looks like progress,
         }
 
         private bool IsNetworkRelatedError(string line)
         {
             if (string.IsNullOrEmpty(line))
+            {
                 return false;
+            }
 
             var lowerLine = line.ToLowerInvariant();
-            return lowerLine.Contains("network") ||
-                   lowerLine.Contains("timeout") ||
-                   lowerLine.Contains("connection") ||
-                   lowerLine.Contains("dns") ||
-                   lowerLine.Contains("resolve") ||
-                   lowerLine.Contains("unreachable") ||
-                   lowerLine.Contains("offline") ||
-                   lowerLine.Contains("proxy") ||
-                   lowerLine.Contains("certificate") ||
-                   lowerLine.Contains("ssl") ||
-                   lowerLine.Contains("tls") ||
-                   lowerLine.Contains("download failed") ||
-                   lowerLine.Contains("no internet") ||
-                   lowerLine.Contains("connectivity") ||
-                   lowerLine.Contains("could not download") ||
-                   lowerLine.Contains("failed to download") ||
-                   lowerLine.Contains("unable to connect") ||
-                   lowerLine.Contains("connection refused") ||
-                   lowerLine.Contains("host not found") ||
-                   lowerLine.Contains("name resolution failed");
+            return lowerLine.Contains("network", StringComparison.Ordinal) ||
+                   lowerLine.Contains("timeout", StringComparison.Ordinal) ||
+                   lowerLine.Contains("connection", StringComparison.Ordinal) ||
+                   lowerLine.Contains("dns", StringComparison.Ordinal) ||
+                   lowerLine.Contains("resolve", StringComparison.Ordinal) ||
+                   lowerLine.Contains("unreachable", StringComparison.Ordinal) ||
+                   lowerLine.Contains("offline", StringComparison.Ordinal) ||
+                   lowerLine.Contains("proxy", StringComparison.Ordinal) ||
+                   lowerLine.Contains("certificate", StringComparison.Ordinal) ||
+                   lowerLine.Contains("ssl", StringComparison.Ordinal) ||
+                   lowerLine.Contains("tls", StringComparison.Ordinal) ||
+                   lowerLine.Contains("download failed", StringComparison.Ordinal) ||
+                   lowerLine.Contains("no internet", StringComparison.Ordinal) ||
+                   lowerLine.Contains("connectivity", StringComparison.Ordinal) ||
+                   lowerLine.Contains("could not download", StringComparison.Ordinal) ||
+                   lowerLine.Contains("failed to download", StringComparison.Ordinal) ||
+                   lowerLine.Contains("unable to connect", StringComparison.Ordinal) ||
+                   lowerLine.Contains("connection refused", StringComparison.Ordinal) ||
+                   lowerLine.Contains("host not found", StringComparison.Ordinal) ||
+                   lowerLine.Contains("name resolution failed", StringComparison.Ordinal);
         }
 
         public void Clear()
         {
-            _lastLine = "";
+            _lastLine = string.Empty;
         }
     }
 }

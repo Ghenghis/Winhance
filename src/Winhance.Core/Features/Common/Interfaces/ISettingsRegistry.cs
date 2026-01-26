@@ -32,6 +32,7 @@ namespace Winhance.Core.Features.Common.Interfaces
         /// </summary>
         /// <typeparam name="T">The type of settings to get.</typeparam>
         /// <returns>A list of settings of the specified type.</returns>
-        List<ISettingItem> GetSettingsByType<T>() where T : ISettingItem;
+        List<ISettingItem> GetSettingsByType<T>()
+            where T : ISettingItem;
     }
 }

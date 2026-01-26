@@ -47,7 +47,7 @@ namespace Winhance.Core.Features.Common.Models
                 IsVerified = true,
                 Version = version,
                 MethodUsed = methodUsed,
-                AdditionalInfo = additionalInfo
+                AdditionalInfo = additionalInfo,
             };
         }
 
@@ -65,7 +65,7 @@ namespace Winhance.Core.Features.Common.Models
                 IsVerified = false,
                 Message = message,
                 MethodUsed = methodUsed,
-                AdditionalInfo = additionalInfo
+                AdditionalInfo = additionalInfo,
             };
         }
     }

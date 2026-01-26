@@ -9,7 +9,6 @@ namespace Winhance.Infrastructure.Features.Common.Services
         IPowerCfgQueryService powerCfgQueryService,
         ILogService logService) : IPowerPlanComboBoxService
     {
-
         public async Task<ComboBoxSetupResult> SetupPowerPlanComboBoxAsync(SettingDefinition setting, object? currentValue)
         {
             logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService] Setting up PowerPlan ComboBox for '{setting.Id}'");
@@ -28,7 +27,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         DisplayText = option.DisplayName,
                         Value = option.Index,
                         Description = option.ExistsOnSystem ? "Installed on system" : "Not installed",
-                        Tag = option
+                        Tag = option,
                     });
                 }
 
@@ -49,7 +48,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task<List<PowerPlanComboBoxOption>> GetPowerPlanOptionsAsync()
         {
             logService.Log(LogLevel.Info, "[PowerPlanComboBoxService] Starting power plan options discovery");
-            
+
             var systemPlans = await powerCfgQueryService.GetAvailablePowerPlansAsync();
             var options = new List<PowerPlanComboBoxOption>();
             var processedGuids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -88,14 +87,14 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         SystemPlan = matchingSystemPlan,
                         ExistsOnSystem = true,
                         IsActive = matchingSystemPlan.IsActive,
-                        Index = options.Count
+                        Index = options.Count,
                     });
 
                     processedGuids.Add(matchingSystemPlan.Guid);
                     processedNames.Add(CleanPlanName(matchingSystemPlan.Name));
                     matchedPredefinedCount++;
 
-                    logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService]   ✓ Matched predefined '{predefinedPlan.Name}' with system '{CleanPlanName(matchingSystemPlan.Name)}' by {matchMethod}{(matchingSystemPlan.IsActive ? " *ACTIVE*" : "")}");
+                    logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService]   ✓ Matched predefined '{predefinedPlan.Name}' with system '{CleanPlanName(matchingSystemPlan.Name)}' by {matchMethod}{(matchingSystemPlan.IsActive ? " *ACTIVE*" : string.Empty)}");
                 }
                 else
                 {
@@ -106,7 +105,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         SystemPlan = null,
                         ExistsOnSystem = false,
                         IsActive = false,
-                        Index = options.Count
+                        Index = options.Count,
                     });
 
                     logService.Log(LogLevel.Warning, $"[PowerPlanComboBoxService]   ✗ Predefined plan '{predefinedPlan.Name}' not found on system");
@@ -126,23 +125,27 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     SystemPlan = systemPlan,
                     ExistsOnSystem = true,
                     IsActive = systemPlan.IsActive,
-                    Index = options.Count
+                    Index = options.Count,
                 });
 
-                logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService]   + Added unmatched system plan '{CleanPlanName(systemPlan.Name)}'{(systemPlan.IsActive ? " *ACTIVE*" : "")}");
+                logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService]   + Added unmatched system plan '{CleanPlanName(systemPlan.Name)}'{(systemPlan.IsActive ? " *ACTIVE*" : string.Empty)}");
             }
 
             var sortedOptions = options.OrderBy(o => o.DisplayName)
-                                     .Select((o, index) => { o.Index = index; return o; })
+                                     .Select((o, index) =>
+                                     {
+                                         o.Index = index;
+                                         return o;
+                                     })
                                      .ToList();
 
             logService.Log(LogLevel.Info, $"[PowerPlanComboBoxService] Completed: {matchedPredefinedCount}/{PowerPlanDefinitions.BuiltInPowerPlans.Count} predefined matched, {unmatchedSystemPlans.Count} additional system plans, {sortedOptions.Count} total options");
-            
+
             logService.Log(LogLevel.Debug, "[PowerPlanComboBoxService] Final sorted options:");
             for (int i = 0; i < sortedOptions.Count; i++)
             {
                 var opt = sortedOptions[i];
-                var status = opt.IsActive ? " *ACTIVE*" : "";
+                var status = opt.IsActive ? " *ACTIVE*" : string.Empty;
                 var source = opt.PredefinedPlan != null ? " (predefined)" : " (system-only)";
                 logService.Log(LogLevel.Debug, $"[PowerPlanComboBoxService]   {i}: {opt.DisplayName}{status}{source}");
             }
@@ -155,7 +158,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 var activePlan = await powerCfgQueryService.GetActivePowerPlanAsync();
-                if (activePlan == null) return 0;
+                if (activePlan == null)
+                {
+                    return 0;
+                }
 
                 for (int i = 0; i < options.Count; i++)
                 {
@@ -182,28 +188,30 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private bool IsUltimatePerformancePlan(string planName)
         {
             var cleanName = CleanPlanName(planName).ToLowerInvariant();
-            
+
             var knownNames = new[]
             {
                 "ultimate performance",
-                "rendimiento máximo", 
+                "rendimiento máximo",
                 "prestazioni ottimali",
                 "höchstleistung",
                 "performances optimales",
                 "desempenho máximo",
                 "ultieme prestaties",
-                "максимальная производительность"
+                "максимальная производительность",
             };
-            
+
             if (knownNames.Contains(cleanName))
+            {
                 return true;
-            
+            }
+
             var ultimateWords = new[] { "ultimate", "ultieme", "máximo", "optimal", "höchst" };
             var performanceWords = new[] { "performance", "prestazioni", "leistung", "performances", "desempenho" };
-            
+
             bool hasUltimateWord = ultimateWords.Any(word => cleanName.Contains(word));
             bool hasPerformanceWord = performanceWords.Any(word => cleanName.Contains(word));
-            
+
             return hasUltimateWord && hasPerformanceWord;
         }
 
@@ -216,6 +224,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         /// Resolves the index from raw values. NOTE: This blocks the calling thread
         /// due to interface requirements. Consider using async alternatives when possible.
         /// </summary>
+        /// <returns></returns>
         public int ResolveIndexFromRawValues(SettingDefinition setting, Dictionary<string, object?> rawValues)
         {
             try
@@ -231,7 +240,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         var opt = options[i];
                         var optGuid = opt.SystemPlan?.Guid ?? opt.PredefinedPlan?.Guid;
 
-                        if (!string.IsNullOrEmpty(optGuid) && 
+                        if (!string.IsNullOrEmpty(optGuid) &&
                             string.Equals(optGuid, activeGuid, StringComparison.OrdinalIgnoreCase))
                         {
                             return i;
@@ -248,7 +257,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     {
                         // Check against DisplayName (LocalizationKey) or SystemPlan.Name
                         var displayMatch = string.Equals(CleanPlanName(options[i].DisplayName), activeNameStr, StringComparison.OrdinalIgnoreCase);
-                        var systemMatch = options[i].SystemPlan != null && 
+                        var systemMatch = options[i].SystemPlan != null &&
                                         string.Equals(CleanPlanName(options[i].SystemPlan!.Name), activeNameStr, StringComparison.OrdinalIgnoreCase);
 
                         if (displayMatch || systemMatch)
@@ -298,7 +307,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     Success = true,
                     Guid = powerPlanGuid,
-                    DisplayName = selectedOption.DisplayName
+                    DisplayName = selectedOption.DisplayName,
                 };
             }
             catch (Exception ex)

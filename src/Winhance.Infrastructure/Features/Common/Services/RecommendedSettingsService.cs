@@ -13,10 +13,12 @@ namespace Winhance.Infrastructure.Features.Common.Services
     internal class OSInfo
     {
         public int BuildNumber { get; set; }
+
         public bool IsWindows10 { get; set; }
+
         public bool IsWindows11 { get; set; }
     }
-    
+
     public class RecommendedSettingsService(
         IDomainServiceRouter domainServiceRouter,
         IWindowsRegistryService registryService,
@@ -39,7 +41,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 logService.Log(LogLevel.Info, $"[RecommendedSettings] Found {settingsList.Count} recommended settings for domain '{domainService.DomainName}'");
 
-                if (!settingsList.Any())
+                if (settingsList.Count == 0)
                 {
                     logService.Log(LogLevel.Info, $"[RecommendedSettings] No recommended settings found for domain '{domainService.DomainName}'");
                     return;
@@ -59,7 +61,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                             if (registrySetting != null && recommendedValue != null)
                             {
-                                enableValue = recommendedValue.Equals(registrySetting.EnabledValue);
+                                enableValue = Equals(recommendedValue, registrySetting.EnabledValue);
                                 logService.Log(LogLevel.Debug, $"[RecommendedSettings] Toggle '{setting.Id}': RecommendedValue={recommendedValue}, EnabledValue={registrySetting.EnabledValue}, DisabledValue={registrySetting.DisabledValue}, Enable={enableValue}");
                             }
 
@@ -120,12 +122,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     BuildNumber = versionService.GetWindowsBuildNumber(),
                     IsWindows10 = !versionService.IsWindows11(),
-                    IsWindows11 = versionService.IsWindows11()
+                    IsWindows11 = versionService.IsWindows11(),
                 };
 
                 var recommendedSettings = allSettings.Where(setting =>
-                    HasRecommendedValue(setting) && IsCompatibleWithCurrentOS(setting, osInfo)
-                );
+                    HasRecommendedValue(setting) && IsCompatibleWithCurrentOS(setting, osInfo));
 
                 var settingsList = recommendedSettings.ToList();
                 logService.Log(LogLevel.Debug, $"[RecommendedSettings] Found {settingsList.Count} recommended settings for domain '{domainService.DomainName}'");
@@ -139,7 +140,6 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
         }
 
-
         private static string? GetRecommendedOptionFromSetting(SettingDefinition setting)
         {
             var primaryRegistrySetting = setting.RegistrySettings?.FirstOrDefault(rs => rs.IsPrimary);
@@ -147,6 +147,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 return recommendedOption?.ToString();
             }
+
             return null;
         }
 
@@ -168,6 +169,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
             }
+
             return null;
         }
 
@@ -183,6 +185,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     return registryValue;
                 }
             }
+
             return null;
         }
 
@@ -200,10 +203,26 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         private static bool IsCompatibleWithCurrentOS(SettingDefinition setting, OSInfo osInfo)
         {
-            if (setting.IsWindows10Only && !osInfo.IsWindows10) return false;
-            if (setting.IsWindows11Only && !osInfo.IsWindows11) return false;
-            if (setting.MinimumBuildNumber.HasValue && osInfo.BuildNumber < setting.MinimumBuildNumber.Value) return false;
-            if (setting.MaximumBuildNumber.HasValue && osInfo.BuildNumber > setting.MaximumBuildNumber.Value) return false;
+            if (setting.IsWindows10Only && !osInfo.IsWindows10)
+            {
+                return false;
+            }
+
+            if (setting.IsWindows11Only && !osInfo.IsWindows11)
+            {
+                return false;
+            }
+
+            if (setting.MinimumBuildNumber.HasValue && osInfo.BuildNumber < setting.MinimumBuildNumber.Value)
+            {
+                return false;
+            }
+
+            if (setting.MaximumBuildNumber.HasValue && osInfo.BuildNumber > setting.MaximumBuildNumber.Value)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -219,7 +238,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 if (setting.InputType == InputType.Selection && value is int index)
                 {
                     var specificValues = comboBoxResolver.ResolveIndexToRawValues(setting, index);
-                    
+
                     foreach (var registrySetting in setting.RegistrySettings)
                     {
                         if (specificValues.TryGetValue(registrySetting.ValueName, out var specificValue))

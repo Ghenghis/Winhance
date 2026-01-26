@@ -16,13 +16,15 @@ public class AppStatusDiscoveryService(
     IPowerShellExecutionService powerShellExecutionService,
     IWinGetService winGetService) : IAppStatusDiscoveryService
 {
-
     public async Task<Dictionary<string, bool>> GetInstallationStatusBatchAsync(IEnumerable<ItemDefinition> definitions)
     {
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         var definitionList = definitions.ToList();
 
-        if (!definitionList.Any()) return result;
+        if (definitionList.Count == 0)
+        {
+            return result;
+        }
 
         try
         {
@@ -30,29 +32,33 @@ public class AppStatusDiscoveryService(
             var capabilities = definitionList.Where(d => !string.IsNullOrEmpty(d.CapabilityName)).ToList();
             var features = definitionList.Where(d => !string.IsNullOrEmpty(d.OptionalFeatureName)).ToList();
 
-            if (capabilities.Any())
+            if (capabilities.Count != 0)
             {
                 var capabilityNames = capabilities.Select(c => c.CapabilityName).ToList();
                 var capabilityResults = await CheckCapabilitiesAsync(capabilityNames);
                 foreach (var capability in capabilities)
                 {
                     if (capabilityResults.TryGetValue(capability.CapabilityName, out bool isInstalled))
+                    {
                         result[capability.Id] = isInstalled;
+                    }
                 }
             }
 
-            if (features.Any())
+            if (features.Count != 0)
             {
                 var featureNames = features.Select(f => f.OptionalFeatureName).ToList();
                 var featureResults = await CheckFeaturesAsync(featureNames);
                 foreach (var feature in features)
                 {
                     if (featureResults.TryGetValue(feature.OptionalFeatureName, out bool isInstalled))
+                    {
                         result[feature.Id] = isInstalled;
+                    }
                 }
             }
 
-            if (apps.Any())
+            if (apps.Count != 0)
             {
                 var installedApps = await GetInstalledStoreAppsAsync();
                 foreach (var app in apps)
@@ -75,7 +81,10 @@ public class AppStatusDiscoveryService(
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         var appIdList = appIds.ToList();
 
-        if (!appIdList.Any()) return result;
+        if (appIdList.Count == 0)
+        {
+            return result;
+        }
 
         try
         {
@@ -84,6 +93,7 @@ public class AppStatusDiscoveryService(
             {
                 result[appId] = installedApps.Contains(appId);
             }
+
             return result;
         }
         catch (Exception ex)
@@ -118,14 +128,18 @@ public class AppStatusDiscoveryService(
             else
             {
                 foreach (var capability in capabilities)
+                {
                     result[capability] = false;
+                }
             }
         }
         catch (Exception ex)
         {
             logService.LogError("Error checking capabilities status", ex);
             foreach (var capability in capabilities)
+            {
                 result[capability] = false;
+            }
         }
 
         return result;
@@ -155,14 +169,18 @@ public class AppStatusDiscoveryService(
             else
             {
                 foreach (var feature in features)
+                {
                     result[feature] = false;
+                }
             }
         }
         catch (Exception ex)
         {
             logService.LogError("Error checking features status", ex);
             foreach (var feature in features)
+            {
                 result[feature] = false;
+            }
         }
 
         return result;
@@ -183,7 +201,9 @@ public class AppStatusDiscoveryService(
                 {
                     var name = obj["Name"]?.ToString();
                     if (!string.IsNullOrEmpty(name))
+                    {
                         installedApps.Add(name);
+                    }
                 }
             });
 
@@ -192,12 +212,15 @@ public class AppStatusDiscoveryService(
                 var registryKeys = new[]
                 {
                     Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
-                    Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")
+                    Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
                 };
 
                 foreach (var uninstallKey in registryKeys)
                 {
-                    if (uninstallKey == null) continue;
+                    if (uninstallKey == null)
+                    {
+                        continue;
+                    }
 
                     using (uninstallKey)
                     {
@@ -228,8 +251,6 @@ public class AppStatusDiscoveryService(
         return installedApps;
     }
 
-    #region External Apps Detection
-
     public async Task<Dictionary<string, bool>> GetExternalAppsInstallationStatusAsync(IEnumerable<ItemDefinition> definitions)
     {
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -237,8 +258,10 @@ public class AppStatusDiscoveryService(
             .Where(d => !string.IsNullOrWhiteSpace(d.WinGetPackageId))
             .ToList();
 
-        if (!definitionList.Any())
+        if (definitionList.Count == 0)
+        {
             return result;
+        }
 
         try
         {
@@ -286,7 +309,7 @@ public class AppStatusDiscoveryService(
                 logService.LogInformation($"WinGet: Found {foundByWinGetId} by package ID, {foundByWinGetName} by name ({foundByWinGetId + foundByWinGetName}/{definitionList.Count} total)");
             }
 
-            if (remainingToCheck.Any())
+            if (remainingToCheck.Count != 0)
             {
                 var wmiTask = GetInstalledProgramsFromWmiOnlyAsync();
                 var registryTask = GetInstalledProgramsFromRegistryAsync();
@@ -309,8 +332,15 @@ public class AppStatusDiscoveryService(
                     {
                         result[def.Id] = true;
                         remainingToCheck.Remove(def);
-                        if (wmiMatch) foundByWmi++;
-                        if (registryMatch) foundByRegistry++;
+                        if (wmiMatch)
+                        {
+                            foundByWmi++;
+                        }
+
+                        if (registryMatch)
+                        {
+                            foundByRegistry++;
+                        }
                     }
                 }
 
@@ -350,7 +380,7 @@ public class AppStatusDiscoveryService(
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                    StandardOutputEncoding = System.Text.Encoding.UTF8,
                 };
 
                 using var process = new System.Diagnostics.Process { StartInfo = startInfo };
@@ -359,7 +389,9 @@ public class AppStatusDiscoveryService(
                 process.OutputDataReceived += (_, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
+                    {
                         output.AppendLine(e.Data);
+                    }
                 };
 
                 process.Start();
@@ -375,7 +407,9 @@ public class AppStatusDiscoveryService(
                     {
                         process.Kill(true);
                     }
-                    catch (Exception) { }
+                    catch (Exception)
+                    {
+                    }
 
                     logService.LogWarning("WinGet list command timed out after 30 seconds");
                     return;
@@ -383,7 +417,7 @@ public class AppStatusDiscoveryService(
 
                 var outputString = output.ToString();
 
-                if (outputString.TrimStart().StartsWith("{"))
+                if (outputString.TrimStart().StartsWith("{", StringComparison.Ordinal))
                 {
                     ParseWinGetJsonOutput(outputString, installedPackageIds, installedPackageNames);
                 }
@@ -462,23 +496,25 @@ public class AppStatusDiscoveryService(
             {
                 var line = lines[i];
 
-                if (line.Contains("---"))
+                if (line.Contains("---", StringComparison.Ordinal))
                 {
                     headerPassed = true;
 
                     if (i > 0)
                     {
                         var headerLine = lines[i - 1];
-                        nameColumnStart = headerLine.IndexOf("Name", StringComparison.OrdinalIgnoreCase);
-                        idColumnStart = headerLine.IndexOf("Id", StringComparison.OrdinalIgnoreCase);
-                        versionColumnStart = headerLine.IndexOf("Version", StringComparison.OrdinalIgnoreCase);
+                        nameColumnStart = headerLine.IndexOf("Name");
+                        idColumnStart = headerLine.IndexOf("Id");
+                        versionColumnStart = headerLine.IndexOf("Version");
                     }
 
                     continue;
                 }
 
                 if (!headerPassed)
+                {
                     continue;
+                }
 
                 if (nameColumnStart.HasValue && idColumnStart.HasValue && line.Length > nameColumnStart.Value)
                 {
@@ -531,7 +567,9 @@ public class AppStatusDiscoveryService(
                     var vendor = obj["Vendor"]?.ToString();
 
                     if (!string.IsNullOrEmpty(name))
-                        installedPrograms.Add((name, vendor ?? ""));
+                    {
+                        installedPrograms.Add((name, vendor ?? string.Empty));
+                    }
                 }
             });
         }
@@ -565,7 +603,7 @@ public class AppStatusDiscoveryService(
         {
             (Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
             (Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
-            (Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")
+            (Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
         };
 
         foreach (var (hive, path) in registryPaths)
@@ -573,29 +611,43 @@ public class AppStatusDiscoveryService(
             try
             {
                 using var key = hive.OpenSubKey(path);
-                if (key == null) continue;
+                if (key == null)
+                {
+                    continue;
+                }
 
                 foreach (var subKeyName in key.GetSubKeyNames())
                 {
                     try
                     {
                         using var subKey = key.OpenSubKey(subKeyName);
-                        if (subKey == null) continue;
+                        if (subKey == null)
+                        {
+                            continue;
+                        }
 
                         var systemComponent = subKey.GetValue("SystemComponent");
                         if (systemComponent is int systemComponentValue && systemComponentValue == 1)
+                        {
                             continue;
+                        }
 
                         var displayName = subKey.GetValue("DisplayName")?.ToString();
                         var publisher = subKey.GetValue("Publisher")?.ToString();
 
                         if (!string.IsNullOrEmpty(displayName))
-                            installedPrograms.Add((displayName, publisher ?? ""));
+                        {
+                            installedPrograms.Add((displayName, publisher ?? string.Empty));
+                        }
                     }
-                    catch (Exception) { }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
         }
     }
 
@@ -608,11 +660,15 @@ public class AppStatusDiscoveryService(
             var normalizedWingetName = NormalizeString(wingetName);
 
             if (normalizedWingetName == normalizedDefName)
+            {
                 return true;
+            }
 
-            if (normalizedWingetName.StartsWith(normalizedDefName + " ") ||
-                normalizedWingetName.StartsWith(normalizedDefName + "-"))
+            if (normalizedWingetName.StartsWith(normalizedDefName + " ", StringComparison.Ordinal) ||
+                normalizedWingetName.StartsWith(normalizedDefName + "-", StringComparison.Ordinal))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -638,20 +694,24 @@ public class AppStatusDiscoveryService(
 
             if (normDisplayName.Contains(productName))
             {
-                if (normDisplayName.Contains("add-in") ||
-                    normDisplayName.Contains("for " + productName) ||
-                    normDisplayName.Contains("plugin"))
+                if (normDisplayName.Contains("add-in", StringComparison.Ordinal) ||
+                    normDisplayName.Contains("for " + productName, StringComparison.Ordinal) ||
+                    normDisplayName.Contains("plugin", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
                 if (string.IsNullOrEmpty(vendor) || normVendor.Contains(publisher))
+                {
                     return true;
+                }
             }
 
-            var fullId = NormalizeString(winGetPackageId).Replace(".", "");
-            if (normDisplayName.Replace(" ", "").Contains(fullId))
+            var fullId = NormalizeString(winGetPackageId).Replace(".", string.Empty, StringComparison.Ordinal);
+            if (normDisplayName.Replace(" ", string.Empty, StringComparison.Ordinal).Contains(fullId))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -660,17 +720,19 @@ public class AppStatusDiscoveryService(
     private string NormalizeString(string input)
     {
         if (string.IsNullOrEmpty(input))
+        {
             return string.Empty;
+        }
 
         var normalized = input.ToLowerInvariant();
 
         normalized = normalized
-            .Replace("á", "a").Replace("à", "a").Replace("ä", "a").Replace("â", "a")
-            .Replace("é", "e").Replace("è", "e").Replace("ë", "e").Replace("ê", "e")
-            .Replace("í", "i").Replace("ì", "i").Replace("ï", "i").Replace("î", "i")
-            .Replace("ó", "o").Replace("ò", "o").Replace("ö", "o").Replace("ô", "o")
-            .Replace("ú", "u").Replace("ù", "u").Replace("ü", "u").Replace("û", "u")
-            .Replace("ñ", "n").Replace("ç", "c");
+            .Replace("á", "a", StringComparison.Ordinal).Replace("à", "a", StringComparison.Ordinal).Replace("ä", "a", StringComparison.Ordinal).Replace("â", "a", StringComparison.Ordinal)
+            .Replace("é", "e", StringComparison.Ordinal).Replace("è", "e", StringComparison.Ordinal).Replace("ë", "e", StringComparison.Ordinal).Replace("ê", "e", StringComparison.Ordinal)
+            .Replace("í", "i", StringComparison.Ordinal).Replace("ì", "i", StringComparison.Ordinal).Replace("ï", "i", StringComparison.Ordinal).Replace("î", "i", StringComparison.Ordinal)
+            .Replace("ó", "o", StringComparison.Ordinal).Replace("ò", "o", StringComparison.Ordinal).Replace("ö", "o", StringComparison.Ordinal).Replace("ô", "o", StringComparison.Ordinal)
+            .Replace("ú", "u", StringComparison.Ordinal).Replace("ù", "u", StringComparison.Ordinal).Replace("ü", "u", StringComparison.Ordinal).Replace("û", "u", StringComparison.Ordinal)
+            .Replace("ñ", "n", StringComparison.Ordinal).Replace("ç", "c", StringComparison.Ordinal);
 
         return normalized;
     }
@@ -680,8 +742,10 @@ public class AppStatusDiscoveryService(
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         var nameList = displayNames.Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
 
-        if (!nameList.Any())
+        if (nameList.Count == 0)
+        {
             return result;
+        }
 
         try
         {
@@ -704,6 +768,4 @@ public class AppStatusDiscoveryService(
             return nameList.ToDictionary(name => name, name => false, StringComparer.OrdinalIgnoreCase);
         }
     }
-
-    #endregion
 }

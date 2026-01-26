@@ -21,20 +21,21 @@ namespace Winhance.Core.Features.Common.Events.Features
         public Guid EventId { get; }
 
         /// <summary>
-        /// The unique identifier of the feature that was composed.
+        /// Gets the unique identifier of the feature that was composed.
         /// </summary>
         public string ModuleId { get; }
 
         /// <summary>
-        /// The settings that were loaded and composed for this feature.
+        /// Gets the settings that were loaded and composed for this feature.
         /// </summary>
         public IEnumerable<SettingDefinition> Settings { get; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="FeatureComposedEvent"/> class.
         /// Initializes a new instance of the FeatureComposedEvent.
         /// </summary>
-        /// <param name="moduleId">The unique identifier of the feature</param>
-        /// <param name="settings">The settings that were composed</param>
+        /// <param name="moduleId">The unique identifier of the feature.</param>
+        /// <param name="settings">The settings that were composed.</param>
         public FeatureComposedEvent(string moduleId, IEnumerable<SettingDefinition> settings)
         {
             ModuleId = moduleId ?? throw new System.ArgumentNullException(nameof(moduleId));

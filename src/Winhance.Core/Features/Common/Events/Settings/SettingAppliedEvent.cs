@@ -9,20 +9,21 @@ namespace Winhance.Core.Features.Common.Events.Settings
     public class SettingAppliedEvent : IDomainEvent
     {
         public DateTime Timestamp { get; }
+
         public Guid EventId { get; }
 
         /// <summary>
-        /// The ID of the setting that was applied.
+        /// Gets the ID of the setting that was applied.
         /// </summary>
         public string SettingId { get; }
 
         /// <summary>
-        /// Whether the setting was enabled or disabled.
+        /// Gets a value indicating whether whether the setting was enabled or disabled.
         /// </summary>
         public bool IsEnabled { get; }
 
         /// <summary>
-        /// The value that was applied (for value-based settings like sliders, combo boxes).
+        /// Gets the value that was applied (for value-based settings like sliders, combo boxes).
         /// </summary>
         public object? Value { get; }
 

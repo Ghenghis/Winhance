@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Winhance.Core.Features.Common.Constants;
 using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Events;
 using Winhance.Core.Features.Common.Events.Settings;
@@ -10,7 +11,6 @@ using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
 using Winhance.Core.Features.Customize.Interfaces;
 using Winhance.Infrastructure.Features.Customize.Services;
-using Winhance.Core.Features.Common.Constants;
 
 namespace Winhance.Infrastructure.Features.Common.Services
 {
@@ -31,7 +31,6 @@ namespace Winhance.Infrastructure.Features.Common.Services
         IPowerShellExecutionService powerShellService,
         IWindowsCompatibilityFilter compatibilityFilter) : ISettingApplicationService
     {
-
         public async Task ApplySettingAsync(string settingId, bool enable, object? value = null, bool checkboxResult = false, string? commandString = null, bool applyRecommended = false, bool skipValuePrerequisites = false)
         {
             var valueDisplay = value is Dictionary<string, object?> dict
@@ -45,7 +44,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
             var setting = allSettings.FirstOrDefault(s => s.Id == settingId);
 
             if (setting == null)
+            {
                 throw new ArgumentException($"Setting '{settingId}' not found in {domainService.DomainName} settings");
+            }
 
             globalSettingsRegistry.RegisterSetting(domainService.DomainName, setting);
 
@@ -87,7 +88,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 if (presets?.ContainsKey(selectedIndex) == true)
                 {
-                    logService.Log(LogLevel.Info,
+                    logService.Log(
+                        LogLevel.Info,
                         $"[SettingApplicationService] Applying preset for '{settingId}' at index {selectedIndex}");
 
                     var preset = presets[selectedIndex];
@@ -98,7 +100,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             var childSetting = globalSettingsRegistry.GetSetting(childSettingId);
                             if (childSetting == null)
                             {
-                                logService.Log(LogLevel.Debug,
+                                logService.Log(
+                                    LogLevel.Debug,
                                     $"[SettingApplicationService] Skipping preset child '{childSettingId}' - not registered (likely OS-filtered)");
                                 continue;
                             }
@@ -108,19 +111,22 @@ namespace Winhance.Infrastructure.Features.Common.Services
                                 var compatibleSettings = compatibilityFilter.FilterSettingsByWindowsVersion(new[] { childSettingDef });
                                 if (!compatibleSettings.Any())
                                 {
-                                    logService.Log(LogLevel.Info,
+                                    logService.Log(
+                                        LogLevel.Info,
                                         $"[SettingApplicationService] Skipping preset child '{childSettingId}' - not compatible with current OS version");
                                     continue;
                                 }
                             }
 
                             await ApplySettingAsync(childSettingId, childValue, skipValuePrerequisites: true);
-                            logService.Log(LogLevel.Info,
+                            logService.Log(
+                                LogLevel.Info,
                                 $"[SettingApplicationService] Applied preset setting '{childSettingId}' = {childValue}");
                         }
                         catch (Exception ex)
                         {
-                            logService.Log(LogLevel.Warning,
+                            logService.Log(
+                                LogLevel.Warning,
                                 $"[SettingApplicationService] Failed to apply preset setting '{childSettingId}': {ex.Message}");
                         }
                     }
@@ -150,7 +156,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     logService.Log(LogLevel.Info, $"[SettingApplicationService] Handling dependencies for '{settingId}'");
                     var dependencyResult = await dependencyManager.HandleSettingEnabledAsync(settingId, allSettings.Cast<ISettingItem>(), this, discoveryService);
                     if (!dependencyResult)
+                    {
                         throw new InvalidOperationException($"Cannot enable '{settingId}' due to unsatisfied dependencies");
+                    }
                 }
             }
             else
@@ -182,14 +190,20 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             var method = domainService.GetType().GetMethod(commandString);
             if (method == null)
+            {
                 throw new NotSupportedException($"Method '{commandString}' not found on service '{domainService.GetType().Name}'");
+            }
 
             if (!typeof(Task).IsAssignableFrom(method.ReturnType))
+            {
                 throw new NotSupportedException($"Method '{commandString}' must return Task for async execution");
+            }
 
             var result = method.Invoke(domainService, null);
             if (result is Task task)
+            {
                 await task;
+            }
 
             if (applyRecommended)
             {
@@ -212,7 +226,6 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             logService.Log(LogLevel.Info, $"[SettingApplicationService] Successfully executed ActionCommand '{commandString}' for setting '{settingId}'");
         }
-
 
         private async Task ApplySettingOperations(SettingDefinition setting, bool enable, object? value)
         {
@@ -247,7 +260,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     {
                         int intValue => intValue,
                         string strValue => comboBoxResolver.GetIndexFromDisplayName(setting, strValue),
-                        _ => 0
+                        _ => 0,
                     };
                     logService.Log(LogLevel.Info, $"[SettingApplicationService] Applying {setting.RegistrySettings.Count} registry settings for '{setting.Id}' with unified mapping for index: {index}");
 
@@ -282,7 +295,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         InputType.Toggle => enable,
                         InputType.NumericRange when value != null => ConvertNumericValue(value) != 0,
                         InputType.Selection => enable,
-                        _ => throw new NotSupportedException($"Input type '{setting.InputType}' not supported for registry operations")
+                        _ => throw new NotSupportedException($"Input type '{setting.InputType}' not supported for registry operations"),
                     };
 
                     logService.Log(LogLevel.Info, $"[SettingApplicationService] Applying {setting.RegistrySettings.Count} registry settings for '{setting.Id}' with value: {applyValue}");
@@ -310,7 +323,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         var valueToApply = comboBoxResolver.GetValueFromIndex(setting, index);
                         var command = valueToApply != 0 ? commandSetting.EnabledCommand : commandSetting.DisabledCommand;
 
-                        if (!string.IsNullOrEmpty(command) && command.Contains("{value}"))
+                        if (!string.IsNullOrEmpty(command) && command.Contains("{value}", StringComparison.Ordinal))
                         {
                             command = command.Replace("{value}", valueToApply.ToString());
                         }
@@ -391,7 +404,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     var convertedDict = new Dictionary<string, object?>
                     {
                         ["ACValue"] = acPowerCfgValue,
-                        ["DCValue"] = dcPowerCfgValue
+                        ["DCValue"] = dcPowerCfgValue,
                     };
 
                     await ExecutePowerCfgSettings(setting.PowerCfgSettings, convertedDict, await hardwareDetectionService.HasBatteryAsync());
@@ -411,7 +424,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     var convertedDict = new Dictionary<string, object?>
                     {
                         ["ACValue"] = acPowerCfgValue,
-                        ["DCValue"] = dcPowerCfgValue
+                        ["DCValue"] = dcPowerCfgValue,
                     };
 
                     await ExecutePowerCfgSettings(setting.PowerCfgSettings, convertedDict, await hardwareDetectionService.HasBatteryAsync());
@@ -431,7 +444,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     var convertedDict = new Dictionary<string, object?>
                     {
                         ["ACValue"] = acSystemValue,
-                        ["DCValue"] = dcSystemValue
+                        ["DCValue"] = dcSystemValue,
                     };
 
                     await ExecutePowerCfgSettings(setting.PowerCfgSettings, convertedDict, await hardwareDetectionService.HasBatteryAsync());
@@ -449,7 +462,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         InputType.Toggle => enable ? 1 : 0,
                         InputType.Selection when value is int index => comboBoxResolver.GetValueFromIndex(setting, index),
                         InputType.NumericRange when value != null => ConvertToSystemUnits(ConvertNumericValue(value), setting.PowerCfgSettings[0].Units),
-                        _ => throw new NotSupportedException($"Input type '{setting.InputType}' not supported for PowerCfg operations")
+                        _ => throw new NotSupportedException($"Input type '{setting.InputType}' not supported for PowerCfg operations"),
                     };
 
                     logService.Log(LogLevel.Info, $"[SettingApplicationService] Applying {setting.PowerCfgSettings.Count} PowerCfg settings for '{setting.Id}' with value: {valueToApply}");
@@ -480,7 +493,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 logService.Log(LogLevel.Info, $"[SettingApplicationService] Restarting service '{setting.RestartService}' for setting '{setting.Id}'");
                 try
                 {
-                    var script = setting.RestartService.Contains("*")
+                    var script = setting.RestartService.Contains("*", StringComparison.Ordinal)
                         ? $"Get-Service -Name '{setting.RestartService}' | Restart-Service -Force -ErrorAction SilentlyContinue"
                         : $"Restart-Service -Name '{setting.RestartService}' -Force -ErrorAction SilentlyContinue";
 
@@ -502,7 +515,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 double doubleVal => (int)doubleVal,
                 float floatVal => (int)floatVal,
                 string stringVal when int.TryParse(stringVal, out int parsed) => parsed,
-                _ => throw new ArgumentException($"Cannot convert '{value}' (type: {value?.GetType().Name ?? "null"}) to numeric value")
+                _ => throw new ArgumentException($"Cannot convert '{value}' (type: {value?.GetType().Name ?? "null"}) to numeric value"),
             };
         }
 
@@ -513,7 +526,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 "minutes" => displayValue * 60,
                 "hours" => displayValue * 3600,
                 "milliseconds" => displayValue / 1000,
-                _ => displayValue
+                _ => displayValue,
             };
         }
 
@@ -529,32 +542,41 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     case PowerModeSupport.Both:
                         var singleValue = ExtractSingleValue(valueToApply);
-                        
+
                         if (currentAc != singleValue)
+                        {
                             commands.Add($"powercfg /setacvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {singleValue}");
+                        }
 
                         if (hasBattery && currentDc != singleValue)
                         {
                             commands.Add($"powercfg /setdcvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {singleValue}");
                         }
+
                         break;
 
                     case PowerModeSupport.Separate:
                         var (acValue, dcValue) = ExtractACDCValues(valueToApply);
-                        
+
                         if (currentAc != acValue)
+                        {
                             commands.Add($"powercfg /setacvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {acValue}");
+                        }
 
                         if (hasBattery && currentDc != dcValue)
                         {
                             commands.Add($"powercfg /setdcvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {dcValue}");
                         }
+
                         break;
 
                     case PowerModeSupport.ACOnly:
                         var acOnlyValue = ExtractSingleValue(valueToApply);
                         if (currentAc != acOnlyValue)
+                        {
                             commands.Add($"powercfg /setacvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {acOnlyValue}");
+                        }
+
                         break;
 
                     case PowerModeSupport.DCOnly:
@@ -562,8 +584,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         {
                             var dcOnlyValue = ExtractSingleValue(valueToApply);
                             if (currentDc != dcOnlyValue)
+                            {
                                 commands.Add($"powercfg /setdcvalueindex SCHEME_CURRENT {powerCfgSetting.SubgroupGuid} {powerCfgSetting.SettingGuid} {dcOnlyValue}");
+                            }
                         }
+
                         break;
                 }
             }
@@ -592,7 +617,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 float floatVal => (int)floatVal,
                 string stringVal when int.TryParse(stringVal, out int parsed) => parsed,
                 ValueTuple<int, int> tuple => tuple.Item1,
-                _ => throw new ArgumentException($"Cannot convert '{value}' (type: {value?.GetType().Name ?? "null"}) to single numeric value")
+                _ => throw new ArgumentException($"Cannot convert '{value}' (type: {value?.GetType().Name ?? "null"}) to single numeric value"),
             };
         }
 
@@ -616,7 +641,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         private int ExtractIndexFromValue(object? value)
         {
-            if (value == null) return 0;
+            if (value == null)
+            {
+                return 0;
+            }
 
             if (value.GetType().Name == "ComboBoxOption")
             {
@@ -625,15 +653,21 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 {
                     var innerValue = valueProp.GetValue(value);
                     if (innerValue is int intVal)
+                    {
                         return intVal;
+                    }
                 }
             }
 
             if (value is int directInt)
+            {
                 return directInt;
+            }
 
             if (int.TryParse(value.ToString(), out int parsed))
+            {
                 return parsed;
+            }
 
             return 0;
         }
@@ -652,14 +686,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 .Where(d => d.DependencyType == SettingDependencyType.RequiresValueBeforeAnyChange)
                 .ToList();
 
-            if (!valuePrerequisites.Any())
+            if (valuePrerequisites.Count == 0)
             {
                 return;
             }
 
             foreach (var dependency in valuePrerequisites)
             {
-                logService.Log(LogLevel.Info,
+                logService.Log(
+                    LogLevel.Info,
                     $"[ValuePrereq] Processing: '{settingId}' requires '{dependency.RequiredSettingId}' = '{dependency.RequiredValue}'");
 
                 var requiredSetting = allSettings.FirstOrDefault(s => s.Id == dependency.RequiredSettingId);
@@ -671,7 +706,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 if (requiredSetting == null)
                 {
-                    logService.Log(LogLevel.Warning,
+                    logService.Log(
+                        LogLevel.Warning,
                         $"[ValuePrereq] Required setting '{dependency.RequiredSettingId}' not found in current module or global registry");
                     continue;
                 }
@@ -679,7 +715,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var states = await discoveryService.GetSettingStatesAsync(new[] { requiredSetting });
                 if (!states.TryGetValue(dependency.RequiredSettingId, out var currentState) || !currentState.Success)
                 {
-                    logService.Log(LogLevel.Warning,
+                    logService.Log(
+                        LogLevel.Warning,
                         $"[ValuePrereq] Could not get current state of '{dependency.RequiredSettingId}'");
                     continue;
                 }
@@ -691,7 +728,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 if (!requirementMet)
                 {
-                    logService.Log(LogLevel.Info,
+                    logService.Log(
+                        LogLevel.Info,
                         $"[ValuePrereq] Auto-fixing '{dependency.RequiredSettingId}' to '{dependency.RequiredValue}' before applying '{settingId}'");
 
                     var valueToApply = GetValueToApplyForRequirement(requiredSetting, dependency.RequiredValue);
@@ -702,7 +740,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         value: valueToApply,
                         skipValuePrerequisites: true);
 
-                    logService.Log(LogLevel.Info,
+                    logService.Log(
+                        LogLevel.Info,
                         $"[ValuePrereq] Successfully auto-fixed '{dependency.RequiredSettingId}', proceeding with '{settingId}'");
                 }
             }
@@ -768,7 +807,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                 }
 
-                logService.Log(LogLevel.Warning,
+                logService.Log(
+                    LogLevel.Warning,
                     $"[ValuePrereq] Could not find ComboBox option matching '{requiredValue}'");
                 return null;
             }
@@ -809,7 +849,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 return;
             }
 
-            logService.Log(LogLevel.Info,
+            logService.Log(
+                LogLevel.Info,
                 $"[PostChange] Checking if child settings now match a preset for parent '{prerequisite.RequiredSettingId}'");
 
             foreach (var (presetIndex, presetChildren) in presets)
@@ -818,7 +859,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 if (allMatch)
                 {
-                    logService.Log(LogLevel.Info,
+                    logService.Log(
+                        LogLevel.Info,
                         $"[PostChange] All children match preset at index {presetIndex}, syncing parent '{prerequisite.RequiredSettingId}'");
 
                     await ApplySettingAsync(
@@ -831,7 +873,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 }
             }
 
-            logService.Log(LogLevel.Debug,
+            logService.Log(
+                LogLevel.Debug,
                 $"[PostChange] No preset match found for parent '{prerequisite.RequiredSettingId}', leaving at current value");
         }
 
@@ -846,7 +889,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 var childSetting = globalSettingsRegistry.GetSetting(childId);
                 if (childSetting == null)
                 {
-                    logService.Log(LogLevel.Debug,
+                    logService.Log(
+                        LogLevel.Debug,
                         $"[PostChange] Skipping preset child '{childId}' from matching - not registered (likely OS-filtered)");
                     continue;
                 }
@@ -856,7 +900,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     var compatibleSettings = compatibilityFilter.FilterSettingsByWindowsVersion(new[] { childSettingDef });
                     if (!compatibleSettings.Any())
                     {
-                        logService.Log(LogLevel.Debug,
+                        logService.Log(
+                            LogLevel.Debug,
                             $"[PostChange] Skipping preset child '{childId}' from matching - not compatible with current OS version");
                         continue;
                     }
@@ -871,9 +916,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
             if (childSettingDefinitions.Count != compatiblePresetEntries.Count)
             {
-                logService.Log(LogLevel.Info,
+                logService.Log(
+                    LogLevel.Info,
                     $"[PostChange] Child count mismatch - Expected: {compatiblePresetEntries.Count}, Found in allSettings: {childSettingDefinitions.Count}");
-                logService.Log(LogLevel.Info,
+                logService.Log(
+                    LogLevel.Info,
                     $"[PostChange] This is likely because child settings span multiple domains. Fetching from global registry instead.");
 
                 childSettingDefinitions.Clear();
@@ -888,7 +935,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 if (childSettingDefinitions.Count != compatiblePresetEntries.Count)
                 {
-                    logService.Log(LogLevel.Warning,
+                    logService.Log(
+                        LogLevel.Warning,
                         $"[PostChange] Still mismatched after global registry lookup - Expected: {compatiblePresetEntries.Count}, Found: {childSettingDefinitions.Count}");
                     return false;
                 }
@@ -900,19 +948,22 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 if (!states.TryGetValue(childId, out var state) || !state.Success)
                 {
-                    logService.Log(LogLevel.Debug,
+                    logService.Log(
+                        LogLevel.Debug,
                         $"[PostChange] Could not get state for child '{childId}'");
                     return false;
                 }
 
                 if (state.IsEnabled != expectedValue)
                 {
-                    logService.Log(LogLevel.Info,
+                    logService.Log(
+                        LogLevel.Info,
                         $"[PostChange] Child '{childId}' mismatch - Expected: {expectedValue}, Actual: {state.IsEnabled}");
                     return false;
                 }
 
-                logService.Log(LogLevel.Debug,
+                logService.Log(
+                    LogLevel.Debug,
                     $"[PostChange] Child '{childId}' matches - Value: {state.IsEnabled}");
             }
 

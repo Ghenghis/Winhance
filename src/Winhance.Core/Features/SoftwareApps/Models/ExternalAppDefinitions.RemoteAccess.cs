@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "RustDesk.RustDesk",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://rustdesk.com/"
+                            WebsiteUrl = "https://rustdesk.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "input-leap.input-leap",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://github.com/input-leap/input-leap"
+                            WebsiteUrl = "https://github.com/input-leap/input-leap",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "AnyDesk.AnyDesk",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://anydesk.com/"
+                            WebsiteUrl = "https://anydesk.com/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "TeamViewer.TeamViewer",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://www.teamviewer.com/"
+                            WebsiteUrl = "https://www.teamviewer.com/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "RealVNC.VNCServer",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://www.realvnc.com/"
+                            WebsiteUrl = "https://www.realvnc.com/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "RealVNC.VNCViewer",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://www.realvnc.com/"
+                            WebsiteUrl = "https://www.realvnc.com/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "Google.ChromeRemoteDesktopHost",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://remotedesktop.google.com/"
+                            WebsiteUrl = "https://remotedesktop.google.com/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "Parsec.Parsec",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://parsec.app/"
+                            WebsiteUrl = "https://parsec.app/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "Parsec.ParsecVDD",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://parsec.app/"
+                            WebsiteUrl = "https://parsec.app/",
                         },
                         new ItemDefinition
                         {
@@ -113,9 +113,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Remote Access",
                             WinGetPackageId = "Parsec.ParsecVUD",
                             Category = "Remote Access",
-                            WebsiteUrl = "https://parsec.app/"
-                        }
-                    }
+                            WebsiteUrl = "https://parsec.app/",
+                        },
+                    },
                 };
             }
         }

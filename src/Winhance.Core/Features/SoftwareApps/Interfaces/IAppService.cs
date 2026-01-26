@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Winhance.Core.Features.SoftwareApps.Models;
 using Winhance.Core.Features.Common.Models;
+using Winhance.Core.Features.SoftwareApps.Models;
 
 namespace Winhance.Core.Features.SoftwareApps.Interfaces
 {
@@ -11,8 +11,6 @@ namespace Winhance.Core.Features.SoftwareApps.Interfaces
     /// </summary>
     public interface IAppService
     {
-        #region App Discovery & Loading
-
         /// <summary>
         /// Gets all installable applications.
         /// </summary>
@@ -36,10 +34,6 @@ namespace Winhance.Core.Features.SoftwareApps.Interfaces
         /// </summary>
         /// <returns>A collection of Windows optional features.</returns>
         Task<IEnumerable<ItemDefinition>> GetOptionalFeaturesAsync();
-
-        #endregion
-
-        #region Status Management
 
         /// <summary>
         /// Checks if an application is installed.
@@ -91,7 +85,5 @@ namespace Winhance.Core.Features.SoftwareApps.Interfaces
         /// Clears the status cache.
         /// </summary>
         void ClearStatusCache();
-
-        #endregion
     }
 }

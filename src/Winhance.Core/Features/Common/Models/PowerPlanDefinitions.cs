@@ -7,10 +7,15 @@ namespace Winhance.Core.Features.Common.Models
     public class PowerPlanComboBoxOption
     {
         public string DisplayName { get; set; } = string.Empty;
+
         public PredefinedPowerPlan? PredefinedPlan { get; set; }
+
         public PowerPlan? SystemPlan { get; set; }
+
         public bool ExistsOnSystem { get; set; }
+
         public bool IsActive { get; set; }
+
         public int Index { get; set; }
     }
 
@@ -19,8 +24,11 @@ namespace Winhance.Core.Features.Common.Models
     public class PowerPlanResolutionResult
     {
         public bool Success { get; set; }
+
         public string Guid { get; set; } = string.Empty;
+
         public string DisplayName { get; set; } = string.Empty;
+
         public string ErrorMessage { get; set; } = string.Empty;
     }
 }

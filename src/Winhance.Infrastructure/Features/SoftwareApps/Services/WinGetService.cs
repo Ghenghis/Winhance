@@ -30,7 +30,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                         $installLocation = $package.InstallLocation
                         $wingetPath = Join-Path $installLocation 'winget.exe'
                         if (Test-Path $wingetPath) {
-                            Write-Output $wingetPath
+                            Write-Output $wingetPath,
                         }
                     }
                 ";
@@ -41,7 +41,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 {
                     string path = output.Trim();
                     if (File.Exists(path))
+                    {
                         return path;
+                    }
                 }
 
                 return null;
@@ -138,7 +140,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
         public async Task<bool> InstallPackageAsync(string packageId, string? displayName = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageId))
+            {
                 throw new ArgumentException("Package ID cannot be null or empty", nameof(packageId));
+            }
 
             displayName ??= packageId;
 
@@ -244,7 +248,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
         public async Task<bool> UninstallPackageAsync(string packageId, string? displayName = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageId))
+            {
                 throw new ArgumentException("Package ID cannot be null or empty", nameof(packageId));
+            }
 
             displayName ??= packageId;
 
@@ -289,7 +295,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
         public async Task<bool> InstallWinGetAsync(CancellationToken cancellationToken = default)
         {
             if (await IsWinGetInstalledAsync(cancellationToken))
+            {
                 return true;
+            }
 
             var progress = new Progress<TaskProgressDetail>(p => taskProgressService?.UpdateDetailedProgress(p));
 
@@ -339,11 +347,12 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
             }
         }
 
-
         public async Task<bool> IsPackageInstalledAsync(string packageId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageId) || !await IsWinGetInstalledAsync(cancellationToken))
+            {
                 return false;
+            }
 
             try
             {
@@ -367,7 +376,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                CreateNoWindow = true
+                CreateNoWindow = true,
             };
 
             using var process = new Process { StartInfo = startInfo };
@@ -381,7 +390,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                     StatusText = p.Status,
                     TerminalOutput = p.Details,
                     IsActive = p.IsActive,
-                    IsIndeterminate = true
+                    IsIndeterminate = true,
                 });
             });
 
@@ -401,7 +410,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                             Status = installProgress.Status,
                             Details = installProgress.LastLine,
                             IsActive = installProgress.IsActive,
-                            IsCancelled = installProgress.IsCancelled
+                            IsCancelled = installProgress.IsCancelled,
                         });
 
                         if (installProgress.IsConnectivityIssue)
@@ -415,14 +424,22 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
             process.Start();
             process.BeginOutputReadLine();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 while (!process.WaitForExit(100))
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
                         ((IProgress<WinGetProgress>)progress).Report(new WinGetProgress { Status = "Cancelling...", IsCancelled = true });
-                        try { process.Kill(); } catch (Exception) { }
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch (Exception)
+                        {
+                        }
+
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
@@ -439,16 +456,29 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
         private string GetInitialStatusMessage(string arguments, string displayName, string operationContext)
         {
             if (!string.IsNullOrEmpty(operationContext))
+            {
                 return operationContext;
+            }
 
-            if (arguments.Contains("install"))
+            if (arguments.Contains("install", StringComparison.Ordinal))
+            {
                 return $"Preparing to install {displayName}...";
-            if (arguments.Contains("uninstall"))
+            }
+
+            if (arguments.Contains("uninstall", StringComparison.Ordinal))
+            {
                 return $"Preparing to uninstall {displayName}...";
-            if (arguments.Contains("--version"))
+            }
+
+            if (arguments.Contains("--version", StringComparison.Ordinal))
+            {
                 return displayName ?? "Checking version...";
-            if (arguments.Contains("list"))
+            }
+
+            if (arguments.Contains("list", StringComparison.Ordinal))
+            {
                 return $"Checking installation status of {displayName}...";
+            }
 
             return $"Processing {displayName ?? "operation"}...";
         }
@@ -472,7 +502,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 unchecked((int)0x80070005) => $"Access denied while installing '{packageId}'. Please run as administrator.",
                 unchecked((int)0x80072EE2) => $"Network timeout while downloading '{packageId}'. Please check your internet connection and try again.",
                 unchecked((int)0x80072EFD) => $"Could not connect to package repository while installing '{packageId}'. Please check your internet connection.",
-                _ => $"Installation failed for '{packageId}' with exit code {exitCode}. Please check the logs for more details."
+                _ => $"Installation failed for '{packageId}' with exit code {exitCode}. Please check the logs for more details.",
             };
         }
 
@@ -484,40 +514,46 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 -1978335148 => $"Uninstallation cancelled by user for package '{packageId}'.",
                 -1978335153 => $"Package '{packageId}' requires administrator privileges to uninstall. Please run as administrator.",
                 unchecked((int)0x80070005) => $"Access denied while uninstalling '{packageId}'. Please run as administrator.",
-                _ => $"Uninstallation failed for '{packageId}' with exit code {exitCode}. The app may require manual uninstallation."
+                _ => $"Uninstallation failed for '{packageId}' with exit code {exitCode}. The app may require manual uninstallation.",
             };
         }
 
         private bool IsNetworkRelatedError(string output)
         {
             if (string.IsNullOrEmpty(output))
+            {
                 return false;
+            }
 
             var lowerOutput = output.ToLowerInvariant();
-            return lowerOutput.Contains("network") ||
-                   lowerOutput.Contains("timeout") ||
-                   lowerOutput.Contains("connection") ||
-                   lowerOutput.Contains("dns") ||
-                   lowerOutput.Contains("resolve") ||
-                   lowerOutput.Contains("unreachable") ||
-                   lowerOutput.Contains("offline") ||
-                   lowerOutput.Contains("proxy") ||
-                   lowerOutput.Contains("certificate") ||
-                   lowerOutput.Contains("ssl") ||
-                   lowerOutput.Contains("tls") ||
-                   lowerOutput.Contains("download failed") ||
-                   lowerOutput.Contains("no internet") ||
-                   lowerOutput.Contains("connectivity");
+            return lowerOutput.Contains("network", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("timeout", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("connection", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("dns", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("resolve", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("unreachable", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("offline", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("proxy", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("certificate", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("ssl", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("tls", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("download failed", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("no internet", StringComparison.Ordinal) ||
+                   lowerOutput.Contains("connectivity", StringComparison.Ordinal);
         }
 
         private string EscapeArgument(string arg)
         {
             if (string.IsNullOrEmpty(arg))
+            {
                 return "\"\"";
+            }
 
-            arg = arg.Replace("\"", "\\\"");
-            if (arg.Contains(" "))
+            arg = arg.Replace("\"", "\\\"", StringComparison.Ordinal);
+            if (arg.Contains(" ", StringComparison.Ordinal))
+            {
                 arg = $"\"{arg}\"";
+            }
 
             return arg;
         }
@@ -565,7 +601,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     Progress = 10,
-                    StatusText = "Checking for WinGet updates..."
+                    StatusText = "Checking for WinGet updates...",
                 });
 
                 string wingetPath = _wingetExePath ?? "winget";
@@ -586,7 +622,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                         progress?.Report(new TaskProgressDetail
                         {
                             Progress = 50,
-                            StatusText = "Waiting for WinGet update to complete..."
+                            StatusText = "Waiting for WinGet update to complete...",
                         });
 
                         bool isReady = false;
@@ -616,14 +652,14 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                         -2147467260 => "WinGet update completed",
                         -1978335189 => "WinGet is already up to date",
                         -1978335135 => "WinGet is already installed at latest version",
-                        _ => "WinGet is ready"
+                        _ => "WinGet is ready",
                     };
 
                     logService?.LogInformation($"{status} (exit code: {result.ExitCode})");
                     progress?.Report(new TaskProgressDetail
                     {
                         Progress = 100,
-                        StatusText = "WinGet is ready"
+                        StatusText = "WinGet is ready",
                     });
                     return true;
                 }
@@ -632,7 +668,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     Progress = 40,
-                    StatusText = "Reinstalling WinGet..."
+                    StatusText = "Reinstalling WinGet...",
                 });
 
                 return await InstallWinGetAsync(cancellationToken);
@@ -651,6 +687,5 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services
                 }
             }
         }
-
     }
 }

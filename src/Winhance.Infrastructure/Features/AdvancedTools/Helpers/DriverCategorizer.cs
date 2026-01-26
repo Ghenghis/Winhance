@@ -13,7 +13,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
         {
             "SCSIAdapter",
             "hdc",
-            "HDC"
+            "HDC",
         };
 
         private static readonly HashSet<string> StorageFileNameKeywords = new(StringComparer.OrdinalIgnoreCase)
@@ -25,7 +25,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
             "iastorv",
             "vmd",
             "irst",
-            "rst"
+            "rst",
         };
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
             var fullPath = Path.GetFullPath(path);
 
             // Check for path traversal patterns
-            if (path.Contains(".."))
+            if (path.Contains("..", StringComparison.Ordinal))
             {
                 logService?.LogWarning($"Path traversal attempt detected in {parameterName}: {path}");
                 throw new ArgumentException($"Path traversal not allowed: {parameterName}", parameterName);
@@ -79,7 +79,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
 
             var fullPath = Path.GetFullPath(path);
 
-            if (path.Contains(".."))
+            if (path.Contains("..", StringComparison.Ordinal))
             {
                 throw new ArgumentException($"Path traversal not allowed: {parameterName}", parameterName);
             }
@@ -115,7 +115,7 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
                 {
                     var trimmedLine = line.Trim();
 
-                    if (trimmedLine.StartsWith("Class", StringComparison.OrdinalIgnoreCase) && trimmedLine.Contains("="))
+                    if (trimmedLine.StartsWith("Class", StringComparison.OrdinalIgnoreCase) && trimmedLine.Contains("=", StringComparison.Ordinal))
                     {
                         var parts = trimmedLine.Split('=');
                         if (parts.Length >= 2)
@@ -190,10 +190,14 @@ namespace Winhance.Infrastructure.Features.AdvancedTools.Helpers
                 {
                     var sourceDir = Path.GetDirectoryName(infFile);
                     if (string.IsNullOrEmpty(sourceDir))
+                    {
                         continue;
+                    }
 
                     if (processedFolders.Contains(sourceDir))
+                    {
                         continue;
+                    }
 
                     processedFolders.Add(sourceDir);
 

@@ -6,20 +6,21 @@ namespace Winhance.Core.Features.Common.Interfaces
     public interface IVersionService
     {
         /// <summary>
-        /// Gets the current application version
+        /// Gets the current application version.
         /// </summary>
+        /// <returns></returns>
         VersionInfo GetCurrentVersion();
 
         /// <summary>
-        /// Checks if an update is available
+        /// Checks if an update is available.
         /// </summary>
-        /// <returns>A task that resolves to true if an update is available, false otherwise</returns>
+        /// <returns>A task that resolves to true if an update is available, false otherwise.</returns>
         Task<VersionInfo> CheckForUpdateAsync();
 
         /// <summary>
-        /// Downloads and launches the installer for the latest version
+        /// Downloads and launches the installer for the latest version.
         /// </summary>
-        /// <returns>A task that completes when the download is initiated</returns>
+        /// <returns>A task that completes when the download is initiated.</returns>
         Task DownloadAndInstallUpdateAsync();
     }
 }

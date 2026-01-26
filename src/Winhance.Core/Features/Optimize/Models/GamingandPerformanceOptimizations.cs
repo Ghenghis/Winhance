@@ -233,6 +233,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Processor Group
                 new SettingDefinition
                 {
@@ -263,14 +264,14 @@ public static class GamingandPerformanceOptimizations
                         {
                             [0] = new Dictionary<string, object?>
                             {
-                                ["Win32PrioritySeparation"] = 38, // Decimal
+                                ["Win32PrioritySeparation"] = 38, // Decimal,
                             },
                             [1] = new Dictionary<string, object?>
                             {
-                                ["Win32PrioritySeparation"] = 24, // Decimal
+                                ["Win32PrioritySeparation"] = 24, // Decimal,
                             },
                         },
-                    }
+                    },
                 },
                 new SettingDefinition
                 {
@@ -340,6 +341,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Graphics Group
                 new SettingDefinition
                 {
@@ -403,8 +405,8 @@ public static class GamingandPerformanceOptimizations
                             ValueName = "DirectXUserGlobalSettings",
                             RecommendedValue = "SwapEffectUpgradeEnable=1;",
                             EnabledValue = "SwapEffectUpgradeEnable=1;",
-                            DisabledValue = "",
-                            DefaultValue = "",
+                            DisabledValue = string.Empty,
+                            DefaultValue = string.Empty,
                             ValueType = RegistryValueKind.String,
                             AbsenceMeansEnabled = true,
                         },
@@ -499,6 +501,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Network Group
                 new SettingDefinition
                 {
@@ -554,6 +557,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Xbox Group
                 new SettingDefinition
                 {
@@ -633,6 +637,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // System Services Group
                 new SettingDefinition
                 {
@@ -1896,6 +1901,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Scheduled Tasks - Telemetry & Privacy
                 new SettingDefinition
                 {
@@ -1913,9 +1919,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -1933,9 +1939,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -1953,9 +1959,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -1973,9 +1979,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -1993,9 +1999,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2013,9 +2019,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2033,9 +2039,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2053,9 +2059,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2073,10 +2079,11 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\PI\\Sqm-Tasks\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\PI\\Sqm-Tasks\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
+
                 // Scheduled Tasks - Application Experience
                 new SettingDefinition
                 {
@@ -2094,9 +2101,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\MareBackup\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\MareBackup\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2114,9 +2121,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\StartupAppTask\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\StartupAppTask\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2134,10 +2141,11 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
+
                 // Scheduled Tasks - Optional
                 new SettingDefinition
                 {
@@ -2155,9 +2163,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Maps\\MapsUpdateTask\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Maps\\MapsUpdateTask\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2175,9 +2183,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Autochk\\Proxy\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Autochk\\Proxy\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = null
-                        }
-                    }
+                            RecommendedState = null,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2195,9 +2203,9 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Shell\\FamilySafetyMonitor\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Shell\\FamilySafetyMonitor\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -2215,10 +2223,11 @@ public static class GamingandPerformanceOptimizations
                             EnabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Power Efficiency Diagnostics\\AnalyzeSystem\" /Enable",
                             DisabledCommand = "schtasks /Change /TN \"\\Microsoft\\Windows\\Power Efficiency Diagnostics\\AnalyzeSystem\" /Disable",
                             RequiresElevation = true,
-                            RecommendedState = false
-                        }
-                    }
+                            RecommendedState = false,
+                        },
+                    },
                 },
+
                 // Visual Effects Group
                 new SettingDefinition
                 {
@@ -2238,7 +2247,7 @@ public static class GamingandPerformanceOptimizations
                             ValueType = RegistryValueKind.DWord,
                             DefaultValue = 0,
                             IsPrimary = true,
-                        }
+                        },
                     },
                     CustomProperties = new Dictionary<string, object>
                     {
@@ -2270,7 +2279,8 @@ public static class GamingandPerformanceOptimizations
                         },
                         [CustomPropertyKeys.SettingPresets] = new Dictionary<int, Dictionary<string, bool>>
                         {
-                            [0] = new Dictionary<string, bool> // Let Windows Decide (Windows changes this preset based on hardware and just setting VisualFXSetting to 0 does not automatically apply the preset) 
+                            [0] = new Dictionary<string, bool> // Let Windows Decide (Windows changes this preset based on hardware and just setting VisualFXSetting to 0 does not automatically apply the preset)
+
                                                                // For this reason, Winhance applies a "Balanced" preset that actually applies the child settings to the system
                                                                // Note: The Visual Effects GUI in Windows will not be accurate after selecting this option in Winhance
                                                                // if you truly want to let Windows decide, toggle the setting in Windows.
@@ -2333,6 +2343,7 @@ public static class GamingandPerformanceOptimizations
                                 ["smooth-scroll-listboxes"] = false,
                                 ["drop-shadows"] = false,
                             },
+
                             // No preset for Custom, since it's, you know.... Custom...
                         },
                     },
@@ -2919,6 +2930,7 @@ public static class GamingandPerformanceOptimizations
                         },
                     },
                 },
+
                 // Accessibility Group
                 new SettingDefinition
                 {

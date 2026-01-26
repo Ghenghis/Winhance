@@ -24,7 +24,7 @@ namespace Winhance.Core.Features.Common.Constants
 
             // SoftwareApps
             new(FeatureIds.WindowsApps, "Windows Apps", "MicrosoftWindows", "SoftwareApps", 1),
-            new(FeatureIds.ExternalApps, "External Apps", "PackageDown", "SoftwareApps", 2)
+            new(FeatureIds.ExternalApps, "External Apps", "PackageDown", "SoftwareApps", 2),
         };
 
         public static readonly HashSet<string> OptimizeFeatures = All

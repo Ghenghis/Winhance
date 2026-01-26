@@ -21,7 +21,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Browser",
                         CapabilityName = "Browser.InternetExplorer",
                         Category = "Browser",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -31,7 +31,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Development",
                         CapabilityName = "Microsoft.Windows.PowerShell.ISE",
                         Category = "Development",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -41,7 +41,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "System",
                         CapabilityName = "App.Support.QuickAssist",
                         Category = "System",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -51,7 +51,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Utilities",
                         CapabilityName = "App.StepsRecorder",
                         Category = "Utilities",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -61,7 +61,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Media",
                         CapabilityName = "Media.WindowsMediaPlayer",
                         Category = "Media",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -71,7 +71,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Productivity",
                         CapabilityName = "Microsoft.Windows.WordPad",
                         Category = "Productivity",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -81,7 +81,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Graphics",
                         CapabilityName = "Microsoft.Windows.MSPaint",
                         Category = "Graphics",
-                        CanBeReinstalled = false
+                        CanBeReinstalled = false,
                     },
                     new ItemDefinition
                     {
@@ -91,7 +91,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Networking",
                         CapabilityName = "OpenSSH.Client",
                         Category = "Networking",
-                        CanBeReinstalled = true
+                        CanBeReinstalled = true,
                     },
                     new ItemDefinition
                     {
@@ -101,9 +101,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                         GroupName = "Networking",
                         CapabilityName = "OpenSSH.Server",
                         Category = "Networking",
-                        CanBeReinstalled = true
-                    }
-                }
+                        CanBeReinstalled = true,
+                    },
+                },
             };
         }
     }

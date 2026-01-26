@@ -23,6 +23,7 @@ namespace Winhance.Core.Features.AdvancedTools.Interfaces
             ImageFormat targetFormat,
             IProgress<TaskProgressDetail>? progress = null,
             CancellationToken cancellationToken = default);
+
         Task<bool> ExtractIsoAsync(
             string isoPath,
             string workingDirectory,

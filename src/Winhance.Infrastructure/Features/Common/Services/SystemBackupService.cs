@@ -69,7 +69,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CheckingRestorePoint"),
-                    IsIndeterminate = true
+                    IsIndeterminate = true,
                 });
 
                 var existingPoint = await FindRestorePointAsync(RestorePointName);
@@ -89,7 +89,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CheckingRestoreStatus"),
-                    IsIndeterminate = true
+                    IsIndeterminate = true,
                 });
 
                 var isEnabled = await CheckSystemRestoreEnabledAsync();
@@ -102,7 +102,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_EnablingRestore"),
-                        IsIndeterminate = true
+                        IsIndeterminate = true,
                     });
 
                     _logService.Log(LogLevel.Info, "Attempting to enable System Restore...");
@@ -129,7 +129,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 progress?.Report(new TaskProgressDetail
                 {
                     StatusText = _localization.GetString("Progress_CreatingRestorePoint"),
-                    IsIndeterminate = true
+                    IsIndeterminate = true,
                 });
 
                 _logService.Log(LogLevel.Info, $"Creating new restore point with name '{RestorePointName}'...");
@@ -278,6 +278,7 @@ $freeSpace";
                     _logService.Log(LogLevel.Info, $"Available disk space: {freeSpace / 1024 / 1024 / 1024:F2} GB");
                     return freeSpace >= MinimumFreeSpaceBytes;
                 }
+
                 return true;
             }
             catch (Exception ex)
@@ -304,7 +305,7 @@ if (-not (Test-Path '{BackupDirectory}')) {{
                 {
                     ("HKLM", "Winhance_HKLM_Backup.reg"),
                     ("HKCU", "Winhance_HKCU_Backup.reg"),
-                    ("HKCR", "Winhance_HKCR_Backup.reg")
+                    ("HKCR", "Winhance_HKCR_Backup.reg"),
                 };
 
                 foreach (var (hive, fileName) in backups)
@@ -316,7 +317,7 @@ if (-not (Test-Path '{BackupDirectory}')) {{
                     progress?.Report(new TaskProgressDetail
                     {
                         StatusText = _localization.GetString("Progress_BackingUpRegistry", hive),
-                        IsIndeterminate = true
+                        IsIndeterminate = true,
                     });
 
                     var success = await ExportRegistryHiveAsync(hive, filePath);
@@ -367,7 +368,7 @@ $files = @(
     '{BackupDirectory}\Winhance_HKLM_Backup.reg',
     '{BackupDirectory}\Winhance_HKCU_Backup.reg',
     '{BackupDirectory}\Winhance_HKCR_Backup.reg'
-)
+),
 $existing = $files | Where-Object {{ Test-Path $_ }}
 $existing -join '|'";
 

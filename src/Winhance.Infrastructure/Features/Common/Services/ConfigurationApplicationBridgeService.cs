@@ -28,7 +28,7 @@ public class ConfigurationApplicationBridgeService
         string sectionName,
         Func<string, object?, SettingDefinition, Task<(bool confirmed, bool checkboxResult)>>? confirmationHandler = null)
     {
-        if (section?.Items == null || !section.Items.Any())
+        if (section?.Items == null || section.Items.Count == 0)
         {
             _logService.Log(LogLevel.Warning, $"Section '{sectionName}' is empty or null");
             return false;
@@ -69,12 +69,14 @@ public class ConfigurationApplicationBridgeService
 
         if (skippedOsCount > 0)
         {
-            _logService.Log(LogLevel.Info,
+            _logService.Log(
+                LogLevel.Info,
                 $"Section '{sectionName}': {appliedCount} applied, {skippedOsCount} skipped (OS incompatible), {failCount} failed");
         }
         else
         {
-            _logService.Log(LogLevel.Info,
+            _logService.Log(
+                LogLevel.Info,
                 $"Section '{sectionName}': {appliedCount} applied, {failCount} failed");
         }
 
@@ -117,7 +119,7 @@ public class ConfigurationApplicationBridgeService
             return new Dictionary<string, object>
             {
                 ["Guid"] = item.PowerPlanGuid,
-                ["Name"] = item.PowerPlanName ?? "Unknown"
+                ["Name"] = item.PowerPlanName ?? "Unknown",
             };
         }
 
@@ -128,7 +130,9 @@ public class ConfigurationApplicationBridgeService
     private object? ResolveNumericRangeValue(ConfigurationItem item)
     {
         if (item.PowerSettings == null || item.PowerSettings.Count == 0)
+        {
             return null;
+        }
 
         var hasAcValue = item.PowerSettings.TryGetValue("ACValue", out var acVal);
         var hasDcValue = item.PowerSettings.TryGetValue("DCValue", out var dcVal);
@@ -138,7 +142,7 @@ public class ConfigurationApplicationBridgeService
             return new Dictionary<string, object?>
             {
                 ["ACValue"] = acVal,
-                ["DCValue"] = dcVal ?? acVal
+                ["DCValue"] = dcVal ?? acVal,
             };
         }
 
@@ -154,7 +158,7 @@ public class ConfigurationApplicationBridgeService
     {
         Applied,
         SkippedOsIncompatible,
-        Failed
+        Failed,
     }
 
     private List<List<(ConfigurationItem item, SettingDefinition setting)>> BuildDependencyWaves(List<ConfigurationItem> items)
@@ -168,7 +172,9 @@ public class ConfigurationApplicationBridgeService
         foreach (var item in items)
         {
             if (string.IsNullOrEmpty(item.Id))
+            {
                 continue;
+            }
 
             var setting = FindSettingById(item.Id, allSettings);
             if (setting != null)
@@ -177,7 +183,7 @@ public class ConfigurationApplicationBridgeService
             }
         }
 
-        while (remainingItems.Any())
+        while (remainingItems.Count != 0)
         {
             var currentWave = new List<(ConfigurationItem, SettingDefinition)>();
 
@@ -198,7 +204,7 @@ public class ConfigurationApplicationBridgeService
                 }
             }
 
-            if (!currentWave.Any() && remainingItems.Any())
+            if (currentWave.Count == 0 && remainingItems.Count != 0)
             {
                 var circularSettingIds = string.Join(", ", remainingItems.Select(x => x.setting.Id));
                 _logService.Log(LogLevel.Warning, $"Circular dependency detected in settings: {circularSettingIds}. Processing anyway.");
@@ -206,7 +212,7 @@ public class ConfigurationApplicationBridgeService
                 remainingItems.Clear();
             }
 
-            if (currentWave.Any())
+            if (currentWave.Count != 0)
             {
                 waves.Add(currentWave);
             }
@@ -302,8 +308,11 @@ public class ConfigurationApplicationBridgeService
         {
             var setting = featureSettings.FirstOrDefault(s => s.Id == id);
             if (setting != null)
+            {
                 return setting;
+            }
         }
+
         return null;
     }
 }

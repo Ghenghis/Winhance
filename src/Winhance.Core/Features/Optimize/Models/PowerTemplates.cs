@@ -24,7 +24,7 @@ namespace Winhance.Core.Features.Optimize.Models
                 "Template_TimeIntervals_Option_12",
                 "Template_TimeIntervals_Option_13",
                 "Template_TimeIntervals_Option_14",
-                "Template_TimeIntervals_Option_15"
+                "Template_TimeIntervals_Option_15",
             },
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
@@ -43,8 +43,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [12] = new Dictionary<string, object?> { ["PowerCfgValue"] = 7200 },
                 [13] = new Dictionary<string, object?> { ["PowerCfgValue"] = 10800 },
                 [14] = new Dictionary<string, object?> { ["PowerCfgValue"] = 14400 },
-                [15] = new Dictionary<string, object?> { ["PowerCfgValue"] = 18000 }
-            }
+                [15] = new Dictionary<string, object?> { ["PowerCfgValue"] = 18000 },
+            },
         };
 
         public static readonly Dictionary<string, object> OnOff = new()
@@ -53,8 +53,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["Value"] = 0 },
-                [1] = new Dictionary<string, object?> { ["Value"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["Value"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> EnabledDisabled = new()
@@ -63,8 +63,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["Value"] = 0 },
-                [1] = new Dictionary<string, object?> { ["Value"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["Value"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> WakeTimers = new()
@@ -74,8 +74,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> PowerButtonActions = new()
@@ -87,8 +87,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
                 [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
-                [4] = new Dictionary<string, object?> { ["PowerCfgValue"] = 4 }
-            }
+                [4] = new Dictionary<string, object?> { ["PowerCfgValue"] = 4 },
+            },
         };
 
         public static readonly Dictionary<string, object> LidActions = new()
@@ -99,8 +99,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> CoolingPolicy = new()
@@ -109,8 +109,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
-                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> BatteryActions = new()
@@ -121,8 +121,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> WirelessPower = new()
@@ -133,8 +133,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> Slideshow = new()
@@ -143,8 +143,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
-                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> PciExpress = new()
@@ -154,8 +154,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> Usb3LinkPower = new()
@@ -166,8 +166,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> MediaSharing = new()
@@ -176,8 +176,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
-                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> VideoQualityBias = new()
@@ -186,8 +186,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
-                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 }
-            }
+                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
+            },
         };
 
         public static readonly Dictionary<string, object> VideoPlayback = new()
@@ -197,8 +197,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> AmdPowerSlider = new()
@@ -209,8 +209,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> JavaScriptTimers = new()
@@ -219,8 +219,8 @@ namespace Winhance.Core.Features.Optimize.Models
             [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 }
-            }
+                [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
+            },
         };
 
         public static readonly Dictionary<string, object> IntelGraphics = new()
@@ -230,8 +230,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> AtiPowerPlay = new()
@@ -241,8 +241,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> SwitchableGraphics = new()
@@ -252,8 +252,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static readonly Dictionary<string, object> ProcessorBoostMode = new()
@@ -267,8 +267,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
                 [4] = new Dictionary<string, object?> { ["PowerCfgValue"] = 4 },
                 [5] = new Dictionary<string, object?> { ["PowerCfgValue"] = 5 },
-                [6] = new Dictionary<string, object?> { ["PowerCfgValue"] = 6 }
-            }
+                [6] = new Dictionary<string, object?> { ["PowerCfgValue"] = 6 },
+            },
         };
 
         public static readonly Dictionary<string, object> PerformanceIncreasePolicy = new()
@@ -279,8 +279,8 @@ namespace Winhance.Core.Features.Optimize.Models
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
                 [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
-                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 }
-            }
+                [3] = new Dictionary<string, object?> { ["PowerCfgValue"] = 3 },
+            },
         };
 
         public static readonly Dictionary<string, object> PerformanceDecreasePolicy = new()
@@ -290,8 +290,8 @@ namespace Winhance.Core.Features.Optimize.Models
             {
                 [0] = new Dictionary<string, object?> { ["PowerCfgValue"] = 0 },
                 [1] = new Dictionary<string, object?> { ["PowerCfgValue"] = 1 },
-                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 }
-            }
+                [2] = new Dictionary<string, object?> { ["PowerCfgValue"] = 2 },
+            },
         };
 
         public static Dictionary<string, object> CreateNumericRange(int minValue, int maxValue, string units)
@@ -301,7 +301,7 @@ namespace Winhance.Core.Features.Optimize.Models
                 ["MinValue"] = minValue,
                 ["MaxValue"] = maxValue,
                 ["Increment"] = 1,
-                ["Units"] = units
+                ["Units"] = units,
             };
         }
     }

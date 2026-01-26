@@ -56,7 +56,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
                 await _prefsService.SetPreferenceAsync("ScriptMigrationCompleted", true);
 
-                _logService.Log(LogLevel.Info,
+                _logService.Log(
+                    LogLevel.Info,
                     $"Migration completed: {result.TasksDeleted} tasks deleted, {result.ScriptsRenamed} scripts renamed");
 
                 return result;

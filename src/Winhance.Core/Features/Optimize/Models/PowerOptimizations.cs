@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using Microsoft.Win32;
 using Winhance.Core.Features.Common.Constants;
 using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Models;
-using Microsoft.Win32;
 
 namespace Winhance.Core.Features.Optimize.Models
 {
@@ -26,8 +26,8 @@ namespace Winhance.Core.Features.Optimize.Models
                         InputType = InputType.Selection,
                         CustomProperties = new Dictionary<string, object>
                         {
-                            ["LoadDynamicOptions"] = true
-                        }
+                            ["LoadDynamicOptions"] = true,
+                        },
                     },
 
                     // Display
@@ -50,18 +50,17 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 300
-                            }
+                                RecommendedValueDC = 300,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.TimeIntervals)
                         {
                             ["RecommendedOptionAC"] = "Never",
-                            ["RecommendedOptionDC"] = "5 minutes"
-                        }
+                            ["RecommendedOptionDC"] = "5 minutes",
+                        },
                     },
 
-                    
-//                    new SettingDefinition
+// new SettingDefinition
 //                    {
 //                        Id = "display-brightness",
 //                        Name = "Display brightness",
@@ -78,13 +77,13 @@ namespace Winhance.Core.Features.Optimize.Models
 //                                SubgroupGuid = "7516b95f-f776-4464-8c53-06167f40cc99",
 //                                SettingGuid = "aded5e82-b909-4619-9949-f5d71dac0bcb",
 //                                PowerModeSupport = PowerModeSupport.Separate,
-//                                Units = "%"
+//                                Units = "%",
 //                            }
 //                        },
-//                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+//                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
 //                    },
 
-//                    new SettingDefinition
+// new SettingDefinition
 //                    {
 //                        Id = "display-dimmed-brightness",
 //                        Name = "Dimmed display brightness",
@@ -100,13 +99,13 @@ namespace Winhance.Core.Features.Optimize.Models
 //                                SubgroupGuid = "7516b95f-f776-4464-8c53-06167f40cc99",
 //                                SettingGuid = "f1fbfde2-a960-4165-9f88-50667911ce96",
 //                                PowerModeSupport = PowerModeSupport.Separate,
-//                                Units = "%"
+//                                Units = "%",
 //                            }
 //                        },
-//                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+//                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
 //                    },
 
-//                    new SettingDefinition
+// new SettingDefinition
 //                    {
 //                        Id = "adaptive-brightness",
 //                        Name = "Enable adaptive brightness",
@@ -124,7 +123,7 @@ namespace Winhance.Core.Features.Optimize.Models
 //                                SettingGuid = "fbd9aa66-9553-4097-ba44-ed6e9d65eab8",
 //                            }
 //                        },
-//                        CustomProperties = PowerTemplates.OnOff
+//                        CustomProperties = PowerTemplates.OnOff,
 //                    },
 
                     // Hard Disk
@@ -147,10 +146,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "Seconds",
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 600
-                            }
+                                RecommendedValueDC = 600,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, int.MaxValue, "Minutes")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, int.MaxValue, "Minutes"),
                     },
 
                     // Internet Explorer
@@ -171,14 +170,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "4c793e7d-a264-42e1-87d3-7a0d2f523ccd",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 0
-                            }
+                                RecommendedValueDC = 0,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.JavaScriptTimers)
                         {
                             ["RecommendedOptionAC"] = "Maximum Performance",
-                            ["RecommendedOptionDC"] = "Maximum Performance"
-                        }
+                            ["RecommendedOptionDC"] = "Maximum Performance",
+                        },
                     },
 
                     // Desktop Background Settings
@@ -198,14 +197,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "309dce9b-bef4-4119-9921-a851fb12f0f4",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 1,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.Slideshow)
                         {
                             ["RecommendedOptionAC"] = "Available",
-                            ["RecommendedOptionDC"] = "Paused"
-                        }
+                            ["RecommendedOptionDC"] = "Paused",
+                        },
                     },
 
                     // Wireless Adapter Settings
@@ -225,14 +224,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "12bbebe6-58d6-4636-95bb-3217ef867c1a",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 2
-                            }
+                                RecommendedValueDC = 2,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.WirelessPower)
                         {
                             ["RecommendedOptionAC"] = "Maximum Performance",
-                            ["RecommendedOptionDC"] = "Medium Power Saving"
-                        }
+                            ["RecommendedOptionDC"] = "Medium Power Saving",
+                        },
                     },
 
                     // Sleep
@@ -254,14 +253,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "29f6c1db-86da-48c5-9fdb-f2b67b1f44da",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 900
-                            }
+                                RecommendedValueDC = 900,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.TimeIntervals)
                         {
                             ["RecommendedOptionAC"] = "Never",
-                            ["RecommendedOptionDC"] = "15 minutes"
-                        }
+                            ["RecommendedOptionDC"] = "15 minutes",
+                        },
                     },
 
                     new SettingDefinition
@@ -282,14 +281,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 0
-                            }
+                                RecommendedValueDC = 0,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.WakeTimers)
                         {
                             ["RecommendedOptionAC"] = "Disable",
-                            ["RecommendedOptionDC"] = "Disable"
-                        }
+                            ["RecommendedOptionDC"] = "Disable",
+                        },
                     },
 
                     new SettingDefinition
@@ -307,8 +306,8 @@ namespace Winhance.Core.Features.Optimize.Models
                                 Id = "hibernation-toggle",
                                 EnabledCommand = "powercfg /hibernate on",
                                 DisabledCommand = "powercfg /hibernate off",
-                                RecommendedState = false
-                            }
+                                RecommendedState = false,
+                            },
                         },
                     },
 
@@ -329,10 +328,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGUIDAlias = "HIBERNATEIDLE",
                                 SubgroupGuid = "238c9fa8-0aad-41ed-83f4-97be242c8f20",
                                 SettingGuid = "9d7815a6-7ee4-497e-8888-515a05f02364",
-                                PowerModeSupport = PowerModeSupport.Separate
-                            }
+                                PowerModeSupport = PowerModeSupport.Separate,
+                            },
                         },
-                        CustomProperties = PowerTemplates.TimeIntervals
+                        CustomProperties = PowerTemplates.TimeIntervals,
                     },
 
                     new SettingDefinition
@@ -361,8 +360,8 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGUIDAlias = "HYBRIDSLEEP",
                                 SubgroupGuid = "238c9fa8-0aad-41ed-83f4-97be242c8f20",
                                 SettingGuid = "94ac6d29-73ce-41a6-809f-6363ba21b47e",
-                                PowerModeSupport = PowerModeSupport.Both
-                            }
+                                PowerModeSupport = PowerModeSupport.Both,
+                            },
                         },
                     },
 
@@ -461,11 +460,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100000, "Milliseconds")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100000, "Milliseconds"),
                     },
                     new SettingDefinition
                     {
@@ -483,14 +482,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "48e6b7a6-50f5-4782-a5d4-53bb8f07e226",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.EnabledDisabled)
                         {
                             ["RecommendedOptionAC"] = "Disabled",
-                            ["RecommendedOptionDC"] = "Enabled"
-                        }
+                            ["RecommendedOptionDC"] = "Enabled",
+                        },
                     },
                     new SettingDefinition
                     {
@@ -517,15 +516,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.Usb3LinkPower)
                         {
                             ["RecommendedOptionAC"] = "Off",
-                            ["RecommendedOptionDC"] = "Moderate power savings"
-                        }
+                            ["RecommendedOptionDC"] = "Moderate power savings",
+                        },
                     },
 
                     // Intel(R) Graphics Settings
@@ -546,14 +545,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "3619c3f2-afb2-4afc-b0e9-e7fef372de36",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 2,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.IntelGraphics)
                         {
                             ["RecommendedOptionAC"] = "Maximum Performance",
-                            ["RecommendedOptionDC"] = "Balanced"
-                        }
+                            ["RecommendedOptionDC"] = "Balanced",
+                        },
                     },
 
                     // Power Buttons and Lid
@@ -582,15 +581,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.PowerButtonActions)
                         {
                             ["RecommendedOptionAC"] = "Do nothing",
-                            ["RecommendedOptionDC"] = "Do nothing"
-                        }
+                            ["RecommendedOptionDC"] = "Do nothing",
+                        },
                     },
 
                     new SettingDefinition
@@ -618,15 +617,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.PowerButtonActions)
                         {
                             ["RecommendedOptionAC"] = "Do nothing",
-                            ["RecommendedOptionDC"] = "Do nothing"
-                        }
+                            ["RecommendedOptionDC"] = "Do nothing",
+                        },
                     },
 
                     new SettingDefinition
@@ -656,15 +655,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.LidActions)
                         {
                             ["RecommendedOptionAC"] = "Sleep",
-                            ["RecommendedOptionDC"] = "Sleep"
-                        }
+                            ["RecommendedOptionDC"] = "Sleep",
+                        },
                     },
 
                     // PCI Express
@@ -686,14 +685,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "ee12f906-d277-404b-b6da-e5fa1a576df5",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 2
-                            }
+                                RecommendedValueDC = 2,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.PciExpress)
                         {
                             ["RecommendedOptionAC"] = "Off",
-                            ["RecommendedOptionDC"] = "Maximum power savings"
-                        }
+                            ["RecommendedOptionDC"] = "Maximum power savings",
+                        },
                     },
 
                     // Processor Power Management
@@ -716,10 +715,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "%",
                                 RecommendedValueAC = 100,
-                                RecommendedValueDC = 5
-                            }
+                                RecommendedValueDC = 5,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -741,10 +740,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "%",
                                 RecommendedValueAC = 100,
-                                RecommendedValueDC = 100
-                            }
+                                RecommendedValueDC = 100,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -774,15 +773,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.CoolingPolicy)
                         {
                             ["RecommendedOptionAC"] = "Active",
-                            ["RecommendedOptionDC"] = "Active"
-                        }
+                            ["RecommendedOptionDC"] = "Active",
+                        },
                     },
 
                     new SettingDefinition
@@ -813,15 +812,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.ProcessorBoostMode)
                         {
                             ["RecommendedOptionAC"] = "Aggressive",
-                            ["RecommendedOptionDC"] = "Enabled"
-                        }
+                            ["RecommendedOptionDC"] = "Enabled",
+                        },
                     },
 
                     new SettingDefinition
@@ -852,15 +851,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.PerformanceIncreasePolicy)
                         {
                             ["RecommendedOptionAC"] = "Rocket",
-                            ["RecommendedOptionDC"] = "Ideal"
-                        }
+                            ["RecommendedOptionDC"] = "Ideal",
+                        },
                     },
 
                     new SettingDefinition
@@ -891,15 +890,15 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.PerformanceDecreasePolicy)
                         {
                             ["RecommendedOptionAC"] = "Single",
-                            ["RecommendedOptionDC"] = "Rocket"
-                        }
+                            ["RecommendedOptionDC"] = "Rocket",
+                        },
                     },
 
                     new SettingDefinition
@@ -932,11 +931,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -969,11 +968,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1005,11 +1004,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1041,11 +1040,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1077,11 +1076,11 @@ namespace Winhance.Core.Features.Optimize.Models
                                     EnabledValue = 0,
                                     DisabledValue = 1,
                                     DefaultValue = 1,
-                                    ValueType = RegistryValueKind.DWord
-                                }
-                            }
+                                    ValueType = RegistryValueKind.DWord,
+                                },
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1125,14 +1124,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "03680956-93bc-4294-bba6-4e0f09bb717f",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 1,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.MediaSharing)
                         {
                             ["RecommendedOptionAC"] = "Prevent idling to sleep",
-                            ["RecommendedOptionDC"] = "Prevent idling to sleep"
-                        }
+                            ["RecommendedOptionDC"] = "Prevent idling to sleep",
+                        },
                     },
 
                     new SettingDefinition
@@ -1151,14 +1150,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "10778347-1370-4ee0-8bbd-33bdacaade49",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 1,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.VideoQualityBias)
                         {
                             ["RecommendedOptionAC"] = "Video playback performance bias",
-                            ["RecommendedOptionDC"] = "Video playback performance bias"
-                        }
+                            ["RecommendedOptionDC"] = "Video playback performance bias",
+                        },
                     },
 
                     new SettingDefinition
@@ -1177,14 +1176,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "34c7b99f-9a6d-4b3c-8dc7-b6693b78cef4",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 0
-                            }
+                                RecommendedValueDC = 0,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.VideoPlayback)
                         {
                             ["RecommendedOptionAC"] = "Optimize video quality",
-                            ["RecommendedOptionDC"] = "Optimize video quality"
-                        }
+                            ["RecommendedOptionDC"] = "Optimize video quality",
+                        },
                     },
 
                     new SettingDefinition
@@ -1206,14 +1205,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "5dbb7c9f-38e9-40d2-9749-4f8a0e9f640f",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 1,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.OnOff)
                         {
                             ["RecommendedOptionAC"] = "On",
-                            ["RecommendedOptionDC"] = "On"
-                        }
+                            ["RecommendedOptionDC"] = "On",
+                        },
                     },
 
                     new SettingDefinition
@@ -1235,14 +1234,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "637ea02f-bbcb-4015-8e2c-a1c7b9c0b546",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 2,
-                                RecommendedValueDC = 2
-                            }
+                                RecommendedValueDC = 2,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.BatteryActions)
                         {
                             ["RecommendedOptionAC"] = "Hibernate",
-                            ["RecommendedOptionDC"] = "Hibernate"
-                        }
+                            ["RecommendedOptionDC"] = "Hibernate",
+                        },
                     },
 
                     new SettingDefinition
@@ -1265,10 +1264,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "%",
                                 RecommendedValueAC = 10,
-                                RecommendedValueDC = 10
-                            }
+                                RecommendedValueDC = 10,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1291,10 +1290,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "%",
                                 RecommendedValueAC = 5,
-                                RecommendedValueDC = 5
-                            }
+                                RecommendedValueDC = 5,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1316,14 +1315,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "bcded951-187b-4d05-bccc-f7e51960c258",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 1,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.OnOff)
                         {
                             ["RecommendedOptionAC"] = "On",
-                            ["RecommendedOptionDC"] = "On"
-                        }
+                            ["RecommendedOptionDC"] = "On",
+                        },
                     },
 
                     new SettingDefinition
@@ -1345,14 +1344,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "d8742dcb-3e6a-4b3c-b3fe-374623cdcf06",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 0,
-                                RecommendedValueDC = 0
-                            }
+                                RecommendedValueDC = 0,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.BatteryActions)
                         {
                             ["RecommendedOptionAC"] = "Do nothing",
-                            ["RecommendedOptionDC"] = "Do nothing"
-                        }
+                            ["RecommendedOptionDC"] = "Do nothing",
+                        },
                     },
 
                     new SettingDefinition
@@ -1374,10 +1373,10 @@ namespace Winhance.Core.Features.Optimize.Models
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 Units = "%",
                                 RecommendedValueAC = 7,
-                                RecommendedValueDC = 7
-                            }
+                                RecommendedValueDC = 7,
+                            },
                         },
-                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%")
+                        CustomProperties = PowerTemplates.CreateNumericRange(0, 100, "%"),
                     },
 
                     new SettingDefinition
@@ -1396,14 +1395,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "7ec1751b-60ed-4588-afb5-9819d3d77d90",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 3,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.AmdPowerSlider)
                         {
                             ["RecommendedOptionAC"] = "Best Performance",
-                            ["RecommendedOptionDC"] = "Better Battery"
-                        }
+                            ["RecommendedOptionDC"] = "Better Battery",
+                        },
                     },
 
                     new SettingDefinition
@@ -1423,14 +1422,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "191f65b5-d45c-4a4f-8aae-1ab8bfd980e6",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 2,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.AtiPowerPlay)
                         {
                             ["RecommendedOptionAC"] = "Maximum Performance",
-                            ["RecommendedOptionDC"] = "Balanced"
-                        }
+                            ["RecommendedOptionDC"] = "Balanced",
+                        },
                     },
 
                     new SettingDefinition
@@ -1450,14 +1449,14 @@ namespace Winhance.Core.Features.Optimize.Models
                                 SettingGuid = "a1662ab2-9d34-4e53-ba8b-2639b9e20857",
                                 PowerModeSupport = PowerModeSupport.Separate,
                                 RecommendedValueAC = 2,
-                                RecommendedValueDC = 1
-                            }
+                                RecommendedValueDC = 1,
+                            },
                         },
                         CustomProperties = new Dictionary<string, object>(PowerTemplates.SwitchableGraphics)
                         {
                             ["RecommendedOptionAC"] = "Maximize Performance",
-                            ["RecommendedOptionDC"] = "Optimize Power Savings"
-                        }
+                            ["RecommendedOptionDC"] = "Optimize Power Savings",
+                        },
                     },
 
                     new SettingDefinition
@@ -1517,8 +1516,7 @@ namespace Winhance.Core.Features.Optimize.Models
                             },
                         },
                     },
-
-                }
+                },
             };
         }
     }
@@ -1531,7 +1529,7 @@ namespace Winhance.Core.Features.Optimize.Models
             new("Balanced", "Balances performance with energy consumption", "PowerPlan_Balanced_Name", "381b4222-f694-41f0-9685-ff5bb260df2e"),
             new("High performance", "Favors performance over energy consumption", "PowerPlan_HighPerformance_Name", "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"),
             new("Ultimate Performance", "Maximum performance with no power saving measures", "PowerPlan_UltimatePerformance_Name", "e9a42b02-d5df-448d-aa00-03f14749eb61"),
-            new("Winhance Power Plan", "Optimized power plan for gaming and performance", "PowerPlan_WinhancePowerPlan_Name", "57696e68-616e-6365-506f-776572000000")
+            new("Winhance Power Plan", "Optimized power plan for gaming and performance", "PowerPlan_WinhancePowerPlan_Name", "57696e68-616e-6365-506f-776572000000"),
         };
     }
 }

@@ -117,6 +117,7 @@ public static class BloatRemovalScriptGenerator
         {
             sb.AppendLine($"    '{package}'");
         }
+
         sb.AppendLine(")");
         sb.AppendLine();
 
@@ -126,6 +127,7 @@ public static class BloatRemovalScriptGenerator
         {
             sb.AppendLine($"    '{capability}'");
         }
+
         sb.AppendLine(")");
         sb.AppendLine();
 
@@ -135,6 +137,7 @@ public static class BloatRemovalScriptGenerator
         {
             sb.AppendLine($"    '{feature}'");
         }
+
         sb.AppendLine(")");
         sb.AppendLine();
 
@@ -144,6 +147,7 @@ public static class BloatRemovalScriptGenerator
         {
             sb.AppendLine($"    '{app}'");
         }
+
         sb.AppendLine(")");
         sb.AppendLine();
     }
@@ -156,7 +160,7 @@ public static class BloatRemovalScriptGenerator
 # REGISTRY SETTINGS TO PREVENT ISSUES AND BUGS
 # ============================================================================
 
-$xboxPackages = @('Microsoft.GamingApp', 'Microsoft.XboxGamingOverlay', 'Microsoft.XboxGameOverlay')
+$xboxPackages = @('Microsoft.GamingApp', 'Microsoft.XboxGamingOverlay', 'Microsoft.XboxGameOverlay'),
 $hasXboxPackages = $packages | Where-Object { $xboxPackages -contains $_ }
 
 if ($hasXboxPackages) {
@@ -180,23 +184,23 @@ if ($hasXboxPackages) {
 
                     Write-Log ""Xbox Game DVR registry settings applied successfully""
                 } catch {
-                    Write-Log ""Warning: Could not apply Xbox Game DVR registry settings: $($_.Exception.Message)""
+                    Write-Log ""Warning: Could not apply Xbox Game DVR registry settings: $($_.Exception.Message)"",
                 }
             } else {
-                Write-Log ""Warning: Could not detect logged-in user for registry settings""
+                Write-Log ""Warning: Could not detect logged-in user for registry settings"",
             }
         } else {
             Write-Log ""Running as user - applying settings directly to HKCU""
             reg add ""HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"" /f /t REG_DWORD /v ""AppCaptureEnabled"" /d 0 2>$null | Out-Null
             reg add ""HKCU\System\GameConfigStore"" /f /t REG_DWORD /v ""GameDVR_Enabled"" /d 0 2>$null | Out-Null
-            Write-Log ""Xbox Game DVR registry settings applied successfully""
+            Write-Log ""Xbox Game DVR registry settings applied successfully"",
         }
     } catch {
-        Write-Log ""Warning: Could not apply Xbox Game DVR registry settings: $($_.Exception.Message)""
+        Write-Log ""Warning: Could not apply Xbox Game DVR registry settings: $($_.Exception.Message)"",
     }
 }
 
-" : "";
+" : string.Empty;
 
         return @"$maxRetries = 3
 $retryCount = 0
@@ -222,9 +226,9 @@ do {
             Write-Log ""Found installed package: $package""
             foreach ($pkg in $installedPackages) {
                 Write-Log ""Queuing installed package for removal: $($pkg.PackageFullName)""
-                $packagesToRemove += $pkg.PackageFullName
+                $packagesToRemove += $pkg.PackageFullName,
             }
-            $foundAny = $true
+            $foundAny = $true,
         }
 
         $provisionedPackages = $allProvisionedPackages | Where-Object { $_.DisplayName -eq $package }
@@ -232,18 +236,18 @@ do {
             Write-Log ""Found provisioned package: $package""
             foreach ($pkg in $provisionedPackages) {
                 Write-Log ""Queuing provisioned package for removal: $($pkg.PackageName)""
-                $provisionedPackagesToRemove += $pkg.PackageName
+                $provisionedPackagesToRemove += $pkg.PackageName,
             }
-            $foundAny = $true
+            $foundAny = $true,
         }
 
         if (-not $foundAny) {
-            $notFoundPackages += $package
+            $notFoundPackages += $package,
         }
     }
 
     if ($notFoundPackages.Count -gt 0) {
-        Write-Log ""Packages not found: $($notFoundPackages -join ', ')""
+        Write-Log ""Packages not found: $($notFoundPackages -join ', ')"",
     }
 
     if ($packagesToRemove.Count -gt 0) {
@@ -251,11 +255,11 @@ do {
         try {
             $packagesToRemove | ForEach-Object {
                 Write-Log ""Removing installed package: $_""
-                Remove-AppxPackage -Package $_ -AllUsers -ErrorAction SilentlyContinue
+                Remove-AppxPackage -Package $_ -AllUsers -ErrorAction SilentlyContinue,
             }
             Write-Log ""Batch removal of installed packages completed""
         } catch {
-            Write-Log ""Error in batch removal of installed packages: $($_.Exception.Message)""
+            Write-Log ""Error in batch removal of installed packages: $($_.Exception.Message)"",
         }
     }
 
@@ -266,10 +270,10 @@ do {
                 Write-Log ""Removing provisioned package: $pkgName""
                 Remove-AppxProvisionedPackage -Online -PackageName $pkgName -ErrorAction SilentlyContinue
             } catch {
-                Write-Log ""Error removing provisioned package $pkgName : $($_.Exception.Message)""
+                Write-Log ""Error removing provisioned package $pkgName : $($_.Exception.Message)"",
             }
         }
-        Write-Log ""Provisioned packages removal completed""
+        Write-Log ""Provisioned packages removal completed"",
     }
 
     Write-Log ""Processing capabilities...""
@@ -284,20 +288,20 @@ do {
                     if ($existingCapability.State -eq ""Installed"") {
                         $foundInstalled = $true
                         Write-Log ""Removing capability: $($existingCapability.Name)""
-                        Remove-WindowsCapability -Online -Name $existingCapability.Name -ErrorAction SilentlyContinue | Out-Null
+                        Remove-WindowsCapability -Online -Name $existingCapability.Name -ErrorAction SilentlyContinue | Out-Null,
                     }
                 }
 
                 if (-not $foundInstalled) {
-                    Write-Log ""Found capability $capability but it is not installed""
+                    Write-Log ""Found capability $capability but it is not installed"",
                 }
             }
             else {
-                Write-Log ""No matching capabilities found for: $capability""
+                Write-Log ""No matching capabilities found for: $capability"",
             }
         }
         catch {
-            Write-Log ""Error checking capability: $capability - $($_.Exception.Message)""
+            Write-Log ""Error checking capability: $capability - $($_.Exception.Message)"",
         }
     }
 
@@ -310,13 +314,13 @@ do {
             if ($existingFeature -and $existingFeature.State -eq ""Enabled"") {
                 $enabledFeatures += $feature
             } else {
-                Write-Log ""Feature not found or not enabled: $feature""
+                Write-Log ""Feature not found or not enabled: $feature"",
             }
         }
 
         if ($enabledFeatures.Count -gt 0) {
             Write-Log ""Disabling features: $($enabledFeatures -join ', ')""
-            Disable-WindowsOptionalFeature -Online -FeatureName $enabledFeatures -NoRestart -ErrorAction SilentlyContinue | Out-Null
+            Disable-WindowsOptionalFeature -Online -FeatureName $enabledFeatures -NoRestart -ErrorAction SilentlyContinue | Out-Null,
         }
     }
 
@@ -327,7 +331,7 @@ do {
     foreach ($package in $packages) {
         if ($currentPackages | Where-Object { $_.Name -eq $package }) {
             $remainingItems += $package
-            Write-Log ""Package still installed: $package""
+            Write-Log ""Package still installed: $package"",
         }
     }
 
@@ -335,7 +339,7 @@ do {
     foreach ($capability in $capabilities) {
         if ($currentCapabilities | Where-Object { $_.Name -like ""$capability*"" }) {
             $remainingItems += $capability
-            Write-Log ""Capability still installed: $capability""
+            Write-Log ""Capability still installed: $capability"",
         }
     }
 
@@ -343,7 +347,7 @@ do {
     foreach ($feature in $optionalFeatures) {
         if ($currentFeatures | Where-Object { $_.FeatureName -eq $feature }) {
             $remainingItems += $feature
-            Write-Log ""Feature still enabled: $feature""
+            Write-Log ""Feature still enabled: $feature"",
         }
     }
 
@@ -354,14 +358,14 @@ do {
         Write-Log ""Retry needed. $($remainingItems.Count) items remain: $($remainingItems -join ', ')""
         if ($retryCount -lt $maxRetries) {
             Write-Log ""Waiting 2 seconds before retry...""
-            Start-Sleep -Seconds 2
+            Start-Sleep -Seconds 2,
         }
     }
 
 } while ($retryCount -lt $maxRetries -and $remainingItems.Count -gt 0)
 
 if ($remainingItems.Count -gt 0) {
-    Write-Log ""Warning: $($remainingItems.Count) standard items could not be removed after $maxRetries attempts: $($remainingItems -join ', ')""
+    Write-Log ""Warning: $($remainingItems.Count) standard items could not be removed after $maxRetries attempts: $($remainingItems -join ', ')"",
 }
 
 if ($specialApps.Count -gt 0) {
@@ -374,7 +378,7 @@ if ($specialApps.Count -gt 0) {
     do {
         $specialRetryCount++
         if ($specialRetryCount -gt 1) {
-            Write-Log ""Special apps retry attempt $specialRetryCount of $maxSpecialRetries""
+            Write-Log ""Special apps retry attempt $specialRetryCount of $maxSpecialRetries"",
         }
 
         $uninstallBasePaths = @(
@@ -393,7 +397,7 @@ if ($specialApps.Count -gt 0) {
                 }
                 default {
                     Write-Log ""Unknown or unsupported special app: $specialApp""
-                    continue
+                    continue,
                 }
             }
 
@@ -401,7 +405,7 @@ if ($specialApps.Count -gt 0) {
                 $processes = Get-Process -Name $processName -ErrorAction SilentlyContinue
                 if ($processes) {
                     $processes | Stop-Process -Force -ErrorAction SilentlyContinue
-                    Write-Log ""Stopped process: $processName""
+                    Write-Log ""Stopped process: $processName"",
                 }
             }
 
@@ -434,32 +438,32 @@ if ($specialApps.Count -gt 0) {
                                     if ($uninstallString -like '*OfficeClickToRun.exe*') {
                                         Start-Process -FilePath $uninstallString -ArgumentList 'DisplayLevel=False' -NoNewWindow -Wait -ErrorAction SilentlyContinue
                                     } else {
-                                        Start-Process -FilePath $uninstallString -ArgumentList '/silent' -NoNewWindow -Wait -ErrorAction SilentlyContinue
+                                        Start-Process -FilePath $uninstallString -ArgumentList '/silent' -NoNewWindow -Wait -ErrorAction SilentlyContinue,
                                     }
                                 }
 
                                 $uninstallExecuted = $true
-                                Write-Log ""Completed uninstall execution for $specialApp""
+                                Write-Log ""Completed uninstall execution for $specialApp"",
                             }
                         }
                         catch {
-                            Write-Log ""Error processing uninstall key: $($_.Exception.Message)""
+                            Write-Log ""Error processing uninstall key: $($_.Exception.Message)"",
                         }
                     }
                 }
                 catch {
-                    Write-Log ""Error searching for uninstall keys: $($_.Exception.Message)""
+                    Write-Log ""Error searching for uninstall keys: $($_.Exception.Message)"",
                 }
             }
 
             if (-not $uninstallExecuted) {
-                Write-Log ""No uninstall strings found for $specialApp""
+                Write-Log ""No uninstall strings found for $specialApp"",
             }
         }
 
         if ($specialRetryCount -eq 1) {
             Write-Log ""Waiting 3 seconds for uninstallers to complete...""
-            Start-Sleep -Seconds 3
+            Start-Sleep -Seconds 3,
         }
 
         Write-Log ""Verifying special apps removal...""
@@ -474,20 +478,20 @@ if ($specialApps.Count -gt 0) {
                                    Where-Object { $_.Name -like '*OneNote*' }
                     if ($appxPackage) {
                         $stillExists = $true
-                        Write-Log ""OneNote AppxPackage still exists: $($appxPackage.PackageFullName)""
+                        Write-Log ""OneNote AppxPackage still exists: $($appxPackage.PackageFullName)"",
                     }
 
                     $uninstallKeys = Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue |
                                      Where-Object { $_.PSChildName -like 'OneNote*' }
                     if ($uninstallKeys) {
                         $stillExists = $true
-                        Write-Log ""OneNote registry uninstall keys still exist""
+                        Write-Log ""OneNote registry uninstall keys still exist"",
                     }
                 }
             }
 
             if ($stillExists) {
-                $specialAppsRemaining += $specialApp
+                $specialAppsRemaining += $specialApp,
             }
         }
 
@@ -498,19 +502,18 @@ if ($specialApps.Count -gt 0) {
             Write-Log ""$($specialAppsRemaining.Count) special apps remain: $($specialAppsRemaining -join ', ')""
             if ($specialRetryCount -lt $maxSpecialRetries) {
                 Write-Log ""Waiting 3 seconds before retry...""
-                Start-Sleep -Seconds 3
+                Start-Sleep -Seconds 3,
             }
         }
 
     } while ($specialRetryCount -lt $maxSpecialRetries -and $specialAppsRemaining.Count -gt 0)
 
     if ($specialAppsRemaining.Count -gt 0) {
-        Write-Log ""Warning: $($specialAppsRemaining.Count) special apps could not be removed after $maxSpecialRetries attempts: $($specialAppsRemaining -join ', ')""
+        Write-Log ""Warning: $($specialAppsRemaining.Count) special apps could not be removed after $maxSpecialRetries attempts: $($specialAppsRemaining -join ', ')"",
     }
 }
 " + xboxRegistryFix + @"
 Write-Log ""Bloat removal process completed""
 ";
     }
-
 }

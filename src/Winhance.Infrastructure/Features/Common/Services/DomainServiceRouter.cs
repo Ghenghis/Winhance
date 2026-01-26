@@ -18,6 +18,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             {
                 serviceMap[service.DomainName] = service;
             }
+
             return serviceMap;
         }
 
@@ -32,11 +33,15 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public IDomainService GetDomainService(string featureIdOrSettingId)
         {
             if (_serviceMap.TryGetValue(featureIdOrSettingId, out var directService))
+            {
                 return directService;
+            }
 
             if (_settingToFeatureMap.TryGetValue(featureIdOrSettingId, out var featureId)
                 && _serviceMap.TryGetValue(featureId, out var service))
+            {
                 return service;
+            }
 
             throw new ArgumentException($"No domain service found for '{featureIdOrSettingId}'");
         }

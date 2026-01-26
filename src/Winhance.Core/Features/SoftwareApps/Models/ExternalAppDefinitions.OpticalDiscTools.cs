@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Optical Disc Tools",
                             WinGetPackageId = "LIGHTNINGUK.ImgBurn",
                             Category = "Optical Disc Tools",
-                            WebsiteUrl = "https://www.imgburn.com/"
+                            WebsiteUrl = "https://www.imgburn.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Optical Disc Tools",
                             WinGetPackageId = "PowerSoftware.AnyBurn",
                             Category = "Optical Disc Tools",
-                            WebsiteUrl = "http://www.anyburn.com/"
+                            WebsiteUrl = "http://www.anyburn.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,9 +43,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Optical Disc Tools",
                             WinGetPackageId = "GuinpinSoft.MakeMKV",
                             Category = "Optical Disc Tools",
-                            WebsiteUrl = "https://www.makemkv.com/"
-                        }
-                    }
+                            WebsiteUrl = "https://www.makemkv.com/",
+                        },
+                    },
                 };
             }
         }

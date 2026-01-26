@@ -20,25 +20,24 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)),
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Programs"
-            ),
+                "Programs"),
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                @"Microsoft\Windows\Start Menu\Programs"
-            ),
+                @"Microsoft\Windows\Start Menu\Programs"),
         };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileSystemVerificationMethod"/> class.
         /// </summary>
         public FileSystemVerificationMethod()
-            : base("FileSystem", priority: 20) { }
+            : base("FileSystem", priority: 20)
+        {
+        }
 
         /// <inheritdoc/>
         protected override async Task<VerificationResult> VerifyPresenceAsync(
             string packageId,
-            CancellationToken cancellationToken
-        )
+            CancellationToken cancellationToken)
         {
             return await Task.Run(
                     () =>
@@ -51,12 +50,12 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                             var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
                             var paths = pathEnv.Split(Path.PathSeparator);
 
-
                             foreach (var path in paths)
                             {
                                 if (string.IsNullOrEmpty(path))
+                                {
                                     continue;
-
+                                }
 
                                 var exePath = Path.Combine(path, $"{packageId}.exe");
                                 if (File.Exists(exePath))
@@ -77,14 +76,16 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                         }
                         catch (Exception)
                         {
-                            // Ignore PATH check errors and continue with other methods
+                            // Ignore PATH check errors and continue with other methods,
                         }
 
                         // Second try: Check common installation directories
                         foreach (var basePath in CommonInstallPaths)
                         {
                             if (!Directory.Exists(basePath))
+                            {
                                 continue;
+                            }
 
                             try
                             {
@@ -93,8 +94,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                                     .EnumerateDirectories(
                                         basePath,
                                         "*",
-                                        SearchOption.TopDirectoryOnly
-                                    )
+                                        SearchOption.TopDirectoryOnly)
                                     .Where(d =>
                                         Path.GetFileName(d)
                                             ?.Equals(packageId, StringComparison.OrdinalIgnoreCase)
@@ -102,12 +102,10 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                                         || Path.GetFileName(d)
                                             ?.Contains(
                                                 packageId,
-                                                StringComparison.OrdinalIgnoreCase
-                                            ) == true
-                                    )
+                                                StringComparison.OrdinalIgnoreCase) == true)
                                     .ToList();
 
-                                if (matchingDirs.Any())
+                                if (matchingDirs.Count != 0)
                                 {
                                     return new VerificationResult
                                     {
@@ -122,9 +120,8 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                                     };
                                 }
 
-
                                 // Check for Microsoft Store apps in Packages directory
-                                if (basePath.Contains("LocalApplicationData"))
+                                if (basePath.Contains("LocalApplicationData", StringComparison.Ordinal))
                                 {
                                     var packagesPath = Path.Combine(basePath, "Packages");
                                     if (Directory.Exists(packagesPath))
@@ -133,14 +130,11 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                                             .EnumerateDirectories(
                                                 packagesPath,
                                                 "*",
-                                                SearchOption.TopDirectoryOnly
-                                            )
+                                                SearchOption.TopDirectoryOnly)
                                             .Where(d =>
                                                 Path.GetFileName(d)
-                                                    ?.IndexOf(packageId, StringComparison.OrdinalIgnoreCase) >= 0
-                                            )
+                                                    ?.IndexOf(packageId) >= 0)
                                             .ToList();
-
 
                                         foreach (var dir in storeAppDirs)
                                         {
@@ -176,11 +170,9 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
                         }
 
                         return VerificationResult.Failure(
-                            $"Package '{packageId}' not found in common installation directories"
-                        );
+                            $"Package '{packageId}' not found in common installation directories");
                     },
-                    cancellationToken
-                )
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -188,8 +180,7 @@ namespace Winhance.Infrastructure.Features.SoftwareApps.Services.WinGet.Verifica
         protected override async Task<VerificationResult> VerifyVersionAsync(
             string packageId,
             string version,
-            CancellationToken cancellationToken
-        )
+            CancellationToken cancellationToken)
         {
             // For file system, we can't reliably determine version from directory name
             // So we'll just check for presence and let other methods verify version

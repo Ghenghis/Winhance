@@ -10,23 +10,25 @@ namespace Winhance.Core.Features.Common.Events.UI
     public class TooltipUpdatedEvent : IDomainEvent
     {
         public DateTime Timestamp { get; }
+
         public Guid EventId { get; }
 
         /// <summary>
-        /// The ID of the setting whose tooltip data was updated.
+        /// Gets the ID of the setting whose tooltip data was updated.
         /// </summary>
         public string SettingId { get; }
 
         /// <summary>
-        /// The updated tooltip data for the setting.
+        /// Gets the updated tooltip data for the setting.
         /// </summary>
         public SettingTooltipData TooltipData { get; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TooltipUpdatedEvent"/> class.
         /// Initializes a new instance of the TooltipUpdatedEvent.
         /// </summary>
-        /// <param name="settingId">The setting ID whose tooltip was updated</param>
-        /// <param name="tooltipData">The updated tooltip data</param>
+        /// <param name="settingId">The setting ID whose tooltip was updated.</param>
+        /// <param name="tooltipData">The updated tooltip data.</param>
         public TooltipUpdatedEvent(string settingId, SettingTooltipData tooltipData)
         {
             Timestamp = DateTime.UtcNow;

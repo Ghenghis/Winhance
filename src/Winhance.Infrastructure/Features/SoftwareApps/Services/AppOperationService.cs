@@ -33,6 +33,7 @@ public class AppOperationService(
     {
         return taskProgressService?.CurrentTaskCancellationSource?.Token ?? CancellationToken.None;
     }
+
     public async Task<OperationResult<bool>> InstallAppAsync(ItemDefinition app, IProgress<TaskProgressDetail>? progress = null, bool shouldRemoveFromBloatScript = true)
     {
         try
@@ -42,6 +43,7 @@ public class AppOperationService(
                 await bloatRemovalService.RemoveItemsFromScriptAsync(new List<ItemDefinition> { app });
                 await CleanupDedicatedRemovalArtifactsAsync(app);
             }
+
             return await InstallSingleAppAsync(app, progress);
         }
         catch (OperationCanceledException)
@@ -71,6 +73,7 @@ public class AppOperationService(
                     logService.Log(LogLevel.Info, $"PowerShell launched for capability '{app.Id}'");
                     return OperationResult<bool>.Succeeded(true);
                 }
+
                 return OperationResult<bool>.Failed("Failed to launch PowerShell for capability");
             }
 
@@ -83,6 +86,7 @@ public class AppOperationService(
                     logService.Log(LogLevel.Info, $"PowerShell launched for feature '{app.Id}'");
                     return OperationResult<bool>.Succeeded(true);
                 }
+
                 return OperationResult<bool>.Failed("Failed to launch PowerShell for feature");
             }
 
@@ -101,6 +105,7 @@ public class AppOperationService(
                         eventBus.Publish(new AppInstalledEvent(app.Id));
                         logService.Log(LogLevel.Success, $"Successfully installed app '{app.Id}'");
                     }
+
                     return result;
                 }
                 else
@@ -112,6 +117,7 @@ public class AppOperationService(
                         eventBus.Publish(new AppInstalledEvent(app.Id));
                         logService.Log(LogLevel.Success, $"Successfully installed app '{app.Id}'");
                     }
+
                     return result;
                 }
             }
@@ -133,12 +139,14 @@ public class AppOperationService(
     public async Task<OperationResult<bool>> UninstallAppAsync(string appId, IProgress<TaskProgressDetail>? progress = null)
     {
         var cancellationToken = GetCurrentCancellationToken();
-        
+
         try
         {
             var app = await windowsAppsService.GetAppByIdAsync(appId);
             if (app == null)
+            {
                 return OperationResult<bool>.Failed("App not found");
+            }
 
             if (!string.IsNullOrEmpty(app.CapabilityName))
             {
@@ -148,6 +156,7 @@ public class AppOperationService(
                     eventBus.Publish(new AppRemovedEvent(appId));
                     logService.Log(LogLevel.Success, $"Successfully removed capability '{appId}'");
                 }
+
                 return success ? OperationResult<bool>.Succeeded(true) : OperationResult<bool>.Failed("Capability removal failed");
             }
 
@@ -159,6 +168,7 @@ public class AppOperationService(
                     eventBus.Publish(new AppRemovedEvent(appId));
                     logService.Log(LogLevel.Success, $"Successfully removed feature '{appId}'");
                 }
+
                 return success ? OperationResult<bool>.Succeeded(true) : OperationResult<bool>.Failed("Feature removal failed");
             }
 
@@ -170,6 +180,7 @@ public class AppOperationService(
                     eventBus.Publish(new AppRemovedEvent(appId));
                     logService.Log(LogLevel.Success, $"Successfully removed app '{appId}'");
                 }
+
                 return success ? OperationResult<bool>.Succeeded(true) : OperationResult<bool>.Failed("App removal failed");
             }
 
@@ -191,8 +202,10 @@ public class AppOperationService(
     {
         try
         {
-            if (apps == null || !apps.Any())
+            if (apps == null || apps.Count == 0)
+            {
                 return OperationResult<int>.Failed("No apps provided");
+            }
 
             if (shouldRemoveFromBloatScript)
             {
@@ -208,7 +221,10 @@ public class AppOperationService(
             foreach (var app in apps)
             {
                 var result = await InstallSingleAppAsync(app, progress);
-                if (result.Success) successCount++;
+                if (result.Success)
+                {
+                    successCount++;
+                }
             }
 
             return OperationResult<int>.Succeeded(successCount);
@@ -231,8 +247,10 @@ public class AppOperationService(
 
         try
         {
-            if (apps == null || !apps.Any())
+            if (apps == null || apps.Count == 0)
+            {
                 return OperationResult<int>.Failed("No apps provided");
+            }
 
             var success = await bloatRemovalService.RemoveAppsAsync(apps, progress, cancellationToken);
 
@@ -242,6 +260,7 @@ public class AppOperationService(
                 {
                     eventBus.Publish(new AppRemovedEvent(app.Id));
                 }
+
                 logService.Log(LogLevel.Success, $"Successfully removed {apps.Count} apps");
                 return OperationResult<int>.Succeeded(apps.Count);
             }
@@ -267,14 +286,16 @@ public class AppOperationService(
         try
         {
             if (string.IsNullOrWhiteSpace(packageId))
+            {
                 return OperationResult<bool>.Failed("Package ID cannot be null or empty");
+            }
 
             var item = new ItemDefinition
             {
                 Id = packageId,
                 Name = displayName,
                 Description = string.Empty,
-                WinGetPackageId = packageId
+                WinGetPackageId = packageId,
             };
             var result = await externalAppsService.UninstallAppAsync(item, progress);
 
@@ -304,8 +325,10 @@ public class AppOperationService(
 
         try
         {
-            if (apps == null || !apps.Any())
+            if (apps == null || apps.Count == 0)
+            {
                 return OperationResult<int>.Failed("No apps provided");
+            }
 
             int successCount = 0;
             int totalCount = apps.Count;
@@ -371,7 +394,7 @@ public class AppOperationService(
         {
             var scriptName = CreateScriptName(app.Id);
             var scriptPath = Path.Combine(ScriptPaths.ScriptsDirectory, scriptName);
-            var taskName = scriptName.Replace(".ps1", "");
+            var taskName = scriptName.Replace(".ps1", string.Empty, StringComparison.Ordinal);
 
             if (File.Exists(scriptPath))
             {
@@ -395,7 +418,7 @@ public class AppOperationService(
         {
             "windows-app-edge" => "EdgeRemoval.ps1",
             "windows-app-onedrive" => "OneDriveRemoval.ps1",
-            _ => throw new NotSupportedException($"No dedicated script defined for {appId}")
+            _ => throw new NotSupportedException($"No dedicated script defined for {appId}"),
         };
     }
 
@@ -453,8 +476,8 @@ public class AppOperationService(
                 registryService.DeleteValue(@"HKEY_CLASSES_ROOT\MSEdgeHTM", "NoOpenWith");
 
                 var edgeCommand = $"\"{msedgePath}\" --single-argument %1";
-                registryService.SetValue(@"HKEY_CLASSES_ROOT\microsoft-edge\shell\open\command", "", edgeCommand, RegistryValueKind.String);
-                registryService.SetValue(@"HKEY_CLASSES_ROOT\MSEdgeHTM\shell\open\command", "", edgeCommand, RegistryValueKind.String);
+                registryService.SetValue(@"HKEY_CLASSES_ROOT\microsoft-edge\shell\open\command", string.Empty, edgeCommand, RegistryValueKind.String);
+                registryService.SetValue(@"HKEY_CLASSES_ROOT\MSEdgeHTM\shell\open\command", string.Empty, edgeCommand, RegistryValueKind.String);
 
                 logService.LogInformation("Restored Edge protocol handlers");
             }
@@ -469,13 +492,17 @@ public class AppOperationService(
 public class AppInstalledEvent(string appId) : IDomainEvent
 {
     public string AppId { get; } = appId;
+
     public Guid EventId { get; } = Guid.NewGuid();
+
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
 public class AppRemovedEvent(string appId) : IDomainEvent
 {
     public string AppId { get; } = appId;
+
     public Guid EventId { get; } = Guid.NewGuid();
+
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }

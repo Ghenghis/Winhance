@@ -7,5 +7,6 @@ namespace Winhance.Core.Features.SoftwareApps.Interfaces;
 public interface IAppDomainService
 {
     string DomainName { get; }
+
     Task<IEnumerable<ItemDefinition>> GetAppsAsync();
 }

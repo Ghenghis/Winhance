@@ -18,7 +18,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-                
+
                 if (key == null)
                 {
                     return false;
@@ -48,7 +48,10 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 foreach (var key in keys)
                 {
                     using var registryKey = Registry.CurrentUser.OpenSubKey(key, true);
-                    if (registryKey == null) continue;
+                    if (registryKey == null)
+                    {
+                        continue;
+                    }
 
                     foreach (var value in values)
                     {

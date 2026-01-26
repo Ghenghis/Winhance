@@ -41,7 +41,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var fullPath = Path.GetFullPath(path);
 
             // Check for path traversal
-            if (path.Contains(".."))
+            if (path.Contains("..", StringComparison.Ordinal))
             {
                 throw new ArgumentException("Path traversal patterns are not allowed", nameof(path));
             }
@@ -107,7 +107,11 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var path in validatedPaths)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 CollectFiles(path, allFiles, options);
             }
 
@@ -128,13 +132,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var sizeGroup in sizeGroups)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 var hashGroups = new Dictionary<string, List<FileInfo>>();
 
                 foreach (var file in sizeGroup)
                 {
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
                     filesProcessed++;
                     progress?.Report(new DuplicateScanProgress
@@ -143,14 +153,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         FilesProcessed = filesProcessed,
                         TotalFiles = allFiles.Count,
                         CurrentFile = file.Name,
-                        DuplicateGroupsFound = duplicateGroups.Count
+                        DuplicateGroupsFound = duplicateGroups.Count,
                     });
 
                     try
                     {
                         var hash = await ComputeQuickHashAsync(file.FullName, ct);
                         if (!hashGroups.ContainsKey(hash))
+                        {
                             hashGroups[hash] = new List<FileInfo>();
+                        }
+
                         hashGroups[hash].Add(file);
                     }
                     catch (Exception ex)
@@ -185,7 +198,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             sw.Stop();
             result.ScanDuration = sw.Elapsed;
 
-            _logService.Log(LogLevel.Info, 
+            _logService.Log(
+                LogLevel.Info,
                 $"Duplicate scan complete: {result.Groups.Count} groups, {result.DuplicateCount} duplicates, {result.FormattedWastedSpace} wasted");
 
             return result;
@@ -199,11 +213,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     var fi = new FileInfo(path);
                     if (ShouldIncludeFile(fi, options))
+                    {
                         files.Add(fi);
+                    }
+
                     return;
                 }
 
-                if (!Directory.Exists(path)) return;
+                if (!Directory.Exists(path))
+                {
+                    return;
+                }
 
                 var searchOption = options.ScanSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
@@ -212,13 +232,20 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     try
                     {
                         if (options.ExcludePaths?.Any(ep => file.StartsWith(ep, StringComparison.OrdinalIgnoreCase)) == true)
+                        {
                             continue;
+                        }
 
                         var fi = new FileInfo(file);
                         if (ShouldIncludeFile(fi, options))
+                        {
                             files.Add(fi);
+                        }
                     }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}"); }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -230,20 +257,30 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private bool ShouldIncludeFile(FileInfo fi, DuplicateScanOptions options)
         {
             if (fi.Length < options.MinFileSize || fi.Length > options.MaxFileSize)
+            {
                 return false;
+            }
 
             if (!options.IncludeHiddenFiles && fi.Attributes.HasFlag(FileAttributes.Hidden))
+            {
                 return false;
+            }
 
             if (!options.IncludeSystemFiles && fi.Attributes.HasFlag(FileAttributes.System))
+            {
                 return false;
+            }
 
             var ext = fi.Extension.TrimStart('.').ToLowerInvariant();
             if (options.IncludeExtensions != null && !options.IncludeExtensions.Contains(ext))
+            {
                 return false;
+            }
 
             if (options.ExcludeExtensions?.Contains(ext) == true)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -253,11 +290,11 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             // Use xxHash-style quick hash (read first/last 64KB + size)
             const int sampleSize = 64 * 1024;
             var fileInfo = new FileInfo(path);
-            
+
             using var md5 = MD5.Create();
             await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-            
-            var buffer = new byte[sampleSize * 2 + 8];
+
+            var buffer = new byte[(sampleSize * 2) + 8];
             var pos = 0;
 
             // Add file size
@@ -277,7 +314,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             }
 
             var hash = md5.ComputeHash(buffer, 0, pos);
-            return BitConverter.ToString(hash).Replace("-", "");
+            return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
         }
 
         private async Task<string> ComputeFullHashAsync(string path, CancellationToken ct)
@@ -285,7 +322,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             using var sha256 = SHA256.Create();
             await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
             var hash = await sha256.ComputeHashAsync(stream, ct);
-            return BitConverter.ToString(hash).Replace("-", "");
+            return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
         }
 
         private async Task<List<DuplicateFileGroup>> VerifyWithFullHashAsync(List<FileInfo> files, CancellationToken ct)
@@ -294,16 +331,25 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var file in files)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 try
                 {
                     var fullHash = await ComputeFullHashAsync(file.FullName, ct);
                     if (!fullHashGroups.ContainsKey(fullHash))
+                    {
                         fullHashGroups[fullHash] = new List<FileInfo>();
+                    }
+
                     fullHashGroups[fullHash].Add(file);
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skip file that can't be hashed: {ex.Message}"); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Skip file that can't be hashed: {ex.Message}");
+                }
             }
 
             return fullHashGroups
@@ -317,7 +363,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var group = new DuplicateFileGroup
             {
                 Hash = hash,
-                FileSize = files.First().Length
+                FileSize = files.First().Length,
             };
 
             var oldest = files.OrderBy(f => f.CreationTime).First();
@@ -328,10 +374,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 {
                     Path = file.FullName,
                     Name = file.Name,
-                    Directory = file.DirectoryName ?? "",
+                    Directory = file.DirectoryName ?? string.Empty,
                     ModifiedTime = file.LastWriteTime,
                     CreatedTime = file.CreationTime,
-                    IsOriginal = file.FullName == oldest.FullName
+                    IsOriginal = file.FullName == oldest.FullName,
                 });
             }
 
@@ -346,7 +392,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var fi1 = new FileInfo(validatedPath1);
             var fi2 = new FileInfo(validatedPath2);
 
-            if (fi1.Length != fi2.Length) return false;
+            if (fi1.Length != fi2.Length)
+            {
+                return false;
+            }
 
             const int bufferSize = 64 * 1024;
             var buffer1 = new byte[bufferSize];
@@ -357,16 +406,28 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             while (true)
             {
-                if (ct.IsCancellationRequested) return false;
+                if (ct.IsCancellationRequested)
+                {
+                    return false;
+                }
 
                 var read1 = await stream1.ReadAsync(buffer1, ct);
                 var read2 = await stream2.ReadAsync(buffer2, ct);
 
-                if (read1 != read2) return false;
-                if (read1 == 0) return true;
+                if (read1 != read2)
+                {
+                    return false;
+                }
+
+                if (read1 == 0)
+                {
+                    return true;
+                }
 
                 if (!buffer1.AsSpan(0, read1).SequenceEqual(buffer2.AsSpan(0, read2)))
+                {
                     return false;
+                }
             }
         }
 
@@ -379,11 +440,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 HashType.Quick => await ComputeQuickHashAsync(validatedPath, ct),
                 HashType.Full => await ComputeFullHashAsync(validatedPath, ct),
                 HashType.Both => $"{await ComputeQuickHashAsync(validatedPath, ct)}:{await ComputeFullHashAsync(validatedPath, ct)}",
-                _ => await ComputeQuickHashAsync(validatedPath, ct)
+                _ => await ComputeQuickHashAsync(validatedPath, ct),
             };
         }
 
-        public async Task<IEnumerable<SimilarFile>> FindSimilarFilesAsync(string sourcePath,
+        public async Task<IEnumerable<SimilarFile>> FindSimilarFilesAsync(
+            string sourcePath,
             IEnumerable<string> searchPaths, SimilarityOptions options, CancellationToken ct = default)
         {
             ArgumentNullException.ThrowIfNull(searchPaths);
@@ -410,13 +472,23 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var searchPath in validatedSearchPaths)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 var searchOption = SearchOption.AllDirectories;
                 foreach (var file in Directory.EnumerateFiles(searchPath, "*", searchOption))
                 {
-                    if (ct.IsCancellationRequested) break;
-                    if (file.Equals(sourcePath, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    if (file.Equals(sourcePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
 
                     try
                     {
@@ -453,7 +525,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 {
                                     similarity = Math.Max(similarity, nameSimilarity);
                                     if (type == SimilarityType.SameExtension)
+                                    {
                                         type = SimilarityType.SimilarName;
+                                    }
                                 }
                             }
                         }
@@ -464,11 +538,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             {
                                 Path = file,
                                 SimilarityPercent = similarity,
-                                Type = type
+                                Type = type,
                             });
                         }
                     }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}"); }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}");
+                    }
                 }
             }
 
@@ -477,12 +554,18 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
         private double CalculateStringSimilarity(string s1, string s2)
         {
-            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2)) return 0;
+            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+            {
+                return 0;
+            }
 
             var longer = s1.Length > s2.Length ? s1 : s2;
             var shorter = s1.Length > s2.Length ? s2 : s1;
 
-            if (longer.Length == 0) return 1.0;
+            if (longer.Length == 0)
+            {
+                return 1.0;
+            }
 
             return (longer.Length - LevenshteinDistance(longer, shorter)) / (double)longer.Length;
         }
@@ -496,18 +579,28 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 for (int j = 0; j <= s2.Length; j++)
                 {
                     if (i == 0)
+                    {
                         costs[j] = j;
+                    }
                     else if (j > 0)
                     {
                         int newValue = costs[j - 1];
                         if (s1[i - 1] != s2[j - 1])
+                        {
                             newValue = Math.Min(Math.Min(newValue, lastValue), costs[j]) + 1;
+                        }
+
                         costs[j - 1] = lastValue;
                         lastValue = newValue;
                     }
                 }
-                if (i > 0) costs[s2.Length] = lastValue;
+
+                if (i > 0)
+                {
+                    costs[s2.Length] = lastValue;
+                }
             }
+
             return costs[s2.Length];
         }
 
@@ -521,13 +614,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             foreach (var group in groups)
             {
-                if (ct.IsCancellationRequested) break;
+                if (ct.IsCancellationRequested)
+                {
+                    break;
+                }
 
                 var toKeep = SelectFileToKeep(group, strategy);
-                
+
                 foreach (var file in group.Files.Where(f => f.Path != toKeep.Path))
                 {
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
                     try
                     {
@@ -554,7 +653,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 }
             }
 
-            _logService.Log(LogLevel.Info, 
+            _logService.Log(
+                LogLevel.Info,
                 $"Deleted {result.DeletedCount} duplicates, recovered {FormatBytes(result.BytesRecovered)}");
 
             return result;
@@ -571,7 +671,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 DuplicateKeepStrategy.KeepShortestPath => group.Files.OrderBy(f => f.Path.Length).First(),
                 DuplicateKeepStrategy.KeepLongestPath => group.Files.OrderByDescending(f => f.Path.Length).First(),
                 DuplicateKeepStrategy.KeepSelected => group.Files.FirstOrDefault(f => f.IsSelected) ?? group.Files.First(),
-                _ => group.Files.First(f => f.IsOriginal)
+                _ => group.Files.First(f => f.IsOriginal),
             };
         }
 
@@ -585,6 +685,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 order++;
                 size /= 1024;
             }
+
             return $"{size:0.##} {sizes[order]}";
         }
     }

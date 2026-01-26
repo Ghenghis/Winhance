@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Microsoft.EdgeWebView2Runtime",
                             Category = "Browsers",
-                            WebsiteUrl = "https://developer.microsoft.com/en-us/microsoft-edge/webview2/"
+                            WebsiteUrl = "https://developer.microsoft.com/en-us/microsoft-edge/webview2/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Alex313031.Thorium",
                             Category = "Browsers",
-                            WebsiteUrl = "https://thorium.rocks/"
+                            WebsiteUrl = "https://thorium.rocks/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Alex313031.Thorium.AVX2",
                             Category = "Browsers",
-                            WebsiteUrl = "https://thorium.rocks/"
+                            WebsiteUrl = "https://thorium.rocks/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Alex313031.Mercury",
                             Category = "Browsers",
-                            WebsiteUrl = "https://thorium.rocks/mercury"
+                            WebsiteUrl = "https://thorium.rocks/mercury",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Mozilla.Firefox",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.mozilla.org/firefox/"
+                            WebsiteUrl = "https://www.mozilla.org/firefox/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Google.Chrome",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.google.com/chrome/"
+                            WebsiteUrl = "https://www.google.com/chrome/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Eloston.Ungoogled-Chromium",
                             Category = "Browsers",
-                            WebsiteUrl = "https://ungoogled-software.github.io/"
+                            WebsiteUrl = "https://ungoogled-software.github.io/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Brave.Brave",
                             Category = "Browsers",
-                            WebsiteUrl = "https://brave.com/"
+                            WebsiteUrl = "https://brave.com/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Opera.Opera",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.opera.com/"
+                            WebsiteUrl = "https://www.opera.com/",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Opera.OperaGX",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.opera.com/gx"
+                            WebsiteUrl = "https://www.opera.com/gx",
                         },
                         new ItemDefinition
                         {
@@ -123,7 +123,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "TheBrowserCompany.Arc",
                             Category = "Browsers",
-                            WebsiteUrl = "https://arc.net/"
+                            WebsiteUrl = "https://arc.net/",
                         },
                         new ItemDefinition
                         {
@@ -133,7 +133,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "TorProject.TorBrowser",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.torproject.org/"
+                            WebsiteUrl = "https://www.torproject.org/",
                         },
                         new ItemDefinition
                         {
@@ -143,7 +143,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Vivaldi.Vivaldi",
                             Category = "Browsers",
-                            WebsiteUrl = "https://vivaldi.com/"
+                            WebsiteUrl = "https://vivaldi.com/",
                         },
                         new ItemDefinition
                         {
@@ -153,7 +153,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Waterfox.Waterfox",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.waterfox.net/"
+                            WebsiteUrl = "https://www.waterfox.net/",
                         },
                         new ItemDefinition
                         {
@@ -163,7 +163,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Zen-Team.Zen-Browser",
                             Category = "Browsers",
-                            WebsiteUrl = "https://zen-browser.app/"
+                            WebsiteUrl = "https://zen-browser.app/",
                         },
                         new ItemDefinition
                         {
@@ -173,7 +173,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "MullvadVPN.MullvadBrowser",
                             Category = "Browsers",
-                            WebsiteUrl = "https://mullvad.net/en/browser"
+                            WebsiteUrl = "https://mullvad.net/en/browser",
                         },
                         new ItemDefinition
                         {
@@ -183,7 +183,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "MoonchildProductions.PaleMoon",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.palemoon.org/"
+                            WebsiteUrl = "https://www.palemoon.org/",
                         },
                         new ItemDefinition
                         {
@@ -193,7 +193,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Maxthon.Maxthon",
                             Category = "Browsers",
-                            WebsiteUrl = "https://www.maxthon.com/"
+                            WebsiteUrl = "https://www.maxthon.com/",
                         },
                         new ItemDefinition
                         {
@@ -203,7 +203,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "Ablaze.Floorp",
                             Category = "Browsers",
-                            WebsiteUrl = "https://floorp.app/"
+                            WebsiteUrl = "https://floorp.app/",
                         },
                         new ItemDefinition
                         {
@@ -213,7 +213,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "DuckDuckGo.DesktopBrowser",
                             Category = "Browsers",
-                            WebsiteUrl = "https://duckduckgo.com/"
+                            WebsiteUrl = "https://duckduckgo.com/",
                         },
                         new ItemDefinition
                         {
@@ -223,9 +223,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Browsers",
                             WinGetPackageId = "LibreWolf.LibreWolf",
                             Category = "Browsers",
-                            WebsiteUrl = "https://librewolf.net/"
-                        }
-                    }
+                            WebsiteUrl = "https://librewolf.net/",
+                        },
+                    },
                 };
             }
         }

@@ -9,12 +9,12 @@ namespace Winhance.Core.Features.Common.Models
     public class ConfirmationResponse
     {
         /// <summary>
-        /// Gets or sets whether the user confirmed the operation.
+        /// Gets or sets a value indicating whether gets or sets whether the user confirmed the operation.
         /// </summary>
         public bool Confirmed { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the optional checkbox was checked.
+        /// Gets or sets a value indicating whether gets or sets whether the optional checkbox was checked.
         /// Only relevant if the ConfirmationRequest had CheckboxText.
         /// </summary>
         public bool CheckboxChecked { get; set; }

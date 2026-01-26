@@ -235,14 +235,14 @@ public static class UpdateOptimizations
                         [CustomPropertyKeys.OptionWarnings] = new Dictionary<int, string>
                         {
                             [2] = "⚠️ WARNING: Pausing updates for a long time leaves your system vulnerable to security threats. Use at your own risk.",
-                            [3] = "⚠️ WARNING: Disabling updates leaves your system vulnerable to security threats. Use at your own risk."
+                            [3] = "⚠️ WARNING: Disabling updates leaves your system vulnerable to security threats. Use at your own risk.",
                         },
                         [CustomPropertyKeys.OptionTooltips] = new string[]
                         {
                             "Windows default behavior - automatic updates enabled",
                             "Only install critical security updates, defer feature updates by 1 year",
                             "Pause all updates until 2051 - manually unpause in Windows Settings when needed",
-                            "Completely disable Windows Update services and block all updates - NOT RECOMMENDED"
+                            "Completely disable Windows Update services and block all updates - NOT RECOMMENDED",
                         },
                         [CustomPropertyKeys.ValueMappings] = new Dictionary<int, Dictionary<string, object?>>
                         {
@@ -472,7 +472,7 @@ public static class UpdateOptimizations
                             ValueType = RegistryValueKind.DWord,
                         },
                     },
-                },         
+                },
                 new SettingDefinition
                 {
                     Id = "updates-restart-options",

@@ -9,37 +9,37 @@ namespace Winhance.Core.Features.SoftwareApps.Models
     public class InstallationPerformanceSettings
     {
         /// <summary>
-        /// Interval in seconds for connectivity checks during installation.
+        /// Gets or sets interval in seconds for connectivity checks during installation.
         /// Default: 15 seconds (optimized for fast performance).
         /// </summary>
         public int ConnectivityCheckIntervalSeconds { get; set; } = 15;
 
         /// <summary>
-        /// Interval in seconds for progress reporting throttling.
+        /// Gets or sets interval in seconds for progress reporting throttling.
         /// Default: 3 seconds for responsive UI updates.
         /// </summary>
         public int ProgressReportingIntervalSeconds { get; set; } = 3;
 
         /// <summary>
-        /// Whether to perform offline capability detection before installation.
+        /// Gets or sets a value indicating whether whether to perform offline capability detection before installation.
         /// Default: true to optimize network usage.
         /// </summary>
         public bool EnableOfflineCapabilityDetection { get; set; } = true;
 
         /// <summary>
-        /// Whether to use batch installation optimizations.
+        /// Gets or sets a value indicating whether whether to use batch installation optimizations.
         /// Default: true for better performance with multiple items.
         /// </summary>
         public bool EnableBatchOptimizations { get; set; } = true;
 
         /// <summary>
-        /// Maximum number of concurrent installations.
+        /// Gets or sets maximum number of concurrent installations.
         /// Default: 3 for maximum performance (fast network optimized).
         /// </summary>
         public int MaxConcurrentInstallations { get; set; } = 3;
 
         /// <summary>
-        /// Timeout in minutes for individual installation operations.
+        /// Gets or sets timeout in minutes for individual installation operations.
         /// Default: 15 minutes (shorter timeout for fast networks).
         /// </summary>
         public int InstallationTimeoutMinutes { get; set; } = 15;
@@ -64,7 +64,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                 ConnectivityCheckIntervalSeconds = 60, // Check less frequently
                 ProgressReportingIntervalSeconds = 10, // Report less frequently
                 MaxConcurrentInstallations = 1, // One at a time
-                InstallationTimeoutMinutes = 60 // Longer timeout
+                InstallationTimeoutMinutes = 60, // Longer timeout
             };
         }
 
@@ -79,7 +79,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                 ConnectivityCheckIntervalSeconds = 15, // Check more frequently
                 ProgressReportingIntervalSeconds = 3, // Report more frequently
                 MaxConcurrentInstallations = 3, // More concurrent installations
-                InstallationTimeoutMinutes = 15 // Shorter timeout
+                InstallationTimeoutMinutes = 15, // Shorter timeout
             };
         }
     }

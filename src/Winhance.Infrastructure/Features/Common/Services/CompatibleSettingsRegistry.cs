@@ -11,7 +11,6 @@ using Winhance.Core.Features.Common.Models;
 
 namespace Winhance.Infrastructure.Features.Common.Services
 {
-
     public class CompatibleSettingsRegistry : ICompatibleSettingsRegistry
     {
         private readonly IWindowsCompatibilityFilter _windowsFilter;
@@ -42,17 +41,23 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public async Task InitializeAsync()
         {
-            if (_isInitialized) return;
+            if (_isInitialized)
+            {
+                return;
+            }
 
             await _initializationLock.WaitAsync();
             try
             {
-                if (_isInitialized) return;
+                if (_isInitialized)
+                {
+                    return;
+                }
 
                 _logService.Log(LogLevel.Info, "Initializing compatible settings registry with auto-discovery");
-                
+
                 await PreFilterAllFeatureSettingsAsync();
-                
+
                 _isInitialized = true;
                 _logService.Log(LogLevel.Info, $"Compatible settings registry initialized with {_preFilteredSettings.Count} pre-filtered features");
             }
@@ -65,7 +70,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public IEnumerable<SettingDefinition> GetFilteredSettings(string featureId)
         {
             if (!_isInitialized)
+            {
                 throw new InvalidOperationException("Registry not initialized");
+            }
 
             _logService.Log(LogLevel.Debug, $"GetFilteredSettings for {featureId}: Filter enabled = {_filterEnabled}");
 
@@ -91,7 +98,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public IReadOnlyDictionary<string, IEnumerable<SettingDefinition>> GetAllFilteredSettings()
         {
             if (!_isInitialized)
+            {
                 throw new InvalidOperationException("Registry not initialized. Call InitializeAsync first.");
+            }
 
             return _filterEnabled ? _preFilteredSettings : _windowsFilterBypassedSettings;
         }
@@ -99,7 +108,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public IEnumerable<SettingDefinition> GetBypassedSettings(string featureId)
         {
             if (!_isInitialized)
+            {
                 throw new InvalidOperationException("Registry not initialized");
+            }
 
             return _windowsFilterBypassedSettings.TryGetValue(featureId, out var settings)
                 ? settings
@@ -109,7 +120,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public IReadOnlyDictionary<string, IEnumerable<SettingDefinition>> GetAllBypassedSettings()
         {
             if (!_isInitialized)
+            {
                 throw new InvalidOperationException("Registry not initialized");
+            }
 
             return _windowsFilterBypassedSettings;
         }
@@ -146,6 +159,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         bypassedSettings = await _hardwareFilter.FilterSettingsByHardwareAsync(bypassedSettings);
                         bypassedSettings = await _powerValidation.FilterSettingsByExistenceAsync(bypassedSettings);
                     }
+
                     var decorated = _windowsFilter.FilterSettingsByWindowsVersion(bypassedSettings, applyFilter: false);
                     _windowsFilterBypassedSettings[featureId] = decorated;
 
@@ -153,7 +167,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 }
                 catch (Exception ex)
                 {
-                    _logService.Log(LogLevel.Error,
+                    _logService.Log(
+                        LogLevel.Error,
                         $"Error loading settings for {featureId}: {ex.Message}");
                     _preFilteredSettings[featureId] = Enumerable.Empty<SettingDefinition>();
                     _rawSettings[featureId] = Enumerable.Empty<SettingDefinition>();
@@ -171,7 +186,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             try
             {
                 var settingClasses = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(assembly => !assembly.IsDynamic && assembly.GetName().Name?.Contains("Winhance") == true)
+                    .Where(assembly => !assembly.IsDynamic && assembly.GetName().Name?.Contains("Winhance", StringComparison.Ordinal) == true)
                     .SelectMany(assembly =>
                     {
                         try
@@ -184,8 +199,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         }
                     })
                     .Where(type => type != null && type.IsClass && (
-                        type.Name.EndsWith("Customizations") ||
-                        type.Name.EndsWith("Optimizations")))
+                        type.Name.EndsWith("Customizations", StringComparison.Ordinal) ||
+                        type.Name.EndsWith("Optimizations", StringComparison.Ordinal)))
                     .ToList();
 
                 foreach (var settingClass in settingClasses)
@@ -202,7 +217,8 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         {
                             var featureId = GetFeatureIdFromMethod(method);
 
-                            providers[featureId] = () => {
+                            providers[featureId] = () =>
+                            {
                                 try
                                 {
                                     var result = method.Invoke(null, null);
@@ -218,13 +234,13 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     }
                     catch (Exception)
                     {
-                        // Continue processing other classes
+                        // Continue processing other classes,
                     }
                 }
             }
             catch (Exception)
             {
-                // Return empty providers if discovery fails
+                // Return empty providers if discovery fails,
             }
 
             return providers;
@@ -233,7 +249,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private bool IsSettingDefinitionEnumerable(Type type)
         {
             return type.GetInterfaces()
-                .Any(i => i.IsGenericType && 
+                .Any(i => i.IsGenericType &&
                      i.GetGenericTypeDefinition() == typeof(IEnumerable<>) &&
                      i.GetGenericArguments()[0] == typeof(SettingDefinition));
         }

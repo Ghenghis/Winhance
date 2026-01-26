@@ -11,7 +11,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
     private enum TaskTriggerType
     {
         Startup = 8,
-        Logon = 9
+        Logon = 9,
     }
 
     public async Task<bool> RegisterScheduledTaskAsync(RemovalScript script)
@@ -40,7 +40,6 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
         });
     }
 
-
     public async Task<bool> UnregisterScheduledTaskAsync(string taskName)
     {
         return await Task.Run(() =>
@@ -50,7 +49,10 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                 var taskService = CreateTaskService();
                 var folder = GetWinhanceFolder(taskService);
 
-                if (folder == null) return true;
+                if (folder == null)
+                {
+                    return true;
+                }
 
                 try
                 {
@@ -63,7 +65,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                 }
                 catch (System.Runtime.InteropServices.COMException)
                 {
-                    // Task doesn't exist
+                    // Task doesn't exist,
                 }
 
                 return true;
@@ -85,7 +87,10 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
                 var taskService = CreateTaskService();
                 var folder = GetWinhanceFolder(taskService);
 
-                if (folder == null) return false;
+                if (folder == null)
+                {
+                    return false;
+                }
 
                 var task = folder.GetTask(taskName);
                 return task != null;
@@ -129,8 +134,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
             username,
             null, // password
             username != null ? 1 : 5, // TASK_LOGON_INTERACTIVE_TOKEN or TASK_LOGON_SERVICE_ACCOUNT
-            null
-        );
+            null);
 
         logService.LogInformation($"Registered task: {taskName} as {username ?? "SYSTEM"}");
         return true;
@@ -140,7 +144,9 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
     {
         Type? taskSchedulerType = Type.GetTypeFromProgID("Schedule.Service");
         if (taskSchedulerType == null)
+        {
             throw new InvalidOperationException("Could not find Schedule.Service COM type");
+        }
 
         dynamic taskService = Activator.CreateInstance(taskSchedulerType)
             ?? throw new InvalidOperationException("Could not create Schedule.Service instance");
@@ -191,10 +197,9 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
         }
         catch (System.Runtime.InteropServices.COMException)
         {
-            // Task doesn't exist
+            // Task doesn't exist,
         }
     }
-
 
     private dynamic CreateTaskDefinition(dynamic taskService, string? scriptPath, string? command, string? username, TaskTriggerType triggerType)
     {
@@ -231,7 +236,7 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
         {
             principal.UserId = username;
             principal.LogonType = 5; // Run whether logged in or not
-            principal.RunLevel = 1; // Highest privileges
+            principal.RunLevel = 1; // Highest privileges,
         }
         else
         {
@@ -242,7 +247,6 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
 
         return taskDefinition;
     }
-
 
     private void EnsureScriptFileExists(RemovalScript script)
     {
@@ -260,5 +264,4 @@ public class ScheduledTaskService(ILogService logService) : IScheduledTaskServic
             }
         }
     }
-
 }

@@ -20,7 +20,9 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(script))
+        {
             throw new ArgumentException("Script cannot be null or empty.", nameof(script));
+        }
 
         var startInfo = new ProcessStartInfo
         {
@@ -30,24 +32,28 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden
+            WindowStyle = ProcessWindowStyle.Hidden,
         };
 
         using var process = new Process { StartInfo = startInfo };
-        
+
         var outputBuilder = new StringBuilder();
         var errorBuilder = new StringBuilder();
 
         process.OutputDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
+            {
                 outputBuilder.AppendLine(e.Data);
+            }
         };
 
         process.ErrorDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
+            {
                 errorBuilder.AppendLine(e.Data);
+            }
         };
 
         process.Start();
@@ -92,7 +98,9 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
     public Task<bool> ExecuteScriptVisibleAsync(string script, string windowTitle = "Winhance PowerShell Task - Administrator")
     {
         if (string.IsNullOrEmpty(script))
+        {
             throw new ArgumentException("Script cannot be null or empty.", nameof(script));
+        }
 
         var windowSetupCommands = $"$Host.UI.RawUI.WindowTitle='{EscapeScript(windowTitle)}';$Host.UI.RawUI.BackgroundColor='Black';$Host.PrivateData.ProgressBackgroundColor='Black';$Host.PrivateData.ProgressForegroundColor='White';Clear-Host;";
 
@@ -102,7 +110,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
             Arguments = $"-ExecutionPolicy Bypass -Command \"{windowSetupCommands} & {{ {EscapeScript(script)} }}\"",
             UseShellExecute = true,
             CreateNoWindow = false,
-            WindowStyle = ProcessWindowStyle.Normal
+            WindowStyle = ProcessWindowStyle.Normal,
         };
 
         try
@@ -119,7 +127,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
 
     private static string EscapeScript(string script)
     {
-        return script.Replace("\"", "'");
+        return script.Replace("\"", "'", StringComparison.Ordinal);
     }
 
     public async Task<string> ExecuteScriptFileAsync(
@@ -129,10 +137,14 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(scriptPath))
+        {
             throw new ArgumentException("Script path cannot be null or empty.", nameof(scriptPath));
+        }
 
         if (!File.Exists(scriptPath))
+        {
             throw new FileNotFoundException($"PowerShell script file not found: {scriptPath}");
+        }
 
         var startInfo = new ProcessStartInfo
         {
@@ -142,24 +154,28 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden
+            WindowStyle = ProcessWindowStyle.Hidden,
         };
 
         using var process = new Process { StartInfo = startInfo };
-        
+
         var outputBuilder = new StringBuilder();
         var errorBuilder = new StringBuilder();
 
         process.OutputDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
+            {
                 outputBuilder.AppendLine(e.Data);
+            }
         };
 
         process.ErrorDataReceived += (_, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
+            {
                 errorBuilder.AppendLine(e.Data);
+            }
         };
 
         process.Start();
@@ -206,21 +222,31 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
     private static string? FilterPowerShellOutput(string? rawOutput)
     {
         if (string.IsNullOrWhiteSpace(rawOutput))
+        {
             return null;
+        }
 
         var trimmed = rawOutput.Trim();
 
         if (string.IsNullOrEmpty(trimmed))
+        {
             return null;
+        }
 
-        if (trimmed.Contains("â–") || trimmed.Contains("█") || trimmed.Contains("▓"))
+        if (trimmed.Contains("â–", StringComparison.Ordinal) || trimmed.Contains("█", StringComparison.Ordinal) || trimmed.Contains("▓", StringComparison.Ordinal))
+        {
             return null;
+        }
 
-        if (trimmed.Length < 10 && trimmed.Contains("%"))
+        if (trimmed.Length < 10 && trimmed.Contains("%", StringComparison.Ordinal))
+        {
             return null;
+        }
 
-        if (trimmed.StartsWith("WARNING:") && trimmed.Contains("culture"))
+        if (trimmed.StartsWith("WARNING:", StringComparison.Ordinal) && trimmed.Contains("culture", StringComparison.Ordinal))
+        {
             return null;
+        }
 
         return trimmed;
     }
@@ -232,10 +258,14 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(scriptPath))
+        {
             throw new ArgumentException("Script path cannot be null or empty.", nameof(scriptPath));
+        }
 
         if (!File.Exists(scriptPath))
+        {
             throw new FileNotFoundException($"PowerShell script file not found: {scriptPath}");
+        }
 
         var startInfo = new ProcessStartInfo
         {
@@ -245,7 +275,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden
+            WindowStyle = ProcessWindowStyle.Hidden,
         };
 
         using var process = new Process { StartInfo = startInfo };
@@ -266,7 +296,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
                     {
                         TerminalOutput = filteredOutput,
                         IsActive = true,
-                        LogLevel = LogLevel.Info
+                        LogLevel = LogLevel.Info,
                     });
                 }
             }
@@ -285,7 +315,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
                     {
                         TerminalOutput = filteredOutput,
                         IsActive = true,
-                        LogLevel = LogLevel.Warning
+                        LogLevel = LogLevel.Warning,
                     });
                 }
             }
@@ -338,7 +368,9 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(scriptContent))
+        {
             throw new ArgumentException("Script content cannot be null or empty.", nameof(scriptContent));
+        }
 
         var tempScriptPath = Path.Combine(Path.GetTempPath(), $"winhance_{Guid.NewGuid()}.ps1");
         await File.WriteAllTextAsync(tempScriptPath, scriptContent, cancellationToken);
@@ -353,7 +385,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,
             };
 
             using var process = new Process { StartInfo = startInfo };
@@ -370,7 +402,7 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
                     {
                         TerminalOutput = e.Data,
                         IsActive = true,
-                        LogLevel = LogLevel.Info
+                        LogLevel = LogLevel.Info,
                     });
                 }
             };
@@ -426,9 +458,14 @@ public class PowerShellExecutionService(ILogService logService) : IPowerShellExe
             try
             {
                 if (File.Exists(tempScriptPath))
+                {
                     File.Delete(tempScriptPath);
+                }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Failed to cleanup temp script: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to cleanup temp script: {ex.Message}");
+            }
         }
     }
 }

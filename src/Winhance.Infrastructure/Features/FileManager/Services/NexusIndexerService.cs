@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.FileManager.Interfaces;
 using Winhance.Core.Features.FileManager.Interop;
 
@@ -24,6 +24,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private NexusInterop.ProgressCallback? _progressCallback;
 
         public bool IsAvailable => _isAvailable;
+
         public NexusIndexStats Stats { get; } = new();
 
         public event Action<ulong, ulong, string>? ProgressChanged;
@@ -39,7 +40,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             try
             {
                 // Try to load the native library
-                return NexusInterop.nexus_init();
+                return NexusInterop.Nexus_init();
             }
             catch (DllNotFoundException)
             {
@@ -55,16 +56,24 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
         public bool Initialize()
         {
-            if (_initialized) return true;
-            if (!_isAvailable) return false;
+            if (_initialized)
+            {
+                return true;
+            }
+
+            if (!_isAvailable)
+            {
+                return false;
+            }
 
             try
             {
-                _initialized = NexusInterop.nexus_init();
+                _initialized = NexusInterop.Nexus_init();
                 if (_initialized)
                 {
                     _logService.Log(LogLevel.Info, "Nexus indexer initialized successfully");
                 }
+
                 return _initialized;
             }
             catch (Exception ex)
@@ -82,16 +91,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 return -1;
             }
 
-            return await Task.Run(() =>
+            return await Task.Run(
+                () =>
             {
                 var sw = Stopwatch.StartNew();
-                
+
                 try
                 {
                     _logService.Log(LogLevel.Info, "Starting MFT-based full drive indexing...");
-                    
-                    long count = NexusInterop.nexus_index_all();
-                    
+
+                    long count = NexusInterop.Nexus_index_all();
+
                     sw.Stop();
                     Stats.IndexTimeMs = sw.ElapsedMilliseconds;
                     Stats.TotalFiles = count > 0 ? count : 0;
@@ -99,7 +109,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
                     if (count >= 0)
                     {
-                        _logService.Log(LogLevel.Info, 
+                        _logService.Log(
+                            LogLevel.Info,
                             $"Indexed {count:N0} files in {sw.ElapsedMilliseconds}ms ({count / Math.Max(1, sw.ElapsedMilliseconds / 1000.0):N0} files/sec)");
                     }
                     else
@@ -124,19 +135,21 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 return -1;
             }
 
-            return await Task.Run(() =>
+            return await Task.Run(
+                () =>
             {
                 var sw = Stopwatch.StartNew();
-                
+
                 try
                 {
-                    long count = NexusInterop.nexus_index_directory(path);
-                    
+                    long count = NexusInterop.Nexus_index_directory(path);
+
                     sw.Stop();
-                    
+
                     if (count >= 0)
                     {
-                        _logService.Log(LogLevel.Info, 
+                        _logService.Log(
+                            LogLevel.Info,
                             $"Indexed {count:N0} files in '{path}' ({sw.ElapsedMilliseconds}ms)");
                     }
 
@@ -157,39 +170,40 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 return Array.Empty<NexusFileEntry>();
             }
 
-            return await Task.Run(() =>
+            return await Task.Run(
+                () =>
             {
                 var results = new List<NexusFileEntry>();
-                
+
                 try
                 {
-                    long count = NexusInterop.nexus_search(query, (uint)maxResults);
-                    
+                    long count = NexusInterop.Nexus_search(query, (uint)maxResults);
+
                     if (count > 0)
                     {
                         for (uint i = 0; i < (uint)count; i++)
                         {
-                            IntPtr resultPtr = NexusInterop.nexus_get_search_result(i);
+                            IntPtr resultPtr = NexusInterop.Nexus_get_search_result(i);
                             if (resultPtr != IntPtr.Zero)
                             {
                                 var ffiResult = Marshal.PtrToStructure<FfiSearchResult>(resultPtr);
-                                
+
                                 results.Add(new NexusFileEntry
                                 {
                                     Path = ffiResult.GetPath(),
                                     Name = ffiResult.GetName(),
                                     Size = (long)ffiResult.Size,
-                                    IsDirectory = ffiResult.IsDir
+                                    IsDirectory = ffiResult.IsDir,
                                 });
-                                
-                                NexusInterop.nexus_free_result(resultPtr);
+
+                                NexusInterop.Nexus_free_result(resultPtr);
                             }
                         }
-                        
+
                         _logService.Log(LogLevel.Debug, $"Search '{query}' returned {count} results");
                     }
-                    
-                    NexusInterop.nexus_clear_search_results();
+
+                    NexusInterop.Nexus_clear_search_results();
                 }
                 catch (Exception ex)
                 {
@@ -203,56 +217,84 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         /// <summary>
         /// Compute quick hash for duplicate detection (xxHash3 - very fast).
         /// </summary>
+        /// <returns></returns>
         public ulong GetQuickHash(string path)
         {
-            if (!_isAvailable) return 0;
-            return NexusInterop.nexus_hash_file_quick(path);
+            if (!_isAvailable)
+            {
+                return 0;
+            }
+
+            return NexusInterop.Nexus_hash_file_quick(path);
         }
 
         /// <summary>
         /// Compute full SHA-256 hash for verification.
         /// </summary>
+        /// <returns></returns>
         public string? GetFullHash(string path)
         {
-            if (!_isAvailable) return null;
-            
-            IntPtr hashPtr = NexusInterop.nexus_hash_file_full(path);
-            if (hashPtr == IntPtr.Zero) return null;
-            
+            if (!_isAvailable)
+            {
+                return null;
+            }
+
+            IntPtr hashPtr = NexusInterop.Nexus_hash_file_full(path);
+            if (hashPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
             string hash = Marshal.PtrToStringAnsi(hashPtr) ?? string.Empty;
-            NexusInterop.nexus_free_string(hashPtr);
+            NexusInterop.Nexus_free_string(hashPtr);
             return hash;
         }
 
         /// <summary>
         /// Find potential duplicate file groups by size.
         /// </summary>
+        /// <returns></returns>
         public long FindDuplicates(ulong minSize = 1024)
         {
-            if (!_isAvailable) return -1;
-            return NexusInterop.nexus_find_duplicates(minSize);
+            if (!_isAvailable)
+            {
+                return -1;
+            }
+
+            return NexusInterop.Nexus_find_duplicates(minSize);
         }
 
         /// <summary>
         /// Get current index statistics from native library.
         /// </summary>
+        /// <returns></returns>
         public FfiIndexStats GetNativeStats()
         {
-            if (!_isAvailable) return default;
-            return NexusInterop.nexus_get_stats();
+            if (!_isAvailable)
+            {
+                return default;
+            }
+
+            return NexusInterop.Nexus_get_stats();
         }
 
         public string? GetLastError()
         {
-            if (!_isAvailable) return "Native library not available";
+            if (!_isAvailable)
+            {
+                return "Native library not available";
+            }
 
             try
             {
-                IntPtr errorPtr = NexusInterop.nexus_get_last_error();
-                if (errorPtr == IntPtr.Zero) return null;
+                IntPtr errorPtr = NexusInterop.Nexus_get_last_error();
+                if (errorPtr == IntPtr.Zero)
+                {
+                    return null;
+                }
 
                 string error = Marshal.PtrToStringAnsi(errorPtr) ?? string.Empty;
-                NexusInterop.nexus_free_string(errorPtr);
+                NexusInterop.Nexus_free_string(errorPtr);
                 return error;
             }
             catch (Exception)

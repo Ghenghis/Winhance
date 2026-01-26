@@ -30,6 +30,5 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 return Enumerable.Empty<SettingDefinition>();
             }
         }
-
     }
 }

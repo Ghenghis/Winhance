@@ -32,7 +32,7 @@ public class DirectDownloadService : IDirectDownloadService
         _localization = localization;
         _httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromMinutes(30)
+            Timeout = TimeSpan.FromMinutes(30),
         };
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Winhance-Download-Manager");
     }
@@ -56,7 +56,7 @@ public class DirectDownloadService : IDirectDownloadService
                 Progress = 5,
                 StatusText = _localization.GetString("Progress_PreparingDownload", item.Name),
                 TerminalOutput = "Resolving download URL...",
-                IsActive = true
+                IsActive = true,
             });
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -68,7 +68,7 @@ public class DirectDownloadService : IDirectDownloadService
                 {
                     Progress = 0,
                     StatusText = _localization.GetString("Progress_FailedResolveUrl", item.Name),
-                    IsActive = false
+                    IsActive = false,
                 });
                 return false;
             }
@@ -82,7 +82,7 @@ public class DirectDownloadService : IDirectDownloadService
                 Progress = 10,
                 StatusText = _localization.GetString("Progress_Downloading", item.Name),
                 TerminalOutput = "Starting download...",
-                IsActive = true
+                IsActive = true,
             });
 
             var downloadedFile = await DownloadFileAsync(downloadUrl, tempPath, item.Name, progress, cancellationToken);
@@ -92,7 +92,7 @@ public class DirectDownloadService : IDirectDownloadService
                 {
                     Progress = 0,
                     StatusText = _localization.GetString("Progress_FailedDownload", item.Name),
-                    IsActive = false
+                    IsActive = false,
                 });
                 return false;
             }
@@ -106,7 +106,7 @@ public class DirectDownloadService : IDirectDownloadService
                 Progress = 80,
                 StatusText = _localization.GetString("Progress_Installing", item.Name),
                 TerminalOutput = "Starting installation...",
-                IsActive = true
+                IsActive = true,
             });
 
             var installSuccess = await InstallDownloadedFileAsync(downloadedFile, item.Name, progress, cancellationToken);
@@ -118,7 +118,7 @@ public class DirectDownloadService : IDirectDownloadService
                     Progress = 100,
                     StatusText = _localization.GetString("Progress_InstalledSuccess", item.Name),
                     TerminalOutput = "Installation complete",
-                    IsActive = false
+                    IsActive = false,
                 });
                 return true;
             }
@@ -127,7 +127,7 @@ public class DirectDownloadService : IDirectDownloadService
             {
                 Progress = 0,
                 StatusText = _localization.GetString("Progress_FailedInstall", item.Name),
-                IsActive = false
+                IsActive = false,
             });
             return false;
         }
@@ -138,7 +138,7 @@ public class DirectDownloadService : IDirectDownloadService
             {
                 Progress = 0,
                 StatusText = _localization.GetString("Progress_DownloadCancelled", item.Name),
-                IsActive = false
+                IsActive = false,
             });
             throw;
         }
@@ -149,7 +149,7 @@ public class DirectDownloadService : IDirectDownloadService
             {
                 Progress = 0,
                 StatusText = _localization.GetString("Progress_Error", ex.Message),
-                IsActive = false
+                IsActive = false,
             });
             return false;
         }
@@ -219,8 +219,8 @@ public class DirectDownloadService : IDirectDownloadService
         _logService?.LogInformation($"Resolving GitHub release URL from: {githubUrl}");
 
         var apiUrl = githubUrl
-            .Replace("github.com", "api.github.com/repos")
-            .Replace("/releases/latest", "/releases/latest");
+            .Replace("github.com", "api.github.com/repos", StringComparison.Ordinal)
+            .Replace("/releases/latest", "/releases/latest", StringComparison.Ordinal);
 
         var response = await _httpClient.GetAsync(apiUrl, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -247,8 +247,8 @@ public class DirectDownloadService : IDirectDownloadService
     private bool MatchesPattern(string fileName, string pattern)
     {
         var regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern)
-            .Replace("\\*", ".*")
-            .Replace("\\?", ".") + "$";
+            .Replace("\\*", ".*", StringComparison.Ordinal)
+            .Replace("\\?", ".", StringComparison.Ordinal) + "$";
 
         return System.Text.RegularExpressions.Regex.IsMatch(
             fileName,
@@ -303,7 +303,7 @@ public class DirectDownloadService : IDirectDownloadService
                             StatusText = _localization.GetString("Progress_DownloadProgress", displayName, downloadedMB.ToString("F2"), totalMB.ToString("F2")),
                             TerminalOutput = $"{downloadedMB:F2} MB of {totalMB:F2} MB",
                             IsActive = true,
-                            IsIndeterminate = false
+                            IsIndeterminate = false,
                         });
                     }
                 }
@@ -337,7 +337,7 @@ public class DirectDownloadService : IDirectDownloadService
             Progress = 80,
             StatusText = _localization.GetString("Progress_Installing", displayName),
             TerminalOutput = $"Installing {extension} file...",
-            IsActive = true
+            IsActive = true,
         });
 
         return extension switch
@@ -345,7 +345,7 @@ public class DirectDownloadService : IDirectDownloadService
             ".msi" => await InstallMsiAsync(filePath, displayName, progress, cancellationToken),
             ".exe" => await InstallExeAsync(filePath, displayName, progress, cancellationToken),
             ".zip" => await InstallZipAsync(filePath, displayName, progress, cancellationToken),
-            _ => throw new NotSupportedException($"File type {extension} is not supported for installation")
+            _ => throw new NotSupportedException($"File type {extension} is not supported for installation"),
         };
     }
 
@@ -359,13 +359,13 @@ public class DirectDownloadService : IDirectDownloadService
         {
             _logService?.LogInformation($"Installing MSI: {msiPath}");
 
-            var escapedPath = msiPath.Replace("'", "''");
+            var escapedPath = msiPath.Replace("'", "''", StringComparison.Ordinal);
             var script = $@"
 $process = Start-Process msiexec.exe -ArgumentList '/i', '{escapedPath}', '/quiet', '/norestart' -Wait -NoNewWindow -PassThru
 if ($process.ExitCode -eq 0) {{
     Write-Output 'Installation completed successfully'
 }} else {{
-    throw ""Installation failed with exit code $($process.ExitCode)""
+    throw ""Installation failed with exit code $($process.ExitCode)"",
 }}
 ";
 
@@ -376,7 +376,7 @@ if ($process.ExitCode -eq 0) {{
                 Progress = 95,
                 StatusText = _localization.GetString("Progress_Installing", displayName),
                 TerminalOutput = "MSI installation completed",
-                IsActive = true
+                IsActive = true,
             });
 
             return true;
@@ -403,7 +403,7 @@ if ($process.ExitCode -eq 0) {{
         {
             _logService?.LogInformation($"Installing EXE: {exePath}");
 
-            var escapedPath = exePath.Replace("'", "''");
+            var escapedPath = exePath.Replace("'", "''", StringComparison.Ordinal);
             var silentArgs = new[] { "/S", "/SILENT /NORESTART", "/VERYSILENT /NORESTART", "/quiet /norestart" };
 
             foreach (var args in silentArgs)
@@ -416,7 +416,7 @@ if ($process.ExitCode -eq 0) {{
 $process = Start-Process '{escapedPath}' -ArgumentList '{args}' -Wait -NoNewWindow -PassThru
 if ($process.ExitCode -eq 0) {{
     Write-Output 'Installation completed successfully'
-    exit 0
+    exit 0,
 }}
 ";
 
@@ -427,7 +427,7 @@ if ($process.ExitCode -eq 0) {{
                         Progress = 95,
                         StatusText = _localization.GetString("Progress_Installing", displayName),
                         TerminalOutput = "EXE installation completed",
-                        IsActive = true
+                        IsActive = true,
                     });
 
                     return true;
@@ -446,13 +446,13 @@ if ($process.ExitCode -eq 0) {{
                 Progress = 90,
                 StatusText = _localization.GetString("Progress_LaunchingInstaller", displayName),
                 TerminalOutput = "Launching interactive installer (requires user interaction)",
-                IsActive = true
+                IsActive = true,
             });
 
             Process.Start(new ProcessStartInfo
             {
                 FileName = exePath,
-                UseShellExecute = true
+                UseShellExecute = true,
             });
 
             return true;
@@ -483,15 +483,14 @@ if ($process.ExitCode -eq 0) {{
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Winhance",
                 "Apps",
-                displayName
-            );
+                displayName);
 
-            var escapedZipPath = zipPath.Replace("'", "''");
-            var escapedExtractPath = extractPath.Replace("'", "''");
+            var escapedZipPath = zipPath.Replace("'", "''", StringComparison.Ordinal);
+            var escapedExtractPath = extractPath.Replace("'", "''", StringComparison.Ordinal);
 
             var script = $@"
 if (Test-Path '{escapedExtractPath}') {{
-    Remove-Item -Path '{escapedExtractPath}' -Recurse -Force
+    Remove-Item -Path '{escapedExtractPath}' -Recurse -Force,
 }}
 New-Item -ItemType Directory -Path '{escapedExtractPath}' -Force | Out-Null
 Expand-Archive -Path '{escapedZipPath}' -DestinationPath '{escapedExtractPath}' -Force
@@ -505,7 +504,7 @@ Write-Output 'Extracted to {extractPath}'
                 Progress = 95,
                 StatusText = _localization.GetString("Progress_Extracting", displayName),
                 TerminalOutput = $"Extracted to: {extractPath}",
-                IsActive = true
+                IsActive = true,
             });
 
             _logService?.LogInformation($"ZIP extracted to {extractPath}. Manual setup may be required.");
@@ -531,7 +530,7 @@ Write-Output 'Extracted to {extractPath}'
             Architecture.X64 => "x64",
             Architecture.X86 => "x86",
             Architecture.Arm64 => "arm64",
-            _ => "x64"
+            _ => "x64",
         };
     }
 }

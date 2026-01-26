@@ -5,6 +5,5 @@ namespace Winhance.Core.Features.Common.Models
         string DefaultName,
         string IconName,
         string Category,
-        int SortOrder
-    );
+        int SortOrder);
 }

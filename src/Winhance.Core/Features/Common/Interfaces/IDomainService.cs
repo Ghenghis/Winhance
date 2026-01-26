@@ -7,6 +7,7 @@ namespace Winhance.Core.Features.Common.Interfaces
     public interface IDomainService
     {
         Task<IEnumerable<SettingDefinition>> GetSettingsAsync();
+
         string DomainName { get; }
 
         void ClearSettingsCache()

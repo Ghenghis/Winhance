@@ -8,10 +8,16 @@ namespace Winhance.Core.Features.SoftwareApps.Interfaces;
 public interface IWindowsAppsService : IAppDomainService
 {
     Task<ItemDefinition?> GetAppByIdAsync(string appId);
+
     Task<OperationResult<bool>> InstallAppAsync(ItemDefinition item, IProgress<TaskProgressDetail>? progress = null);
+
     Task<OperationResult<bool>> UninstallAppAsync(ItemDefinition item, IProgress<TaskProgressDetail>? progress = null);
+
     Task<OperationResult<bool>> EnableCapabilityAsync(ItemDefinition item, IProgress<TaskProgressDetail>? progress = null);
+
     Task<OperationResult<bool>> DisableCapabilityAsync(ItemDefinition item);
+
     Task<OperationResult<bool>> EnableOptionalFeatureAsync(ItemDefinition item, IProgress<TaskProgressDetail>? progress = null);
+
     Task<OperationResult<bool>> DisableOptionalFeatureAsync(ItemDefinition item);
 }

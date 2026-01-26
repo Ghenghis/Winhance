@@ -26,13 +26,17 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         {
             // Return cached settings if available
             if (_cachedSettings != null)
+            {
                 return _cachedSettings;
+            }
 
             lock (_cacheLock)
             {
                 // Double-check locking pattern
                 if (_cachedSettings != null)
+                {
                     return _cachedSettings;
+                }
 
                 try
                 {
@@ -77,8 +81,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                     taskbandKey,
                     favoritesValue,
                     new byte[0],
-                    Microsoft.Win32.RegistryValueKind.Binary
-                );
+                    Microsoft.Win32.RegistryValueKind.Binary);
 
                 if (success)
                 {
@@ -97,6 +100,5 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 throw;
             }
         }
-
     }
 }

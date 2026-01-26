@@ -18,6 +18,6 @@ namespace Winhance.Core.Features.Common.Enums
         /// <summary>
         /// Import recommended configuration.
         /// </summary>
-        ImportRecommended
+        ImportRecommended,
     }
 }

@@ -5,9 +5,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Enums;
+using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.FileManager.Interfaces;
+using Winhance.Core.Features.FileManager.Models;
 
 namespace Winhance.Infrastructure.Features.FileManager.Services
 {
@@ -24,13 +25,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             _logService = logService;
             _transactionLogPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Winhance", "FileManager", "transactions"
-            );
+                "Winhance", "FileManager", "transactions");
             Directory.CreateDirectory(_transactionLogPath);
         }
 
         public async Task<IEnumerable<FileSystemEntry>> GetDirectoryContentsAsync(
-            string path, 
+            string path,
             CancellationToken cancellationToken = default)
         {
             var entries = new List<FileSystemEntry>();
@@ -53,12 +53,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         Name = "..",
                         FullPath = dirInfo.Parent.FullName,
                         IsDirectory = true,
-                        DateModified = dirInfo.Parent.LastWriteTime
+                        DateModified = dirInfo.Parent.LastWriteTime,
                     });
                 }
 
                 // Get directories
-                await Task.Run(() =>
+                await Task.Run(
+                    () =>
                 {
                     foreach (var dir in dirInfo.EnumerateDirectories())
                     {
@@ -73,12 +74,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 DateModified = dir.LastWriteTime,
                                 DateCreated = dir.CreationTime,
                                 DateAccessed = dir.LastAccessTime,
-                                Attributes = dir.Attributes
+                                Attributes = dir.Attributes,
                             });
                         }
                         catch (UnauthorizedAccessException)
                         {
-                            // Skip inaccessible directories
+                            // Skip inaccessible directories,
                         }
                         catch (Exception ex)
                         {
@@ -102,12 +103,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 DateCreated = file.CreationTime,
                                 DateAccessed = file.LastAccessTime,
                                 Extension = file.Extension,
-                                Attributes = file.Attributes
+                                Attributes = file.Attributes,
                             });
                         }
                         catch (UnauthorizedAccessException)
                         {
-                            // Skip inaccessible files
+                            // Skip inaccessible files,
                         }
                         catch (Exception ex)
                         {
@@ -133,7 +134,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var drives = new List<FileManagerDriveInfo>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 foreach (var drive in System.IO.DriveInfo.GetDrives())
                 {
@@ -148,7 +150,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             FileSystem = drive.IsReady ? drive.DriveFormat : string.Empty,
                             TotalSize = drive.IsReady ? drive.TotalSize : 0,
                             FreeSpace = drive.IsReady ? drive.TotalFreeSpace : 0,
-                            IsReady = drive.IsReady
+                            IsReady = drive.IsReady,
                         });
                     }
                     catch (Exception ex)
@@ -161,12 +163,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             return drives;
         }
 
-        public async Task<OperationResult> CopyFilesAsync(
-            IEnumerable<string> sourcePaths, 
+        public async Task<FileOperationResult> CopyFilesAsync(
+            IEnumerable<string> sourcePaths,
             string destinationPath,
             CancellationToken cancellationToken = default)
         {
-            var result = new OperationResult { Success = true };
+            var result = new FileOperationResult { Success = true };
             var errors = new List<string>();
             var transactionId = Guid.NewGuid().ToString();
             var transactionLog = new List<TransactionEntry>();
@@ -204,7 +206,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Operation = "Copy",
                             SourcePath = sourcePath,
                             DestinationPath = destPath,
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.ItemsProcessed++;
@@ -236,19 +238,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             result.Errors = errors;
             result.Success = result.ItemsFailed == 0;
-            result.Message = result.Success 
-                ? $"Copied {result.ItemsProcessed} items" 
+            result.Message = result.Success
+                ? $"Copied {result.ItemsProcessed} items"
                 : $"Copied {result.ItemsProcessed}, failed {result.ItemsFailed}";
 
             return result;
         }
 
-        public async Task<OperationResult> MoveFilesAsync(
-            IEnumerable<string> sourcePaths, 
+        public async Task<FileOperationResult> MoveFilesAsync(
+            IEnumerable<string> sourcePaths,
             string destinationPath,
             CancellationToken cancellationToken = default)
         {
-            var result = new OperationResult { Success = true };
+            var result = new FileOperationResult { Success = true };
             var errors = new List<string>();
             var transactionId = Guid.NewGuid().ToString();
             var transactionLog = new List<TransactionEntry>();
@@ -286,7 +288,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Operation = "Move",
                             SourcePath = sourcePath,
                             DestinationPath = destPath,
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.ItemsProcessed++;
@@ -318,19 +320,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             result.Errors = errors;
             result.Success = result.ItemsFailed == 0;
-            result.Message = result.Success 
-                ? $"Moved {result.ItemsProcessed} items" 
+            result.Message = result.Success
+                ? $"Moved {result.ItemsProcessed} items"
                 : $"Moved {result.ItemsProcessed}, failed {result.ItemsFailed}";
 
             return result;
         }
 
-        public async Task<OperationResult> DeleteFilesAsync(
-            IEnumerable<string> paths, 
+        public async Task<FileOperationResult> DeleteFilesAsync(
+            IEnumerable<string> paths,
             bool permanent = false,
             CancellationToken cancellationToken = default)
         {
-            var result = new OperationResult { Success = true };
+            var result = new FileOperationResult { Success = true };
             var errors = new List<string>();
             var transactionId = Guid.NewGuid().ToString();
             var transactionLog = new List<TransactionEntry>();
@@ -371,7 +373,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         {
                             Operation = permanent ? "PermanentDelete" : "RecycleBinDelete",
                             SourcePath = path,
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.ItemsProcessed++;
@@ -402,18 +404,18 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             result.Errors = errors;
             result.Success = result.ItemsFailed == 0;
-            result.Message = result.Success 
-                ? $"Deleted {result.ItemsProcessed} items" 
+            result.Message = result.Success
+                ? $"Deleted {result.ItemsProcessed} items"
                 : $"Deleted {result.ItemsProcessed}, failed {result.ItemsFailed}";
 
             return result;
         }
 
-        public async Task<OperationResult> CreateDirectoryAsync(
+        public async Task<FileOperationResult> CreateDirectoryAsync(
             string path,
             CancellationToken cancellationToken = default)
         {
-            var result = new OperationResult();
+            var result = new FileOperationResult();
 
             try
             {
@@ -440,12 +442,12 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             return result;
         }
 
-        public async Task<OperationResult> RenameAsync(
-            string path, 
+        public async Task<FileOperationResult> RenameAsync(
+            string path,
             string newName,
             CancellationToken cancellationToken = default)
         {
-            var result = new OperationResult();
+            var result = new FileOperationResult();
 
             try
             {
@@ -489,7 +491,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var properties = new FileProperties();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 if (Directory.Exists(path))
                 {
@@ -529,7 +532,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         using var stream = File.OpenRead(path);
                         using var sha256 = SHA256.Create();
                         var hash = sha256.ComputeHash(stream);
-                        properties.Hash = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                        properties.Hash = BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
                     }
                     catch (Exception ex)
                     {
@@ -542,14 +545,15 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<IEnumerable<FileSystemEntry>> SearchAsync(
-            string searchPath, 
-            string pattern, 
-            SearchOptions options,
+            string searchPath,
+            string pattern,
+            FileSearchOptions options,
             CancellationToken cancellationToken = default)
         {
             var results = new List<FileSystemEntry>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 var searchOption = options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 var searchPattern = options.UseRegex ? "*" : $"*{pattern}*";
@@ -560,7 +564,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     {
                         RecurseSubdirectories = options.Recursive,
                         IgnoreInaccessible = true,
-                        AttributesToSkip = options.IncludeHidden ? FileAttributes.None : FileAttributes.Hidden
+                        AttributesToSkip = options.IncludeHidden ? FileAttributes.None : FileAttributes.Hidden,
                     };
 
                     // Search directories
@@ -577,11 +581,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     Name = dirInfo.Name,
                                     FullPath = dirInfo.FullName,
                                     IsDirectory = true,
-                                    DateModified = dirInfo.LastWriteTime
+                                    DateModified = dirInfo.LastWriteTime,
                                 });
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skip inaccessible directory: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skip inaccessible directory: {ex.Message}");
+                        }
                     }
 
                     // Search files
@@ -593,26 +600,40 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             var fileInfo = new FileInfo(file);
 
                             if (!MatchesSearchCriteria(fileInfo.Name, pattern, options))
+                            {
                                 continue;
+                            }
 
                             // Apply size filters
                             if (options.MinSize.HasValue && fileInfo.Length < options.MinSize.Value)
+                            {
                                 continue;
+                            }
+
                             if (options.MaxSize.HasValue && fileInfo.Length > options.MaxSize.Value)
+                            {
                                 continue;
+                            }
 
                             // Apply date filters
                             if (options.ModifiedAfter.HasValue && fileInfo.LastWriteTime < options.ModifiedAfter.Value)
+                            {
                                 continue;
+                            }
+
                             if (options.ModifiedBefore.HasValue && fileInfo.LastWriteTime > options.ModifiedBefore.Value)
+                            {
                                 continue;
+                            }
 
                             // Apply extension filter
                             if (options.Extensions != null && options.Extensions.Any())
                             {
                                 var ext = fileInfo.Extension.TrimStart('.').ToLowerInvariant();
                                 if (!options.Extensions.Any(e => e.Equals(ext, StringComparison.OrdinalIgnoreCase)))
+                                {
                                     continue;
+                                }
                             }
 
                             results.Add(new FileSystemEntry
@@ -622,10 +643,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 IsDirectory = false,
                                 Size = fileInfo.Length,
                                 DateModified = fileInfo.LastWriteTime,
-                                Extension = fileInfo.Extension
+                                Extension = fileInfo.Extension,
                             });
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skip inaccessible file: {ex.Message}");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -636,8 +660,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
 
             return results;
         }
-
-        #region Helper Methods
 
         private async Task CopyDirectoryAsync(string sourcePath, string destPath, CancellationToken cancellationToken)
         {
@@ -662,7 +684,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private string GetUniqueDestinationPath(string path)
         {
             if (!File.Exists(path) && !Directory.Exists(path))
+            {
                 return path;
+            }
 
             var directory = Path.GetDirectoryName(path) ?? string.Empty;
             var name = Path.GetFileNameWithoutExtension(path);
@@ -674,7 +698,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 newPath = Path.Combine(directory, $"{name} ({counter}){extension}");
                 counter++;
-            } while (File.Exists(newPath) || Directory.Exists(newPath));
+            }
+            while (File.Exists(newPath) || Directory.Exists(newPath));
 
             return newPath;
         }
@@ -687,8 +712,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(
                     path,
                     Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
-                    Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin
-                );
+                    Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
             });
         }
 
@@ -699,11 +723,21 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 foreach (var file in dirInfo.EnumerateFiles("*", SearchOption.AllDirectories))
                 {
-                    try { size += file.Length; }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Size calc error: {ex.Message}"); }
+                    try
+                    {
+                        size += file.Length;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Size calc error: {ex.Message}");
+                    }
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Directory enumeration error: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Directory enumeration error: {ex.Message}");
+            }
+
             return size;
         }
 
@@ -730,23 +764,22 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 ".js" => "JavaScript File",
                 ".ts" => "TypeScript File",
                 ".rs" => "Rust Source File",
-                _ => $"{extension.TrimStart('.').ToUpper()} File"
+                _ => $"{extension.TrimStart('.').ToUpper()} File",
             };
         }
 
-        private bool MatchesSearchCriteria(string name, string pattern, SearchOptions options)
+        private bool MatchesSearchCriteria(string name, string pattern, FileSearchOptions options)
         {
             if (options.UseRegex)
             {
                 try
                 {
                     return System.Text.RegularExpressions.Regex.IsMatch(
-                        name, 
-                        pattern, 
-                        options.CaseSensitive 
-                            ? System.Text.RegularExpressions.RegexOptions.None 
-                            : System.Text.RegularExpressions.RegexOptions.IgnoreCase
-                    );
+                        name,
+                        pattern,
+                        options.CaseSensitive
+                            ? System.Text.RegularExpressions.RegexOptions.None
+                            : System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 }
                 catch (Exception ex)
                 {
@@ -755,8 +788,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 }
             }
 
-            var comparison = options.CaseSensitive 
-                ? StringComparison.Ordinal 
+            var comparison = options.CaseSensitive
+                ? StringComparison.Ordinal
                 : StringComparison.OrdinalIgnoreCase;
 
             return name.Contains(pattern, comparison);
@@ -767,18 +800,19 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var logPath = Path.Combine(_transactionLogPath, $"{transactionId}.json");
             var json = System.Text.Json.JsonSerializer.Serialize(entries, new System.Text.Json.JsonSerializerOptions
             {
-                WriteIndented = true
+                WriteIndented = true,
             });
             await File.WriteAllTextAsync(logPath, json);
         }
 
-        #endregion
-
         private class TransactionEntry
         {
             public string Operation { get; set; } = string.Empty;
+
             public string SourcePath { get; set; } = string.Empty;
+
             public string DestinationPath { get; set; } = string.Empty;
+
             public DateTime Timestamp { get; set; }
         }
     }

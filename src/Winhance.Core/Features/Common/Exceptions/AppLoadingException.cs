@@ -9,12 +9,13 @@ namespace Winhance.Core.Models.Exceptions
         Timeout,
         PackageManagerError,
         InvalidConfiguration,
-        NetworkError
+        NetworkError,
     }
 
     public class AppLoadingException : Exception
     {
         public AppLoadingErrorCode ErrorCode { get; }
+
         public Exception? OriginalException { get; }
 
         public AppLoadingException(AppLoadingErrorCode errorCode, string message,
@@ -29,7 +30,9 @@ namespace Winhance.Core.Models.Exceptions
     public class PackageManagerException : Exception
     {
         public string PackageId { get; }
+
         public string Operation { get; }
+
         public Exception? OriginalException { get; }
 
         public PackageManagerException(string packageId, string operation, string message,

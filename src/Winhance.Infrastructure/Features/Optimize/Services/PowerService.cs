@@ -78,7 +78,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 var rawValues = new Dictionary<string, object?>
                 {
                     ["ActivePowerPlan"] = activePlan?.Name,
-                    ["ActivePowerPlanGuid"] = activePlan?.Guid
+                    ["ActivePowerPlanGuid"] = activePlan?.Guid,
                 };
                 results["power-plan-selection"] = rawValues;
             }
@@ -89,12 +89,16 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
         public async Task<IEnumerable<SettingDefinition>> GetSettingsAsync()
         {
             if (_cachedSettings != null)
+            {
                 return _cachedSettings;
+            }
 
             lock (_cacheLock)
             {
                 if (_cachedSettings != null)
+                {
                     return _cachedSettings;
+                }
 
                 try
                 {
@@ -117,7 +121,6 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 _cachedSettings = null;
             }
         }
-
 
         public async Task<PowerPlan?> GetActivePowerPlanAsync()
         {
@@ -147,7 +150,6 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             }
         }
 
-
         public async Task<IEnumerable<object>> GetAvailablePowerPlansAsync()
         {
             try
@@ -162,7 +164,6 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             }
         }
 
-
         public async Task<bool> SetActivePowerPlanAsync(string powerPlanGuid)
         {
             try
@@ -175,13 +176,13 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 }
 
                 var result = await commandService.ExecuteCommandAsync($"powercfg /setactive {powerPlanGuid}");
-                
+
                 if (result.Success)
                 {
                     powerCfgQueryService.InvalidateCache();
                     return true;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -330,7 +331,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                     PreviousPlanGuid = previousPlan?.Guid ?? string.Empty,
                     NewPlanGuid = powerPlanGuid,
                     NewPlanName = planName,
-                    NewPlanIndex = planIndex
+                    NewPlanIndex = planIndex,
                 });
 
                 logService.Log(LogLevel.Info, $"[PowerService] Successfully applied power plan");
@@ -418,7 +419,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                     PreviousPlanGuid = previousPlan?.Guid ?? string.Empty,
                     NewPlanGuid = powerPlanGuid,
                     NewPlanName = planName,
-                    NewPlanIndex = planIndex >= 0 ? planIndex : 0
+                    NewPlanIndex = planIndex >= 0 ? planIndex : 0,
                 });
 
                 logService.Log(LogLevel.Info, $"[PowerService] Successfully applied power plan '{planName}'");
@@ -433,7 +434,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
 
                 var powerSettings = _cachedSettings?.Where(s => s.PowerCfgSettings?.Any() == true) ?? Enumerable.Empty<SettingDefinition>();
                 if (!powerSettings.Any())
+                {
                     return new Dictionary<string, int?>();
+                }
 
                 var allSettings = await powerCfgQueryService.GetAllPowerSettingsACDCAsync("SCHEME_CURRENT");
 
@@ -495,7 +498,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                         }
                     }
 
-                    return new PowerPlanImportResult(false, "", result.Output ?? result.Error ?? "Ultimate Performance creation failed");
+                    return new PowerPlanImportResult(false, string.Empty, result.Output ?? result.Error ?? "Ultimate Performance creation failed");
                 }
                 else
                 {
@@ -533,7 +536,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             }
             catch (Exception ex)
             {
-                return new PowerPlanImportResult(false, "", ex.Message);
+                return new PowerPlanImportResult(false, string.Empty, ex.Message);
             }
         }
 
@@ -547,7 +550,9 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
 
                 var restoreResult = await commandService.ExecuteCommandAsync("powercfg /restoredefaultschemes");
                 if (!restoreResult.Success)
-                    return new PowerPlanImportResult(false, "", "Failed to restore default schemes");
+                {
+                    return new PowerPlanImportResult(false, string.Empty, "Failed to restore default schemes");
+                }
 
                 await Task.Delay(1000);
                 await RestoreCustomPlansAsync(backupDir);
@@ -565,15 +570,13 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
 
                 return !string.IsNullOrEmpty(targetGuid)
                     ? new PowerPlanImportResult(true, targetGuid)
-                    : new PowerPlanImportResult(false, "", "Target plan not found after restore");
+                    : new PowerPlanImportResult(false, string.Empty, "Target plan not found after restore");
             }
             catch (Exception ex)
             {
-                return new PowerPlanImportResult(false, "", ex.Message);
+                return new PowerPlanImportResult(false, string.Empty, ex.Message);
             }
         }
-
-
 
         private async Task BackupCustomPlansAsync(string backupFolder)
         {
@@ -594,7 +597,10 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
 
         private async Task RestoreCustomPlansAsync(string backupFolder)
         {
-            if (!Directory.Exists(backupFolder)) return;
+            if (!Directory.Exists(backupFolder))
+            {
+                return;
+            }
 
             var backupFiles = Directory.GetFiles(backupFolder, "*.pow");
             foreach (var file in backupFiles)
@@ -610,18 +616,18 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             {
                 "a1841308-3541-4fab-bc81-f71556f20b4a",
                 "381b4222-f694-41f0-9685-ff5bb260df2e",
-                "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+                "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
             };
 
             var builtInNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Power Saver", "Balanced", "High Performance"
+                "Power Saver", "Balanced", "High Performance",
             };
 
             return allPlans.Where(plan =>
                 !builtInGuids.Contains(plan.Guid) ||
-                !builtInNames.Contains(CleanPlanName(plan.Name))
-            ).ToList();
+                !builtInNames.Contains(CleanPlanName(plan.Name)))
+            .ToList();
         }
 
         private string SanitizeFilename(string filename)
@@ -662,11 +668,13 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 "performances optimales",
                 "desempenho máximo",
                 "ultieme prestaties",
-                "максимальная производительность"
+                "максимальная производительность",
             };
 
             if (knownNames.Contains(cleanName))
+            {
                 return true;
+            }
 
             var ultimateWords = new[] { "ultimate", "ultieme", "máximo", "optimal", "höchst" };
             var performanceWords = new[] { "performance", "prestazioni", "leistung", "performances", "desempenho" };
@@ -689,7 +697,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
 
             if (ultimatePerformancePlan == null)
             {
-                return new PowerPlanImportResult(false, "", "Ultimate Performance plan not found");
+                return new PowerPlanImportResult(false, string.Empty, "Ultimate Performance plan not found");
             }
 
             try
@@ -711,7 +719,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 if (!duplicateResult.Success)
                 {
                     logService.Log(LogLevel.Error, $"Failed to duplicate plan: {duplicateResult.Error}");
-                    return new PowerPlanImportResult(false, "", duplicateResult.Error ?? "Failed to create plan");
+                    return new PowerPlanImportResult(false, string.Empty, duplicateResult.Error ?? "Failed to create plan");
                 }
 
                 await commandService.ExecuteCommandAsync(
@@ -727,7 +735,7 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
             catch (Exception ex)
             {
                 logService.Log(LogLevel.Error, $"Error creating Winhance Power Plan: {ex.Message}");
-                return new PowerPlanImportResult(false, "", ex.Message);
+                return new PowerPlanImportResult(false, string.Empty, ex.Message);
             }
         }
 
@@ -789,10 +797,14 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                                     int? acValue = null, dcValue = null;
 
                                     if (indexAC >= 0 && valueMappings.TryGetValue(indexAC, out var valueDictAC))
+                                    {
                                         acValue = valueDictAC.TryGetValue("PowerCfgValue", out var powerCfgValueAC) ? powerCfgValueAC : null;
+                                    }
 
                                     if (indexDC >= 0 && valueMappings.TryGetValue(indexDC, out var valueDictDC))
+                                    {
                                         dcValue = valueDictDC.TryGetValue("PowerCfgValue", out var powerCfgValueDC) ? powerCfgValueDC : null;
+                                    }
 
                                     if (acValue.HasValue && dcValue.HasValue)
                                     {
@@ -882,6 +894,5 @@ namespace Winhance.Infrastructure.Features.Optimize.Services
                 logService.Log(LogLevel.Error, $"Error applying recommended settings: {ex.Message}");
             }
         }
-
     }
 }

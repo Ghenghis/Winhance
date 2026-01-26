@@ -31,7 +31,7 @@ public class OptionalFeatureService(
                             ForEach-Object {{ Write-Host ""  - $($_.FeatureName)"" -ForegroundColor Cyan }}
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host ""Feature found. Current state: $($feature.State)"" -ForegroundColor Gray
@@ -40,7 +40,7 @@ public class OptionalFeatureService(
                         Write-Host 'Feature is already enabled.' -ForegroundColor Green
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host 'Attempting to enable feature...' -ForegroundColor Gray
@@ -49,7 +49,7 @@ public class OptionalFeatureService(
                     if ($result.RestartNeeded) {{
                         Write-Host 'Feature enabled successfully (restart required)!' -ForegroundColor Green
                     }} else {{
-                        Write-Host 'Feature enabled successfully!' -ForegroundColor Green
+                        Write-Host 'Feature enabled successfully!' -ForegroundColor Green,
                     }}
                     Write-Host 'Press any key to close...' -ForegroundColor Gray
                     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
@@ -61,11 +61,11 @@ public class OptionalFeatureService(
                     Write-Host ('Type: ' + $_.Exception.GetType().Name) -ForegroundColor Yellow
 
                     if ($_.Exception.InnerException) {{
-                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan
+                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan,
                     }}
 
                     if ($_.Exception.HResult) {{
-                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan
+                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan,
                     }}
 
                     Write-Host '' -ForegroundColor Gray
@@ -116,7 +116,7 @@ public class OptionalFeatureService(
                             ForEach-Object {{ Write-Host ""  - $($_.FeatureName)"" -ForegroundColor Cyan }}
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host ""Feature found. Current state: $($feature.State)"" -ForegroundColor Gray
@@ -125,7 +125,7 @@ public class OptionalFeatureService(
                         Write-Host 'Feature is already disabled.' -ForegroundColor Green
                         Write-Host 'Press any key to close...' -ForegroundColor Gray
                         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-                        return
+                        return,
                     }}
 
                     Write-Host 'Attempting to disable feature...' -ForegroundColor Gray
@@ -134,7 +134,7 @@ public class OptionalFeatureService(
                     if ($result.RestartNeeded) {{
                         Write-Host 'Feature disabled successfully (restart required)!' -ForegroundColor Green
                     }} else {{
-                        Write-Host 'Feature disabled successfully!' -ForegroundColor Green
+                        Write-Host 'Feature disabled successfully!' -ForegroundColor Green,
                     }}
                     Write-Host 'Press any key to close...' -ForegroundColor Gray
                     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
@@ -146,11 +146,11 @@ public class OptionalFeatureService(
                     Write-Host ('Type: ' + $_.Exception.GetType().Name) -ForegroundColor Yellow
 
                     if ($_.Exception.InnerException) {{
-                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan
+                        Write-Host ('Inner Error: ' + $_.Exception.InnerException.Message) -ForegroundColor Cyan,
                     }}
 
                     if ($_.Exception.HResult) {{
-                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan
+                        Write-Host ('Error Code: 0x' + $_.Exception.HResult.ToString('X8')) -ForegroundColor Cyan,
                     }}
 
                     Write-Host '' -ForegroundColor Gray
@@ -180,6 +180,4 @@ public class OptionalFeatureService(
             return false;
         }
     }
-
-
 }

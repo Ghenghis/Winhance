@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "WinDirStat.WinDirStat",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://windirstat.net/"
+                            WebsiteUrl = "https://windirstat.net/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "AntibodySoftware.WizTree",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.diskanalyzer.com/"
+                            WebsiteUrl = "https://www.diskanalyzer.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "JAMSoftware.TreeSize.Free",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.jam-software.com/treesize_free"
+                            WebsiteUrl = "https://www.jam-software.com/treesize_free",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "voidtools.Everything",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.voidtools.com/"
+                            WebsiteUrl = "https://www.voidtools.com/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "CodeSector.TeraCopy",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.codesector.com/teracopy"
+                            WebsiteUrl = "https://www.codesector.com/teracopy",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "AdrienAllard.FileConverter",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://file-converter.io/"
+                            WebsiteUrl = "https://file-converter.io/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "WsSolInfor.CrystalDiskInfo",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://crystalmark.info/en/software/crystaldiskinfo/"
+                            WebsiteUrl = "https://crystalmark.info/en/software/crystaldiskinfo/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "TGRMNSoftware.BulkRenameUtility",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.bulkrenameutility.co.uk/"
+                            WebsiteUrl = "https://www.bulkrenameutility.co.uk/",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "IObit.IObitUnlocker",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.iobit.com/en/iobit-unlocker.php"
+                            WebsiteUrl = "https://www.iobit.com/en/iobit-unlocker.php",
                         },
                         new ItemDefinition
                         {
@@ -113,7 +113,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "HiBitSoftware.HiBitUninstaller",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.hibitsoft.ir/Uninstaller.html"
+                            WebsiteUrl = "https://www.hibitsoft.ir/Uninstaller.html",
                         },
                         new ItemDefinition
                         {
@@ -123,9 +123,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "File & Disk Management",
                             WinGetPackageId = "Ventoy.Ventoy",
                             Category = "File & Disk Management",
-                            WebsiteUrl = "https://www.ventoy.net/"
-                        }
-                    }
+                            WebsiteUrl = "https://www.ventoy.net/",
+                        },
+                    },
                 };
             }
         }

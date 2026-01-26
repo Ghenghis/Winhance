@@ -10,9 +10,9 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
-using Winhance.Core.Features.Common.Enums;
 
 namespace Winhance.Infrastructure.Features.Common.Services
 {
@@ -24,6 +24,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         private readonly List<string> _navigationHistory = new();
         private readonly Dictionary<string, (Type ViewType, Type ViewModelType)> _viewMappings =
             new();
+
         private readonly IServiceProvider _serviceProvider;
         private readonly IParameterSerializer _parameterSerializer;
         private readonly ILogService _logService;
@@ -35,6 +36,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public ICommand NavigateCommand =>
             _navigateCommand ??= new RelayCommand<string>(route => NavigateTo(route!));
+
         public FrameNavigationService(
             IServiceProvider serviceProvider,
             IParameterSerializer parameterSerializer,
@@ -48,19 +50,27 @@ namespace Winhance.Infrastructure.Features.Common.Services
         }
 
         public bool CanGoBack => _backStack.Count > 1;
+
         public IReadOnlyList<string> NavigationHistory => _navigationHistory.AsReadOnly();
+
         public string? CurrentView => _currentRoute;
 
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs>? Navigated;
+
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs>? Navigating;
+
         public event EventHandler<Winhance.Core.Features.Common.Interfaces.NavigationEventArgs>? NavigationFailed;
 
-        public void Initialize() { }
+        public void Initialize()
+        {
+        }
 
         public void RegisterViewMapping(string route, Type viewType, Type viewModelType)
         {
             if (string.IsNullOrWhiteSpace(route))
+            {
                 throw new ArgumentException("Route cannot be empty", nameof(route));
+            }
 
             _viewMappings[route] = (viewType, viewModelType);
         }
@@ -83,8 +93,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             CurrentView!,
                             viewName,
                             null,
-                            false
-                        );
+                            false);
                         NavigationFailed?.Invoke(this, args);
                     }
                 });
@@ -96,8 +105,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     CurrentView!,
                     viewName,
                     null,
-                    false
-                );
+                    false);
                 NavigationFailed?.Invoke(this, args);
                 return false;
             }
@@ -110,7 +118,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             if (_currentRoute == route)
             {
                 _logService?.Log(LogLevel.Info, $"[FrameNavigationService] Already on route: {route}, skipping navigation");
-                return true; // Return true because we're already where we need to be
+                return true; // Return true because we're already where we need to be,
             }
 
             if (!_viewMappings.TryGetValue(route, out var mapping))
@@ -123,8 +131,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 _currentRoute!,
                 route,
                 null,
-                false
-            );
+                false);
             Navigating?.Invoke(this, navigatingArgs);
 
             try
@@ -183,8 +190,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                             CurrentView!,
                             viewName,
                             parameter,
-                            false
-                        );
+                            false);
                         NavigationFailed?.Invoke(this, args);
                     }
                 });
@@ -196,8 +202,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     CurrentView!,
                     viewName,
                     parameter,
-                    false
-                );
+                    false);
                 NavigationFailed?.Invoke(this, args);
                 return false;
             }
@@ -205,23 +210,27 @@ namespace Winhance.Infrastructure.Features.Common.Services
 
         public async Task NavigateToAsync(string viewName)
         {
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            await Application.Current.Dispatcher.InvokeAsync(
+                async () =>
             {
                 await PreloadAndNavigateToAsync(viewName);
             }, System.Windows.Threading.DispatcherPriority.Loaded);
 
-            await Application.Current.Dispatcher.InvokeAsync(() => { },
+            await Application.Current.Dispatcher.InvokeAsync(
+                () => { },
                 System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         public async Task NavigateToAsync(string viewName, object parameter)
         {
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            await Application.Current.Dispatcher.InvokeAsync(
+                async () =>
             {
                 await PreloadAndNavigateToAsync(viewName);
             }, System.Windows.Threading.DispatcherPriority.Loaded);
 
-            await Application.Current.Dispatcher.InvokeAsync(() => { },
+            await Application.Current.Dispatcher.InvokeAsync(
+                () => { },
                 System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
@@ -229,6 +238,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
         /// Synchronous navigation back. NOTE: This blocks the calling thread.
         /// Required for INavigationService interface compatibility.
         /// </summary>
+        /// <returns></returns>
         public bool NavigateBack()
         {
             try
@@ -242,15 +252,12 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
         }
 
-
-
         private async Task NavigateInternalAsync(
             Type viewType,
             Type viewModelType,
             object? parameter,
             object? preloadedViewModel = null,
-            CancellationToken cancellationToken = default
-        )
+            CancellationToken cancellationToken = default)
         {
             _logService?.Log(LogLevel.Info, $"[NavigateInternalAsync] Starting navigation to {viewModelType.Name}, preloadedViewModel: {preloadedViewModel != null}");
 
@@ -301,8 +308,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 sourceView!,
                 targetView!,
                 parameter,
-                true
-            );
+                true);
             Navigating?.Invoke(this, args);
 
             if (args.Cancel)
@@ -328,9 +334,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     if (viewModel == null)
                     {
                         throw new InvalidOperationException(
-                            $"Failed to create view model of type {viewModelType.FullName}. The service provider returned null."
-                        );
+                            $"Failed to create view model of type {viewModelType.FullName}. The service provider returned null.");
                     }
+
                     _logService?.Log(LogLevel.Info, $"[NavigateInternalAsync] Successfully created ViewModel: {viewModel.GetType().Name}");
                 }
                 catch (Exception ex)
@@ -364,6 +370,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     _backStack.Push(item);
                 }
             }
+
             _backStack.Push(viewModelType);
 
             // Call OnNavigatedTo on the view model if it implements IFeatureViewModel
@@ -384,8 +391,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
                 sourceView ?? string.Empty,
                 targetView ?? string.Empty,
                 viewModel,
-                false
-            );
+                false);
             Navigated?.Invoke(this, navigatedArgs);
             _logService?.Log(LogLevel.Info, $"[NavigateInternalAsync] Navigated event raised for: {targetView}");
             _logService?.Log(LogLevel.Info, $"[NavigateInternalAsync] Navigation completed successfully to: {targetView}");
@@ -394,7 +400,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task GoBackAsync()
         {
             if (!CanGoBack)
+            {
                 return;
+            }
 
             var currentType = _backStack.Pop();
             _forwardStack.Push((currentType, _currentParameter));
@@ -407,7 +415,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
         public async Task GoForwardAsync()
         {
             if (_forwardStack.Count == 0)
+            {
                 return;
+            }
 
             var (nextType, nextParameter) = _forwardStack.Pop();
             _backStack.Push(nextType);
@@ -424,9 +434,11 @@ namespace Winhance.Infrastructure.Features.Common.Services
         }
 
         private object? _currentViewModel;
+
         public object? CurrentViewModel => _currentViewModel;
 
         private object? _currentViewInstance;
+
         public object? CurrentViewInstance => _currentViewInstance;
 
         private Type GetViewTypeForViewModel(Type viewModelType)
@@ -441,7 +453,7 @@ namespace Winhance.Infrastructure.Features.Common.Services
             }
 
             // If no mapping found, try the old way as fallback
-            var viewName = viewModelType.FullName?.Replace("ViewModel", "View") ?? viewModelType.Name.Replace("ViewModel", "View");
+            var viewName = viewModelType.FullName?.Replace("ViewModel", "View", StringComparison.Ordinal) ?? viewModelType.Name.Replace("ViewModel", "View", StringComparison.Ordinal);
             var viewType = Type.GetType(viewName);
 
             if (viewType == null)
@@ -453,18 +465,18 @@ namespace Winhance.Infrastructure.Features.Common.Services
                         .GetTypes()
                         .FirstOrDefault(t =>
                             t.FullName != null
-                            && t.FullName.Equals(viewName, StringComparison.OrdinalIgnoreCase)
-                        );
+                            && t.FullName.Equals(viewName, StringComparison.OrdinalIgnoreCase));
 
                     if (viewType != null)
+                    {
                         break;
+                    }
                 }
             }
 
             return viewType
                 ?? throw new InvalidOperationException(
-                    $"View type for {viewModelType.FullName} not found. Tried looking for {viewName}"
-                );
+                    $"View type for {viewModelType.FullName} not found. Tried looking for {viewName}");
         }
 
         private string GetRouteForViewType(Type viewType)
@@ -476,9 +488,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     return mapping.Key;
                 }
             }
+
             throw new InvalidOperationException(
-                $"No route found for view type: {viewType.FullName}"
-            );
+                $"No route found for view type: {viewType.FullName}");
         }
 
         private string GetRouteForViewModelType(Type viewModelType)
@@ -490,9 +502,9 @@ namespace Winhance.Infrastructure.Features.Common.Services
                     return mapping.Key;
                 }
             }
+
             throw new InvalidOperationException(
-                $"No route found for view model type: {viewModelType.FullName}"
-            );
+                $"No route found for view model type: {viewModelType.FullName}");
         }
     }
 }

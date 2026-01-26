@@ -4,15 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.Common.Models;
-using Winhance.Core.Features.Common.Enums;
 
 namespace Winhance.Infrastructure.Features.Common.Services;
 
 public class CommandService(ILogService logService) : ICommandService
 {
-
     public async Task<(bool Success, string Output, string Error)> ExecuteCommandAsync(
         string command,
         bool requiresElevation = true)
@@ -20,7 +19,7 @@ public class CommandService(ILogService logService) : ICommandService
         try
         {
             logService.Log(LogLevel.Info, $"[CommandService] Executing command: {GetTruncatedCommand(command)}");
-            
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
@@ -31,24 +30,28 @@ public class CommandService(ILogService logService) : ICommandService
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
+                StandardErrorEncoding = Encoding.UTF8,
             };
 
             using var process = new Process { StartInfo = startInfo };
-            
+
             var outputBuilder = new StringBuilder();
             var errorBuilder = new StringBuilder();
 
             process.OutputDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
+                {
                     outputBuilder.AppendLine(e.Data);
+                }
             };
 
             process.ErrorDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
+                {
                     errorBuilder.AppendLine(e.Data);
+                }
             };
 
             process.Start();
@@ -82,7 +85,9 @@ public class CommandService(ILogService logService) : ICommandService
         bool isEnabled)
     {
         if (settings == null || !settings.Any())
+        {
             return (true, "No command settings to apply.");
+        }
 
         var successCount = 0;
         var failureCount = 0;
@@ -92,12 +97,16 @@ public class CommandService(ILogService logService) : ICommandService
             var commandToExecute = isEnabled ? setting.EnabledCommand : setting.DisabledCommand;
 
             if (string.IsNullOrWhiteSpace(commandToExecute))
+            {
                 continue;
+            }
 
             var (success, output, error) = await ExecuteCommandAsync(commandToExecute, setting.RequiresElevation);
 
             if (success)
+            {
                 successCount++;
+            }
             else
             {
                 failureCount++;
@@ -115,11 +124,15 @@ public class CommandService(ILogService logService) : ICommandService
     {
         try
         {
-            if (setting.EnabledCommand.Contains("bcdedit"))
+            if (setting.EnabledCommand.Contains("bcdedit", StringComparison.Ordinal))
+            {
                 return await IsBcdeditSettingEnabledAsync(setting);
+            }
 
-            if (setting.EnabledCommand.Contains("schtasks"))
+            if (setting.EnabledCommand.Contains("schtasks", StringComparison.Ordinal))
+            {
                 return await IsSchedTaskEnabledAsync(setting);
+            }
 
             return false;
         }
@@ -135,15 +148,19 @@ public class CommandService(ILogService logService) : ICommandService
         string expectedValue = ExtractBcdeditSettingValue(setting.EnabledCommand);
 
         if (string.IsNullOrEmpty(settingName))
+        {
             return false;
+        }
 
         var (success, output, error) = await ExecuteCommandAsync("bcdedit /enum {current}");
 
         if (!success || string.IsNullOrEmpty(output))
+        {
             return false;
+        }
 
         bool settingExists = output.Contains(settingName, StringComparison.OrdinalIgnoreCase);
-        if (setting.DisabledCommand.Contains("/deletevalue"))
+        if (setting.DisabledCommand.Contains("/deletevalue", StringComparison.Ordinal))
         {
             if (settingExists)
             {
@@ -161,9 +178,10 @@ public class CommandService(ILogService logService) : ICommandService
                     }
                 }
             }
+
             return false;
         }
-        else if (setting.DisabledCommand.Contains("/set"))
+        else if (setting.DisabledCommand.Contains("/set", StringComparison.Ordinal))
         {
             string disabledValue = ExtractBcdeditSettingValue(setting.DisabledCommand);
 
@@ -184,8 +202,10 @@ public class CommandService(ILogService logService) : ICommandService
                     }
                 }
             }
+
             return false;
         }
+
         return false;
     }
 
@@ -193,19 +213,25 @@ public class CommandService(ILogService logService) : ICommandService
     {
         var taskName = ExtractTaskNameFromCommand(setting.EnabledCommand);
         if (string.IsNullOrEmpty(taskName))
+        {
             return false;
+        }
 
         var queryCommand = $"schtasks /Query /TN \"{taskName}\" /FO LIST";
         var (success, output, _) = await ExecuteCommandAsync(queryCommand);
 
         if (!success || string.IsNullOrEmpty(output))
+        {
             return false;
+        }
 
         var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         var statusLine = lines.FirstOrDefault(l => l.Trim().StartsWith("Status:", StringComparison.OrdinalIgnoreCase));
 
         if (statusLine == null)
+        {
             return false;
+        }
 
         var status = statusLine.Split(':')[1].Trim();
         return status.Equals("Ready", StringComparison.OrdinalIgnoreCase);
@@ -213,55 +239,71 @@ public class CommandService(ILogService logService) : ICommandService
 
     private string ExtractTaskNameFromCommand(string command)
     {
-        var tnIndex = command.IndexOf("/TN", StringComparison.OrdinalIgnoreCase);
+        var tnIndex = command.IndexOf("/TN");
         if (tnIndex == -1)
+        {
             return string.Empty;
+        }
 
         var afterTN = command.Substring(tnIndex + 3).Trim();
         var startQuote = afterTN.IndexOf('"');
         if (startQuote == -1)
+        {
             return string.Empty;
+        }
 
         var endQuote = afterTN.IndexOf('"', startQuote + 1);
         if (endQuote == -1)
+        {
             return string.Empty;
+        }
 
         return afterTN.Substring(startQuote + 1, endQuote - startQuote - 1);
     }
 
     private string ExtractBcdeditSettingName(string command)
     {
-        if (command.Contains("/set "))
+        if (command.Contains("/set ", StringComparison.Ordinal))
         {
             var parts = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length >= 3)
+            {
                 return parts[2];
+            }
         }
-        else if (command.Contains("/deletevalue "))
+        else if (command.Contains("/deletevalue ", StringComparison.Ordinal))
         {
             var parts = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length >= 3)
+            {
                 return parts[2];
+            }
         }
+
         return string.Empty;
     }
 
     private string ExtractBcdeditSettingValue(string command)
     {
-        if (command.Contains("/set "))
+        if (command.Contains("/set ", StringComparison.Ordinal))
         {
             var parts = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length >= 4)
+            {
                 return parts[3];
+            }
         }
+
         return string.Empty;
     }
 
-
     private string GetTruncatedCommand(string command)
     {
-        if (command.StartsWith("powercfg /query"))
+        if (command.StartsWith("powercfg /query", StringComparison.Ordinal))
+        {
             return command;
+        }
+
         return command.Length > 80 ? $"{command.Substring(0, 77)}..." : command;
     }
 }

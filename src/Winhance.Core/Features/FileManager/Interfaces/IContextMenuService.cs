@@ -13,21 +13,24 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         /// <summary>
         /// Register all Winhance context menu entries.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> RegisterContextMenuAsync(ContextMenuRegistration registration);
 
         /// <summary>
         /// Unregister all Winhance context menu entries.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<bool> UnregisterContextMenuAsync();
 
         /// <summary>
-        /// Check if context menu is registered.
+        /// Gets a value indicating whether check if context menu is registered.
         /// </summary>
         bool IsRegistered { get; }
 
         /// <summary>
         /// Get current registration status for all menu items.
         /// </summary>
+        /// <returns></returns>
         IEnumerable<ContextMenuItemStatus> GetRegistrationStatus();
     }
 
@@ -37,11 +40,17 @@ namespace Winhance.Core.Features.FileManager.Interfaces
     public class ContextMenuRegistration
     {
         public bool EnableFileMenu { get; set; } = true;
+
         public bool EnableFolderMenu { get; set; } = true;
+
         public bool EnableDriveMenu { get; set; } = true;
+
         public bool EnableBackgroundMenu { get; set; } = true;
+
         public bool UseSubmenu { get; set; } = true; // Group under "Winhance" submenu
+
         public string SubmenuTitle { get; set; } = "Winhance";
+
         public List<ContextMenuItem> Items { get; set; } = GetDefaultItems();
 
         public static List<ContextMenuItem> GetDefaultItems() => new()
@@ -56,7 +65,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "📋",
                 Command = "copy_path",
                 AppliesTo = ContextMenuTarget.All,
-                Group = "Copy"
+                Group = "Copy",
             },
             new ContextMenuItem
             {
@@ -65,7 +74,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🐧",
                 Command = "copy_path_unix",
                 AppliesTo = ContextMenuTarget.All,
-                Group = "Copy"
+                Group = "Copy",
             },
             new ContextMenuItem
             {
@@ -74,7 +83,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "📝",
                 Command = "copy_name",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Copy"
+                Group = "Copy",
             },
             new ContextMenuItem
             {
@@ -83,7 +92,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "📄",
                 Command = "copy_contents",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Copy"
+                Group = "Copy",
             },
 
             // ====================================================================
@@ -96,7 +105,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "💻",
                 Command = "open_terminal:powershell",
                 AppliesTo = ContextMenuTarget.FoldersAndBackground,
-                Group = "Terminal"
+                Group = "Terminal",
             },
             new ContextMenuItem
             {
@@ -105,7 +114,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "⬛",
                 Command = "open_terminal:cmd",
                 AppliesTo = ContextMenuTarget.FoldersAndBackground,
-                Group = "Terminal"
+                Group = "Terminal",
             },
             new ContextMenuItem
             {
@@ -115,7 +124,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Command = "open_terminal_admin",
                 AppliesTo = ContextMenuTarget.FoldersAndBackground,
                 Group = "Terminal",
-                RequiresElevation = true
+                RequiresElevation = true,
             },
 
             // ====================================================================
@@ -128,7 +137,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "#️⃣",
                 Command = "calculate_hash",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Verify"
+                Group = "Verify",
             },
             new ContextMenuItem
             {
@@ -137,7 +146,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "✅",
                 Command = "verify_checksum",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Verify"
+                Group = "Verify",
             },
             new ContextMenuItem
             {
@@ -146,7 +155,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🔍",
                 Command = "compare_files",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Verify"
+                Group = "Verify",
             },
 
             // ====================================================================
@@ -159,7 +168,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "👯",
                 Command = "find_duplicates",
                 AppliesTo = ContextMenuTarget.Folders,
-                Group = "Analyze"
+                Group = "Analyze",
             },
             new ContextMenuItem
             {
@@ -168,7 +177,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "📊",
                 Command = "analyze_space",
                 AppliesTo = ContextMenuTarget.FoldersAndDrives,
-                Group = "Analyze"
+                Group = "Analyze",
             },
             new ContextMenuItem
             {
@@ -177,7 +186,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "📁",
                 Command = "show_folder_size",
                 AppliesTo = ContextMenuTarget.Folders,
-                Group = "Analyze"
+                Group = "Analyze",
             },
 
             // ====================================================================
@@ -191,7 +200,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Command = "create_symlink",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
                 Group = "Links",
-                RequiresElevation = true
+                RequiresElevation = true,
             },
             new ContextMenuItem
             {
@@ -200,7 +209,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "⛓️",
                 Command = "create_hardlink",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Links"
+                Group = "Links",
             },
             new ContextMenuItem
             {
@@ -209,7 +218,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "↪️",
                 Command = "create_junction",
                 AppliesTo = ContextMenuTarget.Folders,
-                Group = "Links"
+                Group = "Links",
             },
 
             // ====================================================================
@@ -223,7 +232,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Command = "take_ownership",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
                 Group = "Security",
-                RequiresElevation = true
+                RequiresElevation = true,
             },
             new ContextMenuItem
             {
@@ -233,7 +242,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Command = "grant_full_control",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
                 Group = "Security",
-                RequiresElevation = true
+                RequiresElevation = true,
             },
 
             // ====================================================================
@@ -246,7 +255,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "✂️",
                 Command = "split_file",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Operations"
+                Group = "Operations",
             },
             new ContextMenuItem
             {
@@ -255,7 +264,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🔗",
                 Command = "join_files",
                 AppliesTo = ContextMenuTarget.Files,
-                Group = "Operations"
+                Group = "Operations",
             },
             new ContextMenuItem
             {
@@ -264,7 +273,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🗑️",
                 Command = "secure_delete",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Operations"
+                Group = "Operations",
             },
             new ContextMenuItem
             {
@@ -273,7 +282,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "✏️",
                 Command = "batch_rename",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Operations"
+                Group = "Operations",
             },
 
             // ====================================================================
@@ -286,7 +295,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "👁️",
                 Command = "toggle_hidden",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Attributes"
+                Group = "Attributes",
             },
             new ContextMenuItem
             {
@@ -295,7 +304,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🔒",
                 Command = "toggle_readonly",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Attributes"
+                Group = "Attributes",
             },
             new ContextMenuItem
             {
@@ -304,7 +313,7 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Icon = "🕐",
                 Command = "edit_timestamps",
                 AppliesTo = ContextMenuTarget.FilesAndFolders,
-                Group = "Attributes"
+                Group = "Attributes",
             },
 
             // ====================================================================
@@ -318,21 +327,29 @@ namespace Winhance.Core.Features.FileManager.Interfaces
                 Command = "open_in_winhance",
                 AppliesTo = ContextMenuTarget.All,
                 Group = "Main",
-                IsDefault = true
-            }
+                IsDefault = true,
+            },
         };
     }
 
     public class ContextMenuItem
     {
         public string Id { get; set; } = string.Empty;
+
         public string Title { get; set; } = string.Empty;
+
         public string Icon { get; set; } = string.Empty;
+
         public string Command { get; set; } = string.Empty;
+
         public ContextMenuTarget AppliesTo { get; set; }
+
         public string Group { get; set; } = string.Empty;
+
         public bool RequiresElevation { get; set; }
+
         public bool IsDefault { get; set; }
+
         public string? HotKey { get; set; }
     }
 
@@ -347,15 +364,19 @@ namespace Winhance.Core.Features.FileManager.Interfaces
         FilesAndFolders = Files | Folders,
         FoldersAndDrives = Folders | Drives,
         FoldersAndBackground = Folders | Background,
-        All = Files | Folders | Drives | Background
+        All = Files | Folders | Drives | Background,
     }
 
     public class ContextMenuItemStatus
     {
         public string Id { get; set; } = string.Empty;
+
         public string Title { get; set; } = string.Empty;
+
         public bool IsRegistered { get; set; }
+
         public string RegistryPath { get; set; } = string.Empty;
+
         public string? Error { get; set; }
     }
 }

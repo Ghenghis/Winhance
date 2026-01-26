@@ -55,6 +55,6 @@ namespace Winhance.Core.Features.SoftwareApps.Enums
         /// <summary>
         /// The package dependencies could not be resolved.
         /// </summary>
-        DependencyResolutionError
+        DependencyResolutionError,
     }
 }

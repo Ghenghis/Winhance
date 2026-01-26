@@ -7,12 +7,19 @@ namespace Winhance.Core.Features.Common.Models
     public class TaskProgressEventArgs : EventArgs
     {
         public double Progress { get; }
+
         public string StatusText { get; }
+
         public string DetailedMessage { get; }
+
         public LogLevel LogLevel { get; }
+
         public bool IsIndeterminate { get; }
+
         public bool IsTaskRunning { get; }
+
         public string TerminalOutput { get; }
+
         public bool IsActive { get; }
 
         public TaskProgressEventArgs(double progress, string statusText, string detailedMessage = "", LogLevel logLevel = LogLevel.Info, bool isIndeterminate = false, bool isTaskRunning = true, string terminalOutput = "", bool isActive = false)

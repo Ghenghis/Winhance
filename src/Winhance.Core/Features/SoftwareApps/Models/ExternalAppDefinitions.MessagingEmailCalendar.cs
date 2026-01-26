@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Telegram.TelegramDesktop",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://telegram.org/"
+                            WebsiteUrl = "https://telegram.org/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "9NKSQGP7F2NH",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://www.whatsapp.com/"
+                            WebsiteUrl = "https://www.whatsapp.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Zoom.Zoom",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://zoom.us/"
+                            WebsiteUrl = "https://zoom.us/",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Discord.Discord",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://discord.com/"
+                            WebsiteUrl = "https://discord.com/",
                         },
                         new ItemDefinition
                         {
@@ -63,7 +63,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Pidgin.Pidgin",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://pidgin.im/"
+                            WebsiteUrl = "https://pidgin.im/",
                         },
                         new ItemDefinition
                         {
@@ -73,7 +73,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Mozilla.Thunderbird",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://www.thunderbird.net/"
+                            WebsiteUrl = "https://www.thunderbird.net/",
                         },
                         new ItemDefinition
                         {
@@ -83,7 +83,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "eMClient.eMClient",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://www.emclient.com/"
+                            WebsiteUrl = "https://www.emclient.com/",
                         },
                         new ItemDefinition
                         {
@@ -93,7 +93,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Proton.ProtonMail",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://proton.me/mail"
+                            WebsiteUrl = "https://proton.me/mail",
                         },
                         new ItemDefinition
                         {
@@ -103,7 +103,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "CeruleanStudios.Trillian",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://www.trillian.im/"
+                            WebsiteUrl = "https://www.trillian.im/",
                         },
                         new ItemDefinition
                         {
@@ -113,9 +113,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Messaging, Email & Calendar",
                             WinGetPackageId = "Element.Element",
                             Category = "Messaging, Email & Calendar",
-                            WebsiteUrl = "https://element.io/"
-                        }
-                    }
+                            WebsiteUrl = "https://element.io/",
+                        },
+                    },
                 };
             }
         }

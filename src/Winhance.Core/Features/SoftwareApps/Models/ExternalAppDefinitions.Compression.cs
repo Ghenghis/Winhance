@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Compression",
                             WinGetPackageId = "7zip.7zip",
                             Category = "Compression",
-                            WebsiteUrl = "https://www.7-zip.org/"
+                            WebsiteUrl = "https://www.7-zip.org/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Compression",
                             WinGetPackageId = "RARLab.WinRAR",
                             Category = "Compression",
-                            WebsiteUrl = "https://www.win-rar.com/"
+                            WebsiteUrl = "https://www.win-rar.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Compression",
                             WinGetPackageId = "Giorgiotani.Peazip",
                             Category = "Compression",
-                            WebsiteUrl = "https://peazip.github.io/"
+                            WebsiteUrl = "https://peazip.github.io/",
                         },
                         new ItemDefinition
                         {
@@ -53,9 +53,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Compression",
                             WinGetPackageId = "M2Team.NanaZip",
                             Category = "Compression",
-                            WebsiteUrl = "https://github.com/M2Team/NanaZip"
-                        }
-                    }
+                            WebsiteUrl = "https://github.com/M2Team/NanaZip",
+                        },
+                    },
                 };
             }
         }

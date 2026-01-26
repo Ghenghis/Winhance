@@ -11,11 +11,15 @@ namespace Winhance.Core.Features.Common.Interfaces
     public interface ISettingItem
     {
         string Id { get; }
-        string Name { get; }
-        string Description { get; }
-        string? GroupName { get; }
-        InputType InputType { get; }
-        List<SettingDependency> Dependencies { get; }
 
+        string Name { get; }
+
+        string Description { get; }
+
+        string? GroupName { get; }
+
+        InputType InputType { get; }
+
+        List<SettingDependency> Dependencies { get; }
     }
 }

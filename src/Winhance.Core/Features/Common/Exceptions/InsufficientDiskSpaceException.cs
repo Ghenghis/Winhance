@@ -3,8 +3,11 @@ namespace Winhance.Core.Features.Common.Exceptions;
 public class InsufficientDiskSpaceException : Exception
 {
     public string DriveName { get; }
+
     public double RequiredGB { get; }
+
     public double AvailableGB { get; }
+
     public string OperationName { get; }
 
     public InsufficientDiskSpaceException(

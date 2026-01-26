@@ -30,13 +30,17 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         {
             // Return cached settings if available
             if (_cachedSettings != null)
+            {
                 return _cachedSettings;
+            }
 
             lock (_cacheLock)
             {
                 // Double-check locking pattern
                 if (_cachedSettings != null)
+                {
                     return _cachedSettings;
+                }
 
                 try
                 {
@@ -69,8 +73,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 logService.Log(LogLevel.Info, "Starting Windows 10 Start Menu cleaning process");
 
                 await Task.Run(() =>
-                    CleanWindows10StartMenu(scheduledTaskService, logService)
-                );
+                    CleanWindows10StartMenu(scheduledTaskService, logService));
 
                 logService.Log(LogLevel.Info, "Windows 10 Start Menu cleaned successfully");
             }
@@ -78,8 +81,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
             {
                 logService.Log(
                     LogLevel.Error,
-                    $"Error cleaning Windows 10 Start Menu: {ex.Message}"
-                );
+                    $"Error cleaning Windows 10 Start Menu: {ex.Message}");
                 throw;
             }
         }
@@ -98,8 +100,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
             {
                 logService.Log(
                     LogLevel.Error,
-                    $"Error cleaning Windows 11 Start Menu: {ex.Message}"
-                );
+                    $"Error cleaning Windows 11 Start Menu: {ex.Message}");
                 throw;
             }
         }
@@ -130,21 +131,18 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                     {
                         string error = process.StandardError.ReadToEnd();
                         throw new Exception(
-                            $"Failed to add registry entry. Exit code: {process.ExitCode}. Error: {error}"
-                        );
+                            $"Failed to add registry entry. Exit code: {process.ExitCode}. Error: {error}");
                     }
                 }
 
                 // Step 2: Delete start.bin and start2.bin files from LocalState directory
                 string localAppData = Environment.GetFolderPath(
-                    Environment.SpecialFolder.LocalApplicationData
-                );
+                    Environment.SpecialFolder.LocalApplicationData);
                 string startMenuLocalStatePath = Path.Combine(
                     localAppData,
                     "Packages",
                     "Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy",
-                    "LocalState"
-                );
+                    "LocalState");
 
                 if (Directory.Exists(startMenuLocalStatePath))
                 {
@@ -177,8 +175,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
 
         private void CleanWindows10StartMenu(
             IScheduledTaskService? scheduledTaskService = null,
-            ILogService? logService = null
-        )
+            ILogService? logService = null)
         {
             try
             {
@@ -191,8 +188,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 // Create new layout file with clean layout
                 File.WriteAllText(
                     StartMenuLayouts.Win10StartLayoutPath,
-                    StartMenuLayouts.Windows10Layout
-                );
+                    StartMenuLayouts.Windows10Layout);
 
                 // Ensure the directory exists for the layout file
                 var layoutDir = Path.GetDirectoryName(StartMenuLayouts.Win10StartLayoutPath);
@@ -205,8 +201,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 if (scheduledTaskService != null)
                 {
                     logService?.LogInformation(
-                        "Setting up scheduled tasks for all existing users..."
-                    );
+                        "Setting up scheduled tasks for all existing users...");
                     SetupScheduledTasksForAllUsersWindows10(scheduledTaskService, logService);
                 }
 
@@ -224,9 +219,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
             // Set registry values to lock the Start Menu layout for current user
             using (
                 var key = Registry.CurrentUser.CreateSubKey(
-                    @"SOFTWARE\Policies\Microsoft\Windows\Explorer"
-                )
-            )
+                    @"SOFTWARE\Policies\Microsoft\Windows\Explorer"))
             {
                 if (key != null)
                 {
@@ -234,8 +227,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                     key.SetValue(
                         "StartLayoutFile",
                         StartMenuLayouts.Win10StartLayoutPath,
-                        RegistryValueKind.String
-                    );
+                        RegistryValueKind.String);
                 }
             }
 
@@ -248,9 +240,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
             // Disable the locked layout so user can customize again
             using (
                 var key = Registry.CurrentUser.CreateSubKey(
-                    @"SOFTWARE\Policies\Microsoft\Windows\Explorer"
-                )
-            )
+                    @"SOFTWARE\Policies\Microsoft\Windows\Explorer"))
             {
                 if (key != null)
                 {
@@ -264,8 +254,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
 
         private void SetupScheduledTasksForAllUsersWindows10(
             IScheduledTaskService scheduledTaskService,
-            ILogService? logService = null
-        )
+            ILogService? logService = null)
         {
             try
             {
@@ -273,14 +262,12 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 var otherUsernames = GetOtherUsernames();
 
                 logService?.LogInformation(
-                    $"Creating scheduled tasks for {otherUsernames.Count} other users (excluding current user: {currentUsername})"
-                );
+                    $"Creating scheduled tasks for {otherUsernames.Count} other users (excluding current user: {currentUsername})");
 
                 if (otherUsernames.Count == 0)
                 {
                     logService?.LogInformation(
-                        "No other users found to create scheduled tasks for"
-                    );
+                        "No other users found to create scheduled tasks for");
                     return;
                 }
 
@@ -303,33 +290,28 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                                     taskName,
                                     command,
                                     username,
-                                    false
-                                );
+                                    false);
                                 logService?.LogInformation(
-                                    $"Successfully created scheduled task '{taskName}' for user '{username}'"
-                                );
+                                    $"Successfully created scheduled task '{taskName}' for user '{username}'");
                             }
                             catch (Exception ex)
                             {
                                 logService?.LogError(
-                                    $"Failed to create scheduled task for user '{username}': {ex.Message}"
-                                );
+                                    $"Failed to create scheduled task for user '{username}': {ex.Message}");
                             }
                         });
                     }
                     catch (Exception ex)
                     {
                         logService?.LogError(
-                            $"Error setting up scheduled task for user '{username}': {ex.Message}"
-                        );
+                            $"Error setting up scheduled task for user '{username}': {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
                 logService?.LogError(
-                    $"Error in SetupScheduledTasksForAllUsersWindows10: {ex.Message}"
-                );
+                    $"Error in SetupScheduledTasksForAllUsersWindows10: {ex.Message}");
             }
         }
 
@@ -341,11 +323,11 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 try
                 {
                     process.Kill();
-                    process.WaitForExit(5000); // Wait up to 5 seconds for the process to exit
+                    process.WaitForExit(5000); // Wait up to 5 seconds for the process to exit,
                 }
                 catch (Exception)
                 {
-                    // Ignore errors - the process might have already exited or be inaccessible
+                    // Ignore errors - the process might have already exited or be inaccessible,
                 }
                 finally
                 {
@@ -363,15 +345,13 @@ namespace Winhance.Infrastructure.Features.Customize.Services
 
                 logService?.Log(
                     LogLevel.Info,
-                    $"Cleaning Start Menu files for {otherUsernames.Count} other users (excluding current user: {currentUsername})"
-                );
+                    $"Cleaning Start Menu files for {otherUsernames.Count} other users (excluding current user: {currentUsername})");
 
                 if (otherUsernames.Count == 0)
                 {
                     logService?.Log(
                         LogLevel.Info,
-                        "No other users found to clean Start Menu files for"
-                    );
+                        "No other users found to clean Start Menu files for");
                     return;
                 }
 
@@ -388,13 +368,11 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                             "Packages",
                             "Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy",
                             "LocalState",
-                            "start2.bin"
-                        );
+                            "start2.bin");
 
                         logService?.Log(
                             LogLevel.Info,
-                            $"Attempting to delete start2.bin for user: {username}"
-                        );
+                            $"Attempting to delete start2.bin for user: {username}");
 
                         // Delete start2.bin file if it exists
                         if (File.Exists(start2BinPath))
@@ -402,15 +380,13 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                             File.Delete(start2BinPath);
                             logService?.Log(
                                 LogLevel.Info,
-                                $"Successfully deleted start2.bin for user: {username}"
-                            );
+                                $"Successfully deleted start2.bin for user: {username}");
                         }
                         else
                         {
                             logService?.Log(
                                 LogLevel.Info,
-                                $"start2.bin file not found for user: {username} (may not exist or user hasn't used Start Menu yet)"
-                            );
+                                $"start2.bin file not found for user: {username} (may not exist or user hasn't used Start Menu yet)");
                         }
 
                         // Also delete start.bin if it exists
@@ -421,40 +397,37 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                             "Packages",
                             "Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy",
                             "LocalState",
-                            "start.bin"
-                        );
+                            "start.bin");
 
                         if (File.Exists(startBinPath))
                         {
                             File.Delete(startBinPath);
                             logService?.Log(
                                 LogLevel.Info,
-                                $"Successfully deleted start.bin for user: {username}"
-                            );
+                                $"Successfully deleted start.bin for user: {username}");
                         }
                     }
                     catch (Exception ex)
                     {
                         logService?.Log(
                             LogLevel.Warning,
-                            $"Failed to delete Start Menu files for user {username}: {ex.Message}"
-                        );
-                        // Continue with other users even if one fails
+                            $"Failed to delete Start Menu files for user {username}: {ex.Message}");
+
+                        // Continue with other users even if one fails,
                     }
                 }
 
                 logService?.Log(
                     LogLevel.Info,
-                    "Completed cleaning Start Menu files for other users"
-                );
+                    "Completed cleaning Start Menu files for other users");
             }
             catch (Exception ex)
             {
                 logService?.Log(
                     LogLevel.Error,
-                    $"Error during other users Start Menu cleaning: {ex.Message}"
-                );
-                // Don't throw - this is a best-effort feature
+                    $"Error during other users Start Menu cleaning: {ex.Message}");
+
+                // Don't throw - this is a best-effort feature,
             }
         }
 
@@ -468,15 +441,13 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                 // Use ProfileList registry to get ALL users (logged in or not)
                 using (
                     var profileList = Registry.LocalMachine.OpenSubKey(
-                        @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
-                    )
-                )
+                        @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"))
                 {
                     if (profileList != null)
                     {
                         foreach (string sidKey in profileList.GetSubKeyNames())
                         {
-                            if (sidKey.StartsWith("S-1-5-21-")) // User SID pattern
+                            if (sidKey.StartsWith("S-1-5-21-", StringComparison.Ordinal)) // User SID pattern
                             {
                                 using (var userKey = profileList.OpenSubKey(sidKey))
                                 {
@@ -486,11 +457,11 @@ namespace Winhance.Infrastructure.Features.Customize.Services
                                     if (!string.IsNullOrEmpty(profilePath))
                                     {
                                         string username = Path.GetFileName(profilePath);
+
                                         // Skip current user and system accounts
                                         if (
                                             username != currentUsername
-                                            && !IsSystemAccount(username)
-                                        )
+                                            && !IsSystemAccount(username))
                                         {
                                             usernames.Add(username);
                                         }
@@ -503,7 +474,7 @@ namespace Winhance.Infrastructure.Features.Customize.Services
             }
             catch (Exception)
             {
-                // Return empty list if we can't enumerate users
+                // Return empty list if we can't enumerate users,
             }
 
             return usernames;

@@ -91,7 +91,8 @@ namespace Winhance.Core.Features.Common.Services
         /// </summary>
         /// <typeparam name="T">The type of settings to get.</typeparam>
         /// <returns>A list of settings of the specified type.</returns>
-        public List<ISettingItem> GetSettingsByType<T>() where T : ISettingItem
+        public List<ISettingItem> GetSettingsByType<T>()
+            where T : ISettingItem
         {
             lock (_settings)
             {

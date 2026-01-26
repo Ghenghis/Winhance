@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Privacy & Security",
                             WinGetPackageId = "Malwarebytes.Malwarebytes",
                             Category = "Privacy & Security",
-                            WebsiteUrl = "https://www.malwarebytes.com/"
+                            WebsiteUrl = "https://www.malwarebytes.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Privacy & Security",
                             WinGetPackageId = "Malwarebytes.AdwCleaner",
                             Category = "Privacy & Security",
-                            WebsiteUrl = "https://www.malwarebytes.com/adwcleaner"
+                            WebsiteUrl = "https://www.malwarebytes.com/adwcleaner",
                         },
                         new ItemDefinition
                         {
@@ -43,7 +43,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Privacy & Security",
                             WinGetPackageId = "BiniSoft.WindowsFirewallControl",
                             Category = "Privacy & Security",
-                            WebsiteUrl = "https://www.binisoft.org/wfc"
+                            WebsiteUrl = "https://www.binisoft.org/wfc",
                         },
                         new ItemDefinition
                         {
@@ -53,7 +53,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Privacy & Security",
                             WinGetPackageId = "OnionShare.OnionShare",
                             Category = "Privacy & Security",
-                            WebsiteUrl = "https://onionshare.org/"
+                            WebsiteUrl = "https://onionshare.org/",
                         },
                         new ItemDefinition
                         {
@@ -68,8 +68,8 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                                 { "DownloadUrl_arm64", "https://github.com/GyulyVGC/sniffnet/releases/latest/download/Sniffnet_Windows_arm64.msi" },
                                 { "DownloadUrl_x64", "https://github.com/GyulyVGC/sniffnet/releases/latest/download/Sniffnet_Windows_x64.msi" },
                                 { "DownloadUrl_x86", "https://github.com/GyulyVGC/sniffnet/releases/latest/download/Sniffnet_Windows_x86.msi" },
-                                { "RequiresDirectDownload", true }
-                            }
+                                { "RequiresDirectDownload", true },
+                            },
                         },
                         new ItemDefinition
                         {
@@ -82,8 +82,8 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             CustomProperties = new Dictionary<string, object>
                             {
                                 { "DownloadUrl", "https://pub.teleguard.com/teleguard-desktop-latest.exe" },
-                                { "RequiresDirectDownload", true }
-                            }
+                                { "RequiresDirectDownload", true },
+                            },
                         },
                         new ItemDefinition
                         {
@@ -93,9 +93,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Privacy & Security",
                             WinGetPackageId = "OO-Software.ShutUp10",
                             Category = "Privacy & Security",
-                            WebsiteUrl = "https://www.oo-software.com/en/shutup10"
-                        }
-                    }
+                            WebsiteUrl = "https://www.oo-software.com/en/shutup10",
+                        },
+                    },
                 };
             }
         }

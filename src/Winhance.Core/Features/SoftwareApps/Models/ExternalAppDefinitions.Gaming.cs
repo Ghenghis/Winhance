@@ -23,7 +23,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Gaming",
                             WinGetPackageId = "Valve.Steam",
                             Category = "Gaming",
-                            WebsiteUrl = "https://store.steampowered.com/"
+                            WebsiteUrl = "https://store.steampowered.com/",
                         },
                         new ItemDefinition
                         {
@@ -33,7 +33,7 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Gaming",
                             WinGetPackageId = "EpicGames.EpicGamesLauncher",
                             Category = "Gaming",
-                            WebsiteUrl = "https://www.epicgames.com/"
+                            WebsiteUrl = "https://www.epicgames.com/",
                         },
                         new ItemDefinition
                         {
@@ -43,9 +43,9 @@ namespace Winhance.Core.Features.SoftwareApps.Models
                             GroupName = "Gaming",
                             WinGetPackageId = "GOG.Galaxy",
                             Category = "Gaming",
-                            WebsiteUrl = "https://www.gogalaxy.com/en/"
-                        }
-                    }
+                            WebsiteUrl = "https://www.gogalaxy.com/en/",
+                        },
+                    },
                 };
             }
         }

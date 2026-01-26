@@ -8,7 +8,7 @@ namespace Winhance.Core.Features.Common.Models
     public sealed class PowerShellInfo
     {
         /// <summary>
-        /// Gets whether Windows PowerShell 5.1 should be used.
+        /// Gets a value indicating whether gets whether Windows PowerShell 5.1 should be used.
         /// </summary>
         public bool UseWindowsPowerShell { get; }
 

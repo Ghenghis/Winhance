@@ -53,11 +53,11 @@ public static class ExplorerCustomizations
                         new RegistrySetting
                         {
                             KeyPath = @"HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32",
-                            ValueName = "",
-                            RecommendedValue = "",
-                            EnabledValue = "",
+                            ValueName = string.Empty,
+                            RecommendedValue = string.Empty,
+                            EnabledValue = string.Empty,
                             DisabledValue = null,
-                            DefaultValue = "",
+                            DefaultValue = string.Empty,
                             ValueType = RegistryValueKind.String,
                         },
                     },
@@ -80,7 +80,7 @@ public static class ExplorerCustomizations
                             DisabledValue = null,
                             DefaultValue = null,
                             ValueType = RegistryValueKind.None,
-                        }
+                        },
                     },
                     RegContents = new List<RegContentSetting>
                     {
@@ -138,9 +138,9 @@ public static class ExplorerCustomizations
 [-HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership]
 [-HKEY_CLASSES_ROOT\Drive\shell\runas]
 ",
-                            RequiresElevation = true
-                        }
-                    }
+                            RequiresElevation = true,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -161,7 +161,7 @@ public static class ExplorerCustomizations
                             DisabledValue = null,
                             DefaultValue = null,
                             ValueType = RegistryValueKind.None,
-                        }
+                        },
                     },
                     RegContents = new List<RegContentSetting>
                     {
@@ -186,9 +186,9 @@ public static class ExplorerCustomizations
 [-HKEY_CLASSES_ROOT\AllFilesystemObjects\shell\Windows.ShowFileExtensions]
 [-HKEY_CLASSES_ROOT\Directory\Background\shell\Windows.ShowFileExtensions]
 ",
-                            RequiresElevation = true
-                        }
-                    }
+                            RequiresElevation = true,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {
@@ -207,7 +207,7 @@ public static class ExplorerCustomizations
                             ValueName = "{9F156763-7844-4DC4-B2B1-901F640F5155}",
                             RecommendedValue = null,
                             EnabledValue = null,
-                            DisabledValue = "",
+                            DisabledValue = string.Empty,
                             DefaultValue = null,
                             ValueType = RegistryValueKind.String,
                             AbsenceMeansEnabled = true,
@@ -731,12 +731,12 @@ public static class ExplorerCustomizations
                         new RegistrySetting
                         {
                             KeyPath = @"HKEY_CURRENT_USER\Software\Classes\.bmp",
-                            ValueName = "",
+                            ValueName = string.Empty,
                             EnabledValue = "PhotoViewer.FileAssoc.Tiff",
                             DisabledValue = null,
                             DefaultValue = null,
                             ValueType = RegistryValueKind.String,
-                        }
+                        },
                     },
                     RegContents = new List<RegContentSetting>
                     {
@@ -860,9 +860,9 @@ public static class ExplorerCustomizations
 [-HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.tiff\OpenWithProgids]
 [-HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.wdp\OpenWithProgids]
 ",
-                            RequiresElevation = false
-                        }
-                    }
+                            RequiresElevation = false,
+                        },
+                    },
                 },
                 new SettingDefinition
                 {

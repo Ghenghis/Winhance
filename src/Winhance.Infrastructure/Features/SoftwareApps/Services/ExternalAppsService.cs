@@ -48,7 +48,9 @@ public class ExternalAppsService(
             }
 
             if (string.IsNullOrEmpty(item.WinGetPackageId))
+            {
                 return OperationResult<bool>.Failed("No WinGet package ID or download URL specified");
+            }
 
             var wingetSuccess = await winGetService.InstallPackageAsync(item.WinGetPackageId, item.Name, cancellationToken);
             return wingetSuccess ? OperationResult<bool>.Succeeded(true) : OperationResult<bool>.Failed("Installation failed");
@@ -86,7 +88,9 @@ public class ExternalAppsService(
     public async Task<bool> CheckIfInstalledAsync(string winGetPackageId)
     {
         if (string.IsNullOrWhiteSpace(winGetPackageId))
+        {
             return false;
+        }
 
         try
         {
@@ -94,8 +98,8 @@ public class ExternalAppsService(
             {
                 Id = winGetPackageId,
                 Name = winGetPackageId,
-                Description = "",
-                WinGetPackageId = winGetPackageId
+                Description = string.Empty,
+                WinGetPackageId = winGetPackageId,
             };
             var batch = await CheckBatchInstalledAsync(new[] { tempDef });
             return batch.GetValueOrDefault(winGetPackageId, false);

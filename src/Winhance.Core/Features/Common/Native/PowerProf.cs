@@ -6,80 +6,79 @@ namespace Winhance.Core.Features.Common.Native
     public static class PowerProf
     {
         // P/Invoke definitions for PowrProf.dll
+        [DllImport("PowrProf.dll", SetLastError = true)]
+        public static extern uint PowerEnumerate(
+            IntPtr rootPowerKey,
+            IntPtr schemeGuid,
+            IntPtr subGroupOfPowerSettingsGuid,
+            uint accessFlags,
+            uint index,
+            IntPtr buffer,
+            ref uint bufferSize);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerEnumerate(
-            IntPtr RootPowerKey,
-            IntPtr SchemeGuid,
-            IntPtr SubGroupOfPowerSettingsGuid,
-            uint AccessFlags,
-            uint Index,
-            IntPtr Buffer,
-            ref uint BufferSize);
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            IntPtr subGroupOfPowerSettingsGuid,
+            uint accessFlags,
+            uint index,
+            IntPtr buffer,
+            ref uint bufferSize);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerEnumerate(
-            IntPtr RootPowerKey,
-            ref Guid SchemeGuid,
-            IntPtr SubGroupOfPowerSettingsGuid,
-            uint AccessFlags,
-            uint Index,
-            IntPtr Buffer,
-            ref uint BufferSize);
-
-        [DllImport("PowrProf.dll", SetLastError = true)]
-        public static extern uint PowerEnumerate(
-            IntPtr RootPowerKey,
-            ref Guid SchemeGuid,
-            ref Guid SubGroupOfPowerSettingsGuid,
-            uint AccessFlags,
-            uint Index,
-            IntPtr Buffer,
-            ref uint BufferSize);
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            uint accessFlags,
+            uint index,
+            IntPtr buffer,
+            ref uint bufferSize);
 
         [DllImport("PowrProf.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern uint PowerReadFriendlyName(
-            IntPtr RootPowerKey,
-            ref Guid SchemeGuid,
-            IntPtr SubGroupOfPowerSettingsGuid,
-            IntPtr PowerSettingGuid,
-            IntPtr Buffer,
-            ref uint BufferSize);
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            IntPtr subGroupOfPowerSettingsGuid,
+            IntPtr powerSettingGuid,
+            IntPtr buffer,
+            ref uint bufferSize);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerReadACValueIndex(
-            IntPtr RootPowerKey,
-            ref Guid SchemeGuid,
-            ref Guid SubGroupOfPowerSettingsGuid,
-            ref Guid PowerSettingGuid,
-            out uint AcValueIndex);
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            out uint acValueIndex);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerReadDCValueIndex(
-            IntPtr RootPowerKey,
-            ref Guid SchemeGuid,
-            ref Guid SubGroupOfPowerSettingsGuid,
-            ref Guid PowerSettingGuid,
-            out uint DcValueIndex);
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            out uint dcValueIndex);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerGetActiveScheme(
-            IntPtr UserRootPowerKey,
-            out IntPtr ActivePolicyGuid);
+            IntPtr userRootPowerKey,
+            out IntPtr activePolicyGuid);
 
         [DllImport("PowrProf.dll", SetLastError = true)]
         public static extern uint PowerSetActiveScheme(
-            IntPtr UserRootPowerKey,
-            ref Guid SchemeGuid);
+            IntPtr userRootPowerKey,
+            ref Guid schemeGuid);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
         public static extern IntPtr LocalFree(IntPtr hMem);
 
         // Constants
-        public const uint ACCESS_SCHEME = 16;
-        public const uint ACCESS_SUBGROUP = 17;
-        public const uint ACCESS_INDIVIDUAL_SETTING = 18;
-        public const uint ERROR_SUCCESS = 0;
-        public const uint ERROR_NO_MORE_ITEMS = 259;
+        public const uint ACCESSSCHEME = 16;
+        public const uint ACCESSSUBGROUP = 17;
+        public const uint ACCESSINDIVIDUALSETTING = 18;
+        public const uint ERRORSUCCESS = 0;
+        public const uint ERRORNOMOREITEMS = 259;
     }
 }

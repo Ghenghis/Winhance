@@ -6,9 +6,9 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Winhance.Core.Features.Common.Enums;
 using Winhance.Core.Features.Common.Interfaces;
 using Winhance.Core.Features.FileManager.Interfaces;
-using Winhance.Core.Features.Common.Enums;
 
 namespace Winhance.Infrastructure.Features.FileManager.Services
 {
@@ -25,15 +25,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         public OrganizerService(ILogService logService)
         {
             _logService = logService;
-            
+
             var appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Winhance", "FileManager"
-            );
-            
+                "Winhance", "FileManager");
+
             _transactionLogPath = Path.Combine(appDataPath, "organize-transactions");
             _rulesPath = Path.Combine(appDataPath, "organize-rules");
-            
+
             Directory.CreateDirectory(_transactionLogPath);
             Directory.CreateDirectory(_rulesPath);
 
@@ -41,7 +40,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<OrganizationPlan> AnalyzeAsync(
-            string sourcePath, 
+            string sourcePath,
             OrganizationStrategy strategy,
             CancellationToken cancellationToken = default)
         {
@@ -49,12 +48,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 SourcePath = sourcePath,
                 Strategy = strategy,
-                AnalysisDate = DateTime.UtcNow
+                AnalysisDate = DateTime.UtcNow,
             };
 
             var categories = new Dictionary<string, OrganizationCategory>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 if (!Directory.Exists(sourcePath))
                 {
@@ -80,7 +80,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             {
                                 Name = categoryName,
                                 DestinationFolder = destinationFolder,
-                                Items = new List<OrganizationItem>()
+                                Items = new List<OrganizationItem>(),
                             };
                             categories[categoryName] = category;
                         }
@@ -92,7 +92,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             FileName = fileInfo.Name,
                             Size = fileInfo.Length,
                             DateModified = fileInfo.LastWriteTime,
-                            Extension = fileInfo.Extension
+                            Extension = fileInfo.Extension,
                         });
 
                         category.FileCount++;
@@ -140,7 +140,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             if (File.Exists(item.SourcePath))
                             {
                                 var destPath = GetUniqueDestinationPath(item.DestinationPath);
-                                
+
                                 await Task.Run(() => File.Move(item.SourcePath, destPath), cancellationToken);
 
                                 transactionLog.Add(new OrganizationTransaction
@@ -148,7 +148,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     SourcePath = item.SourcePath,
                                     DestinationPath = destPath,
                                     Category = category.Name,
-                                    Timestamp = DateTime.UtcNow
+                                    Timestamp = DateTime.UtcNow,
                                 });
 
                                 result.FilesOrganized++;
@@ -170,7 +170,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 await SaveTransactionAsync(transactionId, transactionLog);
                 result.TransactionId = transactionId;
 
-                _logService.Log(LogLevel.Info, 
+                _logService.Log(
+                    LogLevel.Info,
                     $"Organization complete: {result.FilesOrganized} files organized, {result.FilesFailed} failed");
             }
             catch (OperationCanceledException)
@@ -200,7 +201,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             try
             {
                 var transactionPath = Path.Combine(_transactionLogPath, $"{transactionId}.json");
-                
+
                 if (!File.Exists(transactionPath))
                 {
                     result.Success = false;
@@ -210,7 +211,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 }
 
                 var json = await File.ReadAllTextAsync(transactionPath, cancellationToken);
-                var transactions = JsonSerializer.Deserialize<List<OrganizationTransaction>>(json) 
+                var transactions = JsonSerializer.Deserialize<List<OrganizationTransaction>>(json)
                     ?? new List<OrganizationTransaction>();
 
                 // Undo in reverse order
@@ -229,11 +230,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 Directory.CreateDirectory(originalDir);
                             }
 
-                            await Task.Run(() => File.Move(transaction.DestinationPath, transaction.SourcePath), 
+                            await Task.Run(
+                                () => File.Move(transaction.DestinationPath, transaction.SourcePath),
                                 cancellationToken);
-                            
+
                             result.FilesOrganized++;
-                            _logService.Log(LogLevel.Debug, 
+                            _logService.Log(
+                                LogLevel.Debug,
                                 $"Restored: {Path.GetFileName(transaction.SourcePath)}");
                         }
                         else
@@ -257,7 +260,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     File.Delete(transactionPath);
                 }
 
-                _logService.Log(LogLevel.Info, 
+                _logService.Log(
+                    LogLevel.Info,
                     $"Undo complete: {result.FilesOrganized} files restored");
             }
             catch (Exception ex)
@@ -278,19 +282,20 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var analysis = new SpaceRecoveryAnalysis
             {
-                DriveLetter = driveLetter
+                DriveLetter = driveLetter,
             };
 
             var opportunities = new List<RecoveryOpportunity>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 // Check AI model caches
                 var aiModelPaths = new[]
                 {
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".lmstudio", "models"),
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ollama", "models"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "huggingface", "hub")
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "huggingface", "hub"),
                 };
 
                 foreach (var modelPath in aiModelPaths)
@@ -312,11 +317,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     Category = "AI Models",
                                     Description = "AI model files that can be relocated to another drive",
                                     Action = RecoveryAction.Relocate,
-                                    Priority = size > 10L * 1024 * 1024 * 1024 ? "High" : "Medium"
+                                    Priority = size > 10L * 1024 * 1024 * 1024 ? "High" : "Medium",
                                 });
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                        }
                     }
                 }
 
@@ -326,7 +334,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages"),
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cargo", "registry"),
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".npm"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pip", "cache")
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pip", "cache"),
                 };
 
                 foreach (var cachePath in devCachePaths)
@@ -348,11 +356,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     Category = "Development Cache",
                                     Description = "Development package cache that can be cleaned",
                                     Action = RecoveryAction.Clean,
-                                    Priority = size > 5L * 1024 * 1024 * 1024 ? "High" : "Low"
+                                    Priority = size > 5L * 1024 * 1024 * 1024 ? "High" : "Low",
                                 });
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                        }
                     }
                 }
 
@@ -360,7 +371,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 var tempPaths = new[]
                 {
                     Path.GetTempPath(),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp")
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp"),
                 };
 
                 foreach (var tempPath in tempPaths)
@@ -382,14 +393,16 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                     Category = "System Cache",
                                     Description = "Temporary files that can be safely cleaned",
                                     Action = RecoveryAction.Clean,
-                                    Priority = "Low"
+                                    Priority = "Low",
                                 });
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                        }
                     }
                 }
-
             }, cancellationToken);
 
             analysis.Opportunities = opportunities.OrderByDescending(o => o.Size).ToList();
@@ -399,7 +412,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<OrganizationResult> RelocateModelsAsync(
-            string sourcePath, 
+            string sourcePath,
             string destinationPath,
             bool createSymlinks,
             CancellationToken cancellationToken = default)
@@ -437,7 +450,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             SourcePath = dir,
                             DestinationPath = destDir,
                             Category = "AI Model Relocation",
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.FilesOrganized++;
@@ -457,7 +470,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     {
                         var destFile = Path.Combine(destinationPath, Path.GetFileName(file));
                         var fileInfo = new FileInfo(file);
-                        
+
                         await Task.Run(() => File.Move(file, destFile), cancellationToken);
 
                         transactionLog.Add(new OrganizationTransaction
@@ -465,7 +478,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             SourcePath = file,
                             DestinationPath = destFile,
                             Category = "AI Model Relocation",
-                            Timestamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow,
                         });
 
                         result.FilesOrganized++;
@@ -492,12 +505,14 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         // Create junction/symlink
                         await CreateSymbolicLinkAsync(sourcePath, destinationPath);
 
-                        _logService.Log(LogLevel.Info, 
+                        _logService.Log(
+                            LogLevel.Info,
                             $"Created symbolic link: {sourcePath} -> {destinationPath}");
                     }
                     catch (Exception ex)
                     {
-                        _logService.Log(LogLevel.Warning, 
+                        _logService.Log(
+                            LogLevel.Warning,
                             $"Could not create symbolic link: {ex.Message}");
                     }
                 }
@@ -505,7 +520,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 await SaveTransactionAsync(transactionId, transactionLog);
                 result.TransactionId = transactionId;
 
-                _logService.Log(LogLevel.Info, 
+                _logService.Log(
+                    LogLevel.Info,
                     $"Model relocation complete: {result.BytesProcessed / (1024 * 1024)} MB moved");
             }
             catch (OperationCanceledException)
@@ -526,17 +542,20 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         }
 
         public async Task<IEnumerable<DuplicateGroup>> FindDuplicatesAsync(
-            string searchPath, 
+            string searchPath,
             DuplicateSearchMethod method,
             CancellationToken cancellationToken = default)
         {
             var duplicates = new List<DuplicateGroup>();
             var fileGroups = new Dictionary<string, List<DuplicateFile>>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 if (!Directory.Exists(searchPath))
+                {
                     return;
+                }
 
                 var files = Directory.EnumerateFiles(searchPath, "*", SearchOption.AllDirectories);
 
@@ -578,10 +597,13 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                             Name = fileInfo.Name,
                             Size = fileInfo.Length,
                             DateModified = fileInfo.LastWriteTime,
-                            Hash = method == DuplicateSearchMethod.Hash ? key : null
+                            Hash = method == DuplicateSearchMethod.Hash ? key : null,
                         });
                     }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                    }
                 }
             }, cancellationToken);
 
@@ -598,7 +620,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     Files = group,
                     TotalSize = totalSize,
                     WastedSize = wastedSize,
-                    FileCount = group.Count
+                    FileCount = group.Count,
                 });
             }
 
@@ -609,7 +631,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         {
             var rules = new List<OrganizationRule>();
 
-            await Task.Run(() =>
+            await Task.Run(
+                () =>
             {
                 try
                 {
@@ -624,10 +647,16 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                                 rules.Add(rule);
                             }
                         }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                        }
                     }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                }
             }, cancellationToken);
 
             return rules.OrderBy(r => r.Priority);
@@ -655,8 +684,6 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             }
         }
 
-        #region Helper Methods
-
         private string GetCategoryName(FileInfo fileInfo, OrganizationStrategy strategy)
         {
             return strategy switch
@@ -666,7 +693,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 OrganizationStrategy.BySize => GetSizeCategoryName(fileInfo.Length),
                 OrganizationStrategy.ByProject => "Misc",
                 OrganizationStrategy.ByAICategory => GetAICategoryName(fileInfo),
-                _ => "Other"
+                _ => "Other",
             };
         }
 
@@ -694,7 +721,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 < 10 * 1024 * 1024 => "Medium (1MB - 10MB)",
                 < 100 * 1024 * 1024 => "Large (10MB - 100MB)",
                 < 1024 * 1024 * 1024 => "Very Large (100MB - 1GB)",
-                _ => "Huge (> 1GB)"
+                _ => "Huge (> 1GB)",
             };
         }
 
@@ -704,16 +731,30 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             var name = fileInfo.Name.ToLowerInvariant();
             var ext = fileInfo.Extension.TrimStart('.').ToLowerInvariant();
 
-            if (name.Contains("screenshot") || name.Contains("screen") || name.Contains("capture"))
+            if (name.Contains("screenshot", StringComparison.Ordinal) || name.Contains("screen", StringComparison.Ordinal) || name.Contains("capture", StringComparison.Ordinal))
+            {
                 return "Screenshots";
-            if (name.Contains("download") || fileInfo.DirectoryName?.Contains("Downloads") == true)
+            }
+
+            if (name.Contains("download", StringComparison.Ordinal) || fileInfo.DirectoryName?.Contains("Downloads", StringComparison.Ordinal) == true)
+            {
                 return "Downloads";
-            if (ext == "pdf" && (name.Contains("invoice") || name.Contains("receipt")))
+            }
+
+            if (ext == "pdf" && (name.Contains("invoice", StringComparison.Ordinal) || name.Contains("receipt", StringComparison.Ordinal)))
+            {
                 return "Financial Documents";
-            if (ext == "pdf" && (name.Contains("resume") || name.Contains("cv")))
+            }
+
+            if (ext == "pdf" && (name.Contains("resume", StringComparison.Ordinal) || name.Contains("cv", StringComparison.Ordinal)))
+            {
                 return "Career Documents";
-            if (new[] { "jpg", "jpeg", "png", "gif" }.Contains(ext) && name.Contains("img_"))
+            }
+
+            if (new[] { "jpg", "jpeg", "png", "gif" }.Contains(ext) && name.Contains("img_", StringComparison.Ordinal))
+            {
                 return "Camera Photos";
+            }
 
             return GetTypeCategoryName(fileInfo.Extension);
         }
@@ -721,7 +762,9 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
         private string GetUniqueDestinationPath(string path)
         {
             if (!File.Exists(path))
+            {
                 return path;
+            }
 
             var directory = Path.GetDirectoryName(path) ?? string.Empty;
             var name = Path.GetFileNameWithoutExtension(path);
@@ -733,7 +776,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             {
                 newPath = Path.Combine(directory, $"{name} ({counter}){extension}");
                 counter++;
-            } while (File.Exists(newPath));
+            }
+            while (File.Exists(newPath));
 
             return newPath;
         }
@@ -749,10 +793,17 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                     {
                         size += new FileInfo(file).Length;
                     }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                    }
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+            }
+
             return size;
         }
 
@@ -763,7 +814,7 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 using var stream = File.OpenRead(filePath);
                 using var md5 = MD5.Create();
                 var hash = md5.ComputeHash(stream);
-                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
             }
             catch (Exception)
             {
@@ -778,7 +829,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
             await File.WriteAllTextAsync(filePath, json);
         }
 
-        private async Task CleanupEmptyFoldersAsync(List<OrganizationTransaction> transactions, 
+        private async Task CleanupEmptyFoldersAsync(
+            List<OrganizationTransaction> transactions,
             CancellationToken cancellationToken)
         {
             var folders = transactions
@@ -797,7 +849,10 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         await Task.Run(() => Directory.Delete(folder), cancellationToken);
                     }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}"); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Skipped inaccessible item: {ex.Message}");
+                }
             }
         }
 
@@ -815,8 +870,8 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true,
-                        RedirectStandardError = true
-                    }
+                        RedirectStandardError = true,
+                    },
                 };
                 process.Start();
                 process.WaitForExit();
@@ -836,17 +891,18 @@ namespace Winhance.Infrastructure.Features.FileManager.Services
                 ["Executables"] = new[] { "exe", "msi", "dll", "bat", "cmd", "ps1", "sh" },
                 ["Fonts"] = new[] { "ttf", "otf", "woff", "woff2", "eot" },
                 ["3D Models"] = new[] { "obj", "fbx", "stl", "blend", "dae", "3ds", "gltf", "glb" },
-                ["AI Models"] = new[] { "gguf", "ggml", "safetensors", "bin", "pt", "pth", "onnx", "h5" }
+                ["AI Models"] = new[] { "gguf", "ggml", "safetensors", "bin", "pt", "pth", "onnx", "h5" },
             };
         }
-
-        #endregion
 
         private class OrganizationTransaction
         {
             public string SourcePath { get; set; } = string.Empty;
+
             public string DestinationPath { get; set; } = string.Empty;
+
             public string Category { get; set; } = string.Empty;
+
             public DateTime Timestamp { get; set; }
         }
     }

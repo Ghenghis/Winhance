@@ -18,7 +18,6 @@ namespace Winhance.Infrastructure.Features.Customize.Services
     public class ExplorerCustomizationService(
         ILogService logService,
         ICompatibleSettingsRegistry compatibleSettingsRegistry) : IDomainService
-        
     {
         private IEnumerable<SettingDefinition>? _cachedSettings;
         private readonly object _cacheLock = new object();
@@ -28,12 +27,16 @@ namespace Winhance.Infrastructure.Features.Customize.Services
         public async Task<IEnumerable<SettingDefinition>> GetSettingsAsync()
         {
             if (_cachedSettings != null)
+            {
                 return _cachedSettings;
+            }
 
             lock (_cacheLock)
             {
                 if (_cachedSettings != null)
+                {
                     return _cachedSettings;
+                }
 
                 try
                 {
